@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<customMultiLayerMapSource>
+<name>AH OpenSeaMap - Mapnik</name>
+<tileType>PNG</tileType>
+<layers>
+<customMapSource>
+<name>AH OpenStreetMap Mapnik</name>
+<minZoom>0</minZoom>
+<maxZoom>18</maxZoom>
+<tileType>PNG</tileType>
+<tileUpdate>None</tileUpdate>
+<url>http://a.tile.openstreetmap.org/{$z}/{$x}/{$y}.png</url>
+<backgroundColor>#FFFFFF00</backgroundColor>
+</customMapSource>
+<customMapSource>
+<name>AH OpenSeaMap</name>
+<minZoom>0</minZoom>
+<maxZoom>18</maxZoom>
+<tileType>PNG</tileType>
+<tileUpdate>None</tileUpdate>
+<ignoreErrors>true</ignoreErrors>
+<url>http://t1.openseamap.org/seamark/{$z}/{$x}/{$y}.png</url>
+<backgroundColor>#00000000</backgroundColor>
+</customMapSource>
+</layers>
+</customMultiLayerMapSource>

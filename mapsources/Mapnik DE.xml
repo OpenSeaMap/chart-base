@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<customMapSource>
+<name>AH OpenStreetMap Mapnik</name>
+<minZoom>0</minZoom>
+<maxZoom>18</maxZoom>
+<tileType>PNG</tileType>
+<tileUpdate>None</tileUpdate>
+<url>http://a.tile.openstreetmap.org/{$z}/{$x}/{$y}.png</url>
+<backgroundColor>#FFFFFF00</backgroundColor>
+</customMapSource>
