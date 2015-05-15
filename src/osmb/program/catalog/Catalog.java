@@ -61,14 +61,14 @@ import osmb.utilities.OSMBUtilities;
 public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparable<IfCatalogProfile>
 {
 	// standard data
-	public static final int CURRENT_CATALOG_VERSION = 1;
+	public static final int CURRENT_CATALOG_VERSION = 2;
 	protected static Logger log = Logger.getLogger(Catalog.class);
 
 	// class/static data
 	public static final String CATALOG_NAME_REGEX = "[\\w _-]+";
 	public static final String CATALOG_FILENAME_PREFIX = "osmcb-catalog-";
 	public static final Pattern CATALOG_FILENAME_PATTERN = Pattern.compile(CATALOG_FILENAME_PREFIX + "(" + CATALOG_NAME_REGEX + ").xml");
-	public static final Catalog DEFAULT = new Catalog();
+	// public static final Catalog DEFAULT = new Catalog();
 	protected static Vector<Catalog> catalogs = new Vector<Catalog>();
 
 	/**
@@ -165,21 +165,20 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	public Catalog(String catalogName)
 	{
 		this(new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(catalogName)), catalogName);
-		try
-		{
-			load();
-		}
-		catch (JAXBException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	protected Catalog(File file, String name)
 	{
 		this.file = file;
 		this.name = name;
+		try
+		{
+			load();
+		}
+		catch (JAXBException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	public Catalog(Catalog catalog)
@@ -521,6 +520,10 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		FileOutputStream fo = null;
 		try
 		{
+			if (file == null)
+			{
+				file = new File(getCatalogFileName(name));
+			}
 			fo = new FileOutputStream(file);
 			m.marshal(this, fo);
 		}

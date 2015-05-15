@@ -350,8 +350,8 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		int xMax = maxTileCoordinate.x / tileSize;
 		int yMin = minTileCoordinate.y / tileSize;
 		int yMax = maxTileCoordinate.y / tileSize;
-		int width = xMax - xMin + 1;
-		int height = yMax - yMin + 1;
+		int width = xMax - xMin;
+		int height = yMax - yMin;
 		int tileCount = width * height;
 		// TODO correct tile count in case of multi-layer maps
 		// if (mapSource instanceof MultiLayerMapSource) {
