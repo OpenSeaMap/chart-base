@@ -117,6 +117,7 @@ public abstract class ACSettings implements IfSettings
 	protected int cfgDownloadThreadCount = 2;
 	protected int cfgDownloadRetryCount = 1;
 	protected CoordinateStringFormat cfgCoordinateNumberFormat = CoordinateStringFormat.DEG_LOCAL;
+	@XmlElement
 	/**
 	 * settings for the lat/lon grid
 	 */

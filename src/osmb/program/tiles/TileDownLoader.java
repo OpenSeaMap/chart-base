@@ -310,7 +310,7 @@ public class TileDownLoader
 		else
 		{
 			// no expiration time set by server - use the default one
-			expiredTime = tileStoreEntry.getTimeDownloaded() + settings.getTileDefaultExpirationTime();
+			expiredTime = tileStoreEntry.getTimeDownloaded() + ACSettings.getTileDefaultExpirationTime();
 		}
 		return (expiredTime < System.currentTimeMillis());
 	}
