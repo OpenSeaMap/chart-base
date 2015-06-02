@@ -10,9 +10,11 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.log4j.Logger;
 
+import osmb.program.jaxb.DimensionAdapter;
 import osmb.program.tiles.TileImageFormat;
 import osmb.utilities.UnitSystem;
 import osmb.utilities.geo.CoordinateStringFormat;
@@ -97,10 +99,11 @@ public abstract class ACSettings implements IfSettings
 
 	// instance data, usually all protected
 	// esp. this classes instances are load from a xml-file by loadOrQuit()
-	@XmlElement(defaultValue = "")
+	
 	/**
 	 * Version of this settings file
 	 */
+	//@XmlElement(defaultValue = "")///WTest auskommentiert wg cfgVersion (+ version)?
 	protected String cfgVersion;
 	/**
 	 * user agent used for connections to tile servers
@@ -117,10 +120,10 @@ public abstract class ACSettings implements IfSettings
 	protected int cfgDownloadThreadCount = 2;
 	protected int cfgDownloadRetryCount = 1;
 	protected CoordinateStringFormat cfgCoordinateNumberFormat = CoordinateStringFormat.DEG_LOCAL;
-	@XmlElement
 	/**
 	 * settings for the lat/lon grid
 	 */
+	@XmlElement
 	protected final WgsGridSettings cfgWgsGrid = new WgsGridSettings();
 	protected transient UnitSystem cfgUnitSystem = UnitSystem.Metric;
 	protected String cfgLocaleLanguage = Locale.getDefault().getLanguage();
@@ -207,6 +210,7 @@ public abstract class ACSettings implements IfSettings
 		this.cfgUnitSystem = unitSystem;
 	}
 
+	@XmlJavaTypeAdapter(DimensionAdapter.class)
 	public Dimension getTileSize()
 	{
 		return cfgTileSize;
