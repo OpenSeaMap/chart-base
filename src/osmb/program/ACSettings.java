@@ -87,6 +87,7 @@ public abstract class ACSettings implements IfSettings
 		return (SETTINGS_LAST_MODIFIED != lastModified);
 	}
 
+	///W ? xml-Element? static?
 	public static long getTileDefaultExpirationTime()
 	{
 		return cfgTileDefaultExpirationTime;
@@ -123,7 +124,7 @@ public abstract class ACSettings implements IfSettings
 	/**
 	 * settings for the lat/lon grid
 	 */
-	@XmlElement
+	@XmlElement(name = "wgsGrid")
 	protected final WgsGridSettings cfgWgsGrid = new WgsGridSettings();
 	protected transient UnitSystem cfgUnitSystem = UnitSystem.Metric;
 	protected String cfgLocaleLanguage = Locale.getDefault().getLanguage();
