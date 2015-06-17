@@ -1,0 +1,61 @@
+<project default="all" name="Compile and build java classes plus jar archives">
+	<property name="app.name" value="OSeaMChartBase" />
+	<property name="app.shname" value="osmb" />
+	<property name="jar.name" value="${app.name}.jar" />
+	
+	<property name="osmb.dir" value="." />
+	<property name="src.dir" value="src" />
+	<property name="resrc.dir" value="src/osmb/resources" />
+	<property name="build.dir" value="build" />
+
+	<!-- Java target version -->
+	<property name="java-target" value="1.7" />
+
+	<!-- version dependent libraries -->
+	<property name="je-version" value="3.3.93" />
+	<property name="sqlite-version" value="3.7.15-M1" />
+
+	<path id="maincp">
+		<fileset dir="${osmb.dir}/lib" includes="log*.jar" />
+		<fileset dir="${osmb.dir}/lib" includes="jai*.jar" />
+		<fileset dir="${osmb.dir}/lib" includes="bsh-2.0b4.jar" />
+		<fileset dir="${osmb.dir}/lib" includes="Tidy.jar" />
+		<fileset dir="${osmb.dir}/lib" includes="javapng-2.0.jar" />
+		<fileset dir="${osmb.dir}/lib" includes="itextpdf-5.1.0.jar" />
+		<fileset dir="${osmb.dir}/lib" includes="commons-codec-1.4.jar" />
+		<fileset dir="${osmb.dir}/lib" includes="commons-io-2.0.jar" />
+		<fileset dir="${osmb.dir}/lib" includes="commons-lang3-3.1.jar" />
+		<fileset dir="${osmb.dir}/lib" includes="je-${je-version}.jar" />
+	</path>
+	
+	
+	<!-- <target name="all" depends="clean_build,build,build_mapsources,sign_mapsources,create_jar,shrink,create_release,create_release_src" /> -->
+	<target name="all" depends="clean_build,build,create_jar" />
+	
+	<target name="clean_build">
+		<delete includeEmptyDirs="true" failonerror="false">
+			<fileset dir="${build.dir}" includes="**/*" />
+		</delete>
+	</target>
+	
+	<target name="build">		
+		<mkdir dir="${build.dir}" />
+		<javac srcdir="${src.dir}"
+				destdir="${build.dir}"
+				target="${java-target}"
+				source="${java-target}"
+				debug="true"
+				includeantruntime="false"
+				encoding="UTF-8"
+				listfiles="yes">
+			<classpath refid="maincp" />
+	  	</javac>
+		<copy todir="${build.dir}/${app.shname}/resources" overwrite="true">
+			<fileset dir="${resrc.dir}" excludes="**/mapsources.properties" />
+		</copy>
+	</target>
+	
+	<target name ="create_jar">
+		<jar destfile="${build.dir}/${app.name}.jar" basedir="${build.dir}"/>
+	</target>
+</project>
