@@ -25,6 +25,7 @@ import javax.swing.tree.TreeNode;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.log4j.Logger;
 
@@ -32,6 +33,7 @@ import osmb.exceptions.InvalidNameException;
 import osmb.mapsources.IfMapSource;
 import osmb.program.catalog.IfCapabilityDeletable;
 import osmb.program.catalog.IfCatalog;
+import osmb.program.jaxb.PointAdapter;
 import osmb.program.tiles.IfTileFilter;
 import osmb.program.tiles.TileImageParameters;
 import osmb.utilities.geo.EastNorthCoordinate;
@@ -123,12 +125,14 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	}
 
 	@Override
+	@XmlJavaTypeAdapter(PointAdapter.class)
 	public Point getMaxTileCoordinate()
 	{
 		return this.maxTileCoordinate;
 	}
 
 	@Override
+	@XmlJavaTypeAdapter(PointAdapter.class)
 	public Point getMinTileCoordinate()
 	{
 		return this.minTileCoordinate;
