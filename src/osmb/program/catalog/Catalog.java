@@ -439,7 +439,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	}
 
 	/**
-	 * Copares the IFCatalogProfile of this object to the IfCatalogProfile of the other one.
+	 * Compares the IFCatalogProfile of this object to the IfCatalogProfile of the other one.
 	 * Specifically it compares the files. Currently it does not compare the names or contents of the catalog.
 	 * 
 	 * @see osmb.program.catalog.IfCatalogProfile#equals(java.lang.Object)
@@ -522,7 +522,8 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		{
 			if (file == null)
 			{
-				file = new File(getCatalogFileName(name));
+				///W Pfad angepasst: ACSettings.getInstance().getCatalogsDirectory()
+				file = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(name));
 			}
 			fo = new FileOutputStream(file);
 			m.marshal(this, fo);

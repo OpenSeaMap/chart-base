@@ -40,16 +40,16 @@ public abstract class ACSettings implements IfSettings
 	public static class Directories
 	{
 		@XmlElement
-		protected String bundleOutputDirectory = null;
+		protected String bundleOutputDirectory = "";///W '= ""' statt '= null' für settings.xml-Inittialisierung (nötig?)
 
 		@XmlElement
-		protected String tileStoreDirectory = null;
+		protected String tileStoreDirectory = ""; ///W dto
 
 		@XmlElement
-		protected String mapSourcesDirectory = null;
+		protected String mapSourcesDirectory = ""; ///W dto
 
 		@XmlElement
-		protected String catalogsDirectory = null;
+		protected String catalogsDirectory = ""; ///W dto
 	}
 
 	protected static long SETTINGS_LAST_MODIFIED = 0;
@@ -113,6 +113,7 @@ public abstract class ACSettings implements IfSettings
 	/**
 	 * List with directories
 	 */
+	@XmlElement(name = "directories")
 	protected Directories cfgDirectories = new Directories();
 	/**
 	 * Use tilestore or not
@@ -126,7 +127,7 @@ public abstract class ACSettings implements IfSettings
 	 */
 	@XmlElement(name = "wgsGrid")
 	protected final WgsGridSettings cfgWgsGrid = new WgsGridSettings();
-	protected transient UnitSystem cfgUnitSystem = UnitSystem.Metric;
+	protected transient UnitSystem cfgUnitSystem = UnitSystem.Metric; ///W ? transient <-> XmlElement ? s.u.
 	protected String cfgLocaleLanguage = Locale.getDefault().getLanguage();
 	protected String cfgLocaleCountry = Locale.getDefault().getCountry();
 	/**
@@ -198,7 +199,7 @@ public abstract class ACSettings implements IfSettings
 		this.cfgVersion = cfgVersion;
 	}
 
-	@XmlElement
+	@XmlElement ///W ? transient <-> XmlElement ? s.o.
 	public UnitSystem getUnitSystem()
 	{
 		return cfgUnitSystem;
@@ -242,7 +243,7 @@ public abstract class ACSettings implements IfSettings
 		this.cfgDirectories = cfgDirectories;
 	}
 
-	@XmlTransient
+	///W ? @XmlTransient
 	public File getTileStoreDirectory()
 	{
 		String tileStoreDirSet = cfgDirectories.tileStoreDirectory;
@@ -251,10 +252,12 @@ public abstract class ACSettings implements IfSettings
 			tileStoreDir = DirectoryManager.tileStoreDir;
 		else
 			tileStoreDir = new File(tileStoreDirSet);
+		///W Setzen der Standard-tileStoreDirectory in settings.xml geht hier -> (muss aber anders)
+		///W cfgDirectories.tileStoreDirectory = tileStoreDir.toString();
 		return tileStoreDir;
 	}
 
-	@XmlTransient
+	///W ? @XmlTransient
 	public File getMapSourcesDirectory()
 	{
 		String mapSourcesDirCfg = cfgDirectories.mapSourcesDirectory;
@@ -263,10 +266,11 @@ public abstract class ACSettings implements IfSettings
 			mapSourcesDir = DirectoryManager.mapSourcesDir;
 		else
 			mapSourcesDir = new File(mapSourcesDirCfg);
+		///W ? lassen?
 		return mapSourcesDir;
 	}
 
-	@XmlTransient
+	///W ? @XmlTransient
 	public File getCatalogsDirectory()
 	{
 		String dirSetting = cfgDirectories.catalogsDirectory;
@@ -275,6 +279,8 @@ public abstract class ACSettings implements IfSettings
 			catalogsDir = DirectoryManager.catalogsDir;
 		else
 			catalogsDir = new File(dirSetting);
+		///W Setzen der Standard-catalogsDirectory in settings.xml geht hier -> (muss aber anders)
+		///W cfgDirectories.catalogsDirectory = catalogsDir.toString();
 		return catalogsDir;
 	}
 

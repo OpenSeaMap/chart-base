@@ -62,12 +62,14 @@ public class DirectoryManager
 		toolsDir = new File(programDir, "tools");
 		userSettingsDir = programDir;
 
-		catalogsDir = new File(programDir, "catalogs");
-		mapSourcesDir = new File(programDir, "mapsources");
-		tileStoreDir = new File(programDir, "tilestore");
-		bundlesDir = new File(programDir, "bundles");
+		///W Standardpfade geändert
+		catalogsDir = new File(userHomeDir, "catalogs");
+		mapSourcesDir = new File(programDir, "../OSeaMChartBase/mapsources");
+		tileStoreDir = new File(userHomeDir, "tilestore");
+		bundlesDir = new File(userHomeDir, "bundles");
 	}
 
+	///W //keine Warnung: unused??? in OSMCBApp.java Z. 73 auskommentiert: // DirectoryManager.initialize(); in 
 	public static void initialize(File programDir)
 	{
 
