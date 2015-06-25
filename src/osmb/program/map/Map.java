@@ -70,6 +70,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	protected String natName;
 	protected Point maxTileCoordinate = null;
 	protected Point minTileCoordinate = null;
+	@XmlAttribute
 	protected IfMapSource mapSource = null;
 	protected int zoom;
 	protected Layer layer;
@@ -125,14 +126,14 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	}
 
 	@Override
-	@XmlJavaTypeAdapter(PointAdapter.class)
+	///W ? @XmlJavaTypeAdapter(PointAdapter.class) als package-info!
 	public Point getMaxTileCoordinate()
 	{
 		return this.maxTileCoordinate;
 	}
 
 	@Override
-	@XmlJavaTypeAdapter(PointAdapter.class)
+	///W ? @XmlJavaTypeAdapter(PointAdapter.class) als package-info!
 	public Point getMinTileCoordinate()
 	{
 		return this.minTileCoordinate;
@@ -194,6 +195,13 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	public int getZoom()
 	{
 		return zoom;
+	}
+	
+	///WTest einlesen_catalog ? XmlAttribute zoom ohne setter?
+	/// -> Map/PolygonMap können nicht eingelesen werden
+	public void setZoom(int zoom)
+	{
+		this.zoom = zoom;
 	}
 
 	@Override

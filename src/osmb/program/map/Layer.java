@@ -30,7 +30,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
-import javax.xml.bind.annotation.XmlRootElement;
+///W ? import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.log4j.Logger;
@@ -50,7 +50,7 @@ import osmb.utilities.geo.EastNorthCoordinate;
  * 20140128 Ah zoom level introduced as property of layer
  * 
  */
-@XmlRootElement
+///W ? @XmlRootElement
 public class Layer implements IfLayer, IfCapabilityDeletable
 {
 	// static/class data
@@ -116,9 +116,9 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		if (zoom == nZoomLvl)
 		{
 			int tileSize = mapSource.getMapSpace().getTileSize();
-			int nXSize = (maxTileCoordinate.x - minTileCoordinate.x) / tileSize + 1;
-			int nYSize = (maxTileCoordinate.y - minTileCoordinate.y) / tileSize + 1;
-			int nXExp = 1, nYExp = 1;
+			int nXSize = (maxTileCoordinate.x - minTileCoordinate.x) / tileSize + 1;///W ?int nXSize = (maxTileCoordinate.x - minTileCoordinate.x + 1) / tileSize;
+			int nYSize = (maxTileCoordinate.y - minTileCoordinate.y) / tileSize + 1;///W ?int nYSize = (maxTileCoordinate.y - minTileCoordinate.y + 1) / tileSize;
+			int nXExp = 1, nYExp = 1;///W ? n_Exp = 0?
 
 			// get requested size in 2^n grid
 			while ((nXSize >>= 1) >= 1)
