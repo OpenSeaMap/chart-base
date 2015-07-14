@@ -263,6 +263,9 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	{
 		if (name == null) // name set?
 			return true;
+		///W Check for empty catalogs
+		if(layers.size() < 1)
+			return true;
 		// Check for duplicate layer names
 		HashSet<String> names = new HashSet<String>(layers.size());
 		for (IfLayer layer : layers)

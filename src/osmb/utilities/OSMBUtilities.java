@@ -275,7 +275,8 @@ public class OSMBUtilities
 
 	public static URL getResourceImageUrl(String imageName)
 	{
-		log.trace("RscIcon URL='" + ACApp.getApp().getClass().toString() + "'");
+		log.trace("RscIcon URL='" + ACApp.getApp().getClass().toString() + "'"); ///W -> RscIcon URL='class osmcd.OSMCDApp'
+		log.trace("RscIcon URL='" + ACApp.getApp().getClass().getResource("resources/images/" + imageName).toString() + "'"); ///W ? RscIcon URL=??? -> RscIcon URL='file:/home/wilbert/Java/OpenSeaMap(build)/OSeaMChartDesigner/bin/osmcd/resources/images/osmb_48.png'
 		return ACApp.getApp().getClass().getResource("resources/images/" + imageName);
 	}
 

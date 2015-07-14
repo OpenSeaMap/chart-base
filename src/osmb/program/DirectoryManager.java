@@ -64,12 +64,12 @@ public class DirectoryManager
 
 		///W Standardpfade geändert
 		catalogsDir = new File(userHomeDir, "catalogs");
-		mapSourcesDir = new File(programDir, "../OSeaMChartBase/mapsources");
+		mapSourcesDir = new File(programDir, "../OSeaMChartBase/mapsources"); ///W ?
 		tileStoreDir = new File(userHomeDir, "tilestore");
 		bundlesDir = new File(userHomeDir, "bundles");
 	}
 
-	///W //keine Warnung: unused??? in OSMCBApp.java Z. 73 auskommentiert: // DirectoryManager.initialize(); in 
+	///W //keine Warnung: unused??? in OSMCBApp.java Z. 73 auskommentiert: // DirectoryManager.initialize();
 	public static void initialize(File programDir)
 	{
 

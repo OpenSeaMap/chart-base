@@ -37,19 +37,23 @@ public abstract class ACSettings implements IfSettings
 		return log = Logger.getLogger(ACSettings.class);
 	}
 
+	///W getter/setter ??? <->
+	/// => //W? @XmlElement(name = "directories")	protected Directories cfgDirectories = new Directories();
 	public static class Directories
 	{
+		// standard directories applied in DirectoryManager.static
+		// user changes in SettingsGUI.addDirectoriesPanel()
 		@XmlElement
-		protected String bundleOutputDirectory = "";///W '= ""' statt '= null' für settings.xml-Inittialisierung (nötig?)
-
+		protected String bundleOutputDirectory = null;
 		@XmlElement
-		protected String tileStoreDirectory = ""; ///W dto
-
+		protected String tileStoreDirectory = null;
 		@XmlElement
-		protected String mapSourcesDirectory = ""; ///W dto
-
-		@XmlElement
-		protected String catalogsDirectory = ""; ///W dto
+		protected String catalogsDirectory = null;
+		
+		///W ? weg? @XmlElement
+		/// wurde gebraucht in: public File getMapSourcesDirectory()
+		//protected String mapSourcesDirectory = null;
+		
 	}
 
 	protected static long SETTINGS_LAST_MODIFIED = 0;
@@ -232,18 +236,29 @@ public abstract class ACSettings implements IfSettings
 	{
 		this.cfgTileImageFormat = tileImageFormat;
 	}
-
-	public Directories getDirectories()
+	
+///W auskommentiert => @XmlElement(name = "directories") bei:	protected Directories cfgDirectories = new Directories();
+//	///W unused
+//	public Directories getDirectories()
+//	{
+//		return cfgDirectories;
+//	}
+//
+//	///W unused (wie auch???)
+//	public void setDirectories(Directories cfgDirectories)
+//	{
+//		this.cfgDirectories = cfgDirectories;
+//	}
+	
+	///W ? keine vom User einstellbare Directory -> Pfad wird in DirectoryManager festgelegt
+	public File getMapSourcesDirectory()
 	{
-		return cfgDirectories;
+		File mapSourcesDir;
+		mapSourcesDir = DirectoryManager.mapSourcesDir;
+		return mapSourcesDir;
 	}
-
-	public void setDirectories(Directories cfgDirectories)
-	{
-		this.cfgDirectories = cfgDirectories;
-	}
-
-	///W ? @XmlTransient
+	
+	@XmlTransient
 	public File getTileStoreDirectory()
 	{
 		String tileStoreDirSet = cfgDirectories.tileStoreDirectory;
@@ -252,25 +267,16 @@ public abstract class ACSettings implements IfSettings
 			tileStoreDir = DirectoryManager.tileStoreDir;
 		else
 			tileStoreDir = new File(tileStoreDirSet);
-		///W Setzen der Standard-tileStoreDirectory in settings.xml geht hier -> (muss aber anders)
-		///W cfgDirectories.tileStoreDirectory = tileStoreDir.toString();
 		return tileStoreDir;
 	}
-
-	///W ? @XmlTransient
-	public File getMapSourcesDirectory()
+	
+	///W
+	public void setTileStoreDirectory(File tileStoreDir)
 	{
-		String mapSourcesDirCfg = cfgDirectories.mapSourcesDirectory;
-		File mapSourcesDir;
-		if (mapSourcesDirCfg == null || mapSourcesDirCfg.trim().length() == 0)
-			mapSourcesDir = DirectoryManager.mapSourcesDir;
-		else
-			mapSourcesDir = new File(mapSourcesDirCfg);
-		///W ? lassen?
-		return mapSourcesDir;
+		cfgDirectories.tileStoreDirectory = tileStoreDir.toString();
 	}
 
-	///W ? @XmlTransient
+	@XmlTransient
 	public File getCatalogsDirectory()
 	{
 		String dirSetting = cfgDirectories.catalogsDirectory;
@@ -279,9 +285,32 @@ public abstract class ACSettings implements IfSettings
 			catalogsDir = DirectoryManager.catalogsDir;
 		else
 			catalogsDir = new File(dirSetting);
-		///W Setzen der Standard-catalogsDirectory in settings.xml geht hier -> (muss aber anders)
-		///W cfgDirectories.catalogsDirectory = catalogsDir.toString();
 		return catalogsDir;
+	}
+	
+	///W 
+	public void setCatalogsDirectory(File catalogsDir)
+	{
+		cfgDirectories.catalogsDirectory = catalogsDir.toString();
+	}
+	
+	///W test
+	@XmlTransient
+	public File getChartBundleOutputDirectory()
+	{
+		String dirSetting = cfgDirectories.bundleOutputDirectory;
+		File bundlesDir;
+		if (dirSetting == null || dirSetting.trim().length() == 0)
+			bundlesDir = DirectoryManager.bundlesDir;
+		else
+			bundlesDir = new File(dirSetting);
+		return bundlesDir;
+	}
+	
+	///W 
+	public void setChartBundleOutputDirectory(File bundlesDir)
+	{
+		cfgDirectories.bundleOutputDirectory = bundlesDir.toString();
 	}
 
 	public WgsGridSettings getWgsGrid()

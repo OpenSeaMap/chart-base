@@ -116,9 +116,9 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		if (zoom == nZoomLvl)
 		{
 			int tileSize = mapSource.getMapSpace().getTileSize();
-			int nXSize = (maxTileCoordinate.x - minTileCoordinate.x) / tileSize + 1;///W ?int nXSize = (maxTileCoordinate.x - minTileCoordinate.x + 1) / tileSize;
-			int nYSize = (maxTileCoordinate.y - minTileCoordinate.y) / tileSize + 1;///W ?int nYSize = (maxTileCoordinate.y - minTileCoordinate.y + 1) / tileSize;
-			int nXExp = 1, nYExp = 1;///W ? n_Exp = 0?
+			int nXSize = (maxTileCoordinate.x - minTileCoordinate.x) / tileSize + 1;
+			int nYSize = (maxTileCoordinate.y - minTileCoordinate.y) / tileSize + 1;
+			int nXExp = 1, nYExp = 1;
 
 			// get requested size in 2^n grid
 			while ((nXSize >>= 1) >= 1)
@@ -128,9 +128,9 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 
 			// fit into encouraged map grid widths (8, 16, 32, 64, 128 tiles)
 			int nXGridSize = 0, nYGridSize = 0;
-			nXExp = Math.min(3, Math.max(7, nXExp));
+			nXExp = Math.max(3, Math.min(7, nXExp));///W == 3 ? min <-> max vertauscht
 			nXGridSize = tileSize << nXExp;
-			nYExp = Math.min(3, Math.max(7, nYExp));
+			nYExp = Math.max(3, Math.min(7, nYExp));///W dto
 			nYGridSize = tileSize << nYExp;
 
 			// align left/top with map grid
@@ -227,7 +227,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	 * checks if the new map from MinC to MaxC is not covered by an already existing map
 	 * 
 	 * @param MinC
-	 *          minimun coordinate (upper left corner, NW-C)
+	 *          minimum coordinate (upper left corner, NW-C)
 	 * @param MaxC
 	 *          maximum coordinate (lower right corner, SE-C)
 	 * @return true if it truly is new map
@@ -264,7 +264,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	 * map. 20140511 case new map lies between two already existing maps is not covered yet. The new map will be extending both
 	 * 
 	 * @param MinC
-	 *          minimun coordinate (upper left corner, NW-C)
+	 *          minimum coordinate (upper left corner, NW-C)
 	 * @param MaxC
 	 *          maximum coordinate (lower right corner, SE-C)
 	 * @return true if the new map is an extension to an existing map

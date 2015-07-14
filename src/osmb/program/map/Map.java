@@ -154,7 +154,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@XmlAttribute
 	public String getULC()
 	{
-		return new EastNorthCoordinate(mapSource.getMapSpace(), zoom, minTileCoordinate.x, maxTileCoordinate.y).toCatalog();
+		return new EastNorthCoordinate(mapSource.getMapSpace(), zoom, minTileCoordinate.x, minTileCoordinate.y).toCatalog();///W max->min
 	}
 
 	public void setULC(String strULC)
@@ -165,7 +165,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@XmlAttribute
 	public String getLRC()
 	{
-		return new EastNorthCoordinate(mapSource.getMapSpace(), zoom, maxTileCoordinate.x, minTileCoordinate.y).toCatalog();
+		return new EastNorthCoordinate(mapSource.getMapSpace(), zoom, maxTileCoordinate.x, maxTileCoordinate.y).toCatalog();///W min->max
 	}
 
 	public void setLRC(String strLRC)
