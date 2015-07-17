@@ -129,8 +129,10 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			// fit into encouraged map grid widths (8, 16, 32, 64, 128 tiles)
 			int nXGridSize = 0, nYGridSize = 0;
 			nXExp = Math.max(3, Math.min(7, nXExp));///W == 3 ? min <-> max vertauscht
+			nXExp = Math.min(zoom, nXExp);///W sonst Problem bei zoom 0, 1, 2
 			nXGridSize = tileSize << nXExp;
 			nYExp = Math.max(3, Math.min(7, nYExp));///W dto
+			nYExp = Math.min(zoom, nYExp);///W dto
 			nYGridSize = tileSize << nYExp;
 
 			// align left/top with map grid
@@ -141,9 +143,9 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			minTileCoordinate.y -= (nYOff > (nYGridSize / 4) ? nYOff : nYOff + nYGridSize / 2);
 
 			// align right/bottom with map grid
-			nXOff = nXGridSize / 2 + tileSize * overlapTiles - maxTileCoordinate.x % (nXGridSize / 2) + 1;
+			nXOff = nXGridSize / 2 + tileSize * overlapTiles - maxTileCoordinate.x % (nXGridSize / 2) - 1;///W -1 statt + 1 -> Werte in catalog ok
 			maxTileCoordinate.x += (nXOff > (nXGridSize / 4) ? nXOff : nXOff + nXGridSize / 2);
-			nYOff = nYGridSize / 2 + tileSize * overlapTiles - maxTileCoordinate.y % (nYGridSize / 2) + 1;
+			nYOff = nYGridSize / 2 + tileSize * overlapTiles - maxTileCoordinate.y % (nYGridSize / 2) - 1;///W dto
 			maxTileCoordinate.y += (nYOff > (nYGridSize / 4) ? nYOff : nYOff + nYGridSize / 2);
 
 			// if the user set parameters we use them
