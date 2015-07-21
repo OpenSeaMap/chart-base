@@ -25,7 +25,6 @@ import javax.swing.tree.TreeNode;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.log4j.Logger;
 
@@ -33,7 +32,6 @@ import osmb.exceptions.InvalidNameException;
 import osmb.mapsources.IfMapSource;
 import osmb.program.catalog.IfCapabilityDeletable;
 import osmb.program.catalog.IfCatalog;
-import osmb.program.jaxb.PointAdapter;
 import osmb.program.tiles.IfTileFilter;
 import osmb.program.tiles.TileImageParameters;
 import osmb.utilities.geo.EastNorthCoordinate;
@@ -126,14 +124,14 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	}
 
 	@Override
-	///W ? @XmlJavaTypeAdapter(PointAdapter.class) als package-info!
+	// /W ? @XmlJavaTypeAdapter(PointAdapter.class) als package-info!
 	public Point getMaxTileCoordinate()
 	{
 		return this.maxTileCoordinate;
 	}
 
 	@Override
-	///W ? @XmlJavaTypeAdapter(PointAdapter.class) als package-info!
+	// /W ? @XmlJavaTypeAdapter(PointAdapter.class) als package-info!
 	public Point getMinTileCoordinate()
 	{
 		return this.minTileCoordinate;
@@ -154,7 +152,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@XmlAttribute
 	public String getULC()
 	{
-		return new EastNorthCoordinate(mapSource.getMapSpace(), zoom, minTileCoordinate.x, minTileCoordinate.y).toCatalog();///W max->min
+		return new EastNorthCoordinate(mapSource.getMapSpace(), zoom, minTileCoordinate.x, minTileCoordinate.y).toCatalog();// /W max->min
 	}
 
 	public void setULC(String strULC)
@@ -165,7 +163,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@XmlAttribute
 	public String getLRC()
 	{
-		return new EastNorthCoordinate(mapSource.getMapSpace(), zoom, maxTileCoordinate.x, maxTileCoordinate.y).toCatalog();///W min->max
+		return new EastNorthCoordinate(mapSource.getMapSpace(), zoom, maxTileCoordinate.x, maxTileCoordinate.y).toCatalog();// /W min->max
 	}
 
 	public void setLRC(String strLRC)
@@ -196,9 +194,9 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	{
 		return zoom;
 	}
-	
-	///WTest einlesen_catalog ? XmlAttribute zoom ohne setter?
-	/// -> Map/PolygonMap können nicht eingelesen werden
+
+	// /WTest einlesen_catalog ? XmlAttribute zoom ohne setter?
+	// / -> Map/PolygonMap können nicht eingelesen werden
 	public void setZoom(int zoom)
 	{
 		this.zoom = zoom;
@@ -413,7 +411,6 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		catch (Exception e)
 		{
 		}
-
 		return result;
 	}
 
@@ -474,5 +471,4 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	// {
 	// return new DownloadJobEnumerator(this, mapSource, tileArchive, listener);
 	// }
-
 }

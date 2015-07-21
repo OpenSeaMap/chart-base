@@ -160,6 +160,8 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			maxMapDimension.width -= maxMapSize % tileDimension.width;
 			maxMapDimension.height -= maxMapSize % tileDimension.height;
 
+			log.trace("Adding new map(s) after alignment: \"" + mapNameBase + "\" " + mapSource + " zoom=" + zoom + " min=" + minTileCoordinate.x + "/"
+					+ minTileCoordinate.y + " max=" + maxTileCoordinate.x + "/" + maxTileCoordinate.y);
 			// is the new map an extension of an already existing map
 
 			// does the map fit the allowed size or has it be cut into several maps
@@ -173,7 +175,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 					if (CheckMapArea(minTileCoordinate, maxTileCoordinate))
 					{
 						// String mapName = String.format(mapNameFormat, new Object[] {mapNameBase, mapCounter++});
-						String mapName = MakeValidMapName(mapNameBase, "000");
+						String mapName = MakeValidMapName(mapNameBase, "0000");
 						Map s = new Map(this, mapName, mapSource, zoom, minTileCoordinate, maxTileCoordinate, parameters);
 						maps.add(s);
 					}
@@ -198,7 +200,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 							if (CheckMapArea(min, max))
 							{
 								// String mapName = String.format(mapNameFormat, new Object[] {mapNameBase, mapCounter++});
-								String mapName = MakeValidMapName(mapNameBase, "000");
+								String mapName = MakeValidMapName(mapNameBase, "0000");
 								Map s = new Map(this, mapName, mapSource, zoom, min, max, parameters);
 								maps.add(s);
 							}
@@ -217,7 +219,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		{
 			if (newMapName.compareTo(getMap(mapNr).getName()) == 0)
 			{
-				newMapName = String.format("%s-%03d", mapName, c++);
+				newMapName = String.format("%s-%04d", mapName, c++);
 				mapNr = 0;
 				continue;
 			}

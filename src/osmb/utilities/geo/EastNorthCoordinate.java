@@ -73,6 +73,6 @@ public class EastNorthCoordinate
 	public String toCatalog()
 	{
 		// TODO Auto-generated method stub
-		return "" + lat + "," + lon;
+		return "" + lat + ", " + lon;
 	}
 }
