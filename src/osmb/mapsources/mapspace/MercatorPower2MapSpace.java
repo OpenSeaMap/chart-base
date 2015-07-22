@@ -32,6 +32,8 @@ import osmb.program.map.IfMapSpace;
  * DO NOT TRY TO IMPLEMENT YOUR OWN. IT WILL MOST LIKELY NOT WORK!
  * </p>
  * 
+ * Currently it supports a world up to zoom level 22
+ * 
  * @see IfMapSpace
  */
 public class MercatorPower2MapSpace implements IfMapSpace
@@ -51,7 +53,8 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 * 
 	 * @param tileSize
 	 */
-	protected MercatorPower2MapSpace(int tileSize) {
+	protected MercatorPower2MapSpace(int tileSize)
+	{
 		this.tileSize = tileSize;
 		worldSize = new int[23];
 		for (int zoom = 0; zoom < worldSize.length; zoom++)
@@ -63,6 +66,7 @@ public class MercatorPower2MapSpace implements IfMapSpace
 		return getMaxPixels(zoom) / (2.0 * Math.PI);
 	}
 
+	@Override
 	public ProjectionCategory getProjectionCategory()
 	{
 		return ProjectionCategory.SPHERE;
@@ -75,6 +79,7 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 *          [0..22] (for tileSize = 256)
 	 * @return
 	 */
+	@Override
 	public int getMaxPixels(int zoom)
 	{
 		return worldSize[zoom];
@@ -95,6 +100,7 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 * @return [0..2^zoom*tileSize[
 	 * @author Jan Peter Stotz
 	 */
+	@Override
 	public int cLatToY(double lat, int zoom)
 	{
 		lat = Math.max(MIN_LAT, Math.min(MAX_LAT, lat));
@@ -116,6 +122,7 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 * @return [0..2^zoom*TILE_SIZE[
 	 * @author Jan Peter Stotz
 	 */
+	@Override
 	public int cLonToX(double lon, int zoom)
 	{
 		int mp = getMaxPixels(zoom);
@@ -134,6 +141,7 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 * @return ]-180..180[
 	 * @author Jan Peter Stotz
 	 */
+	@Override
 	public double cXToLon(int x, int zoom)
 	{
 		return ((360d * x) / getMaxPixels(zoom)) - 180.0;
@@ -148,6 +156,7 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 *          [0..22]
 	 * @return [MIN_LAT..MAX_LAT] is about [-85..85]
 	 */
+	@Override
 	public double cYToLat(int y, int zoom)
 	{
 		y += falseNorthing(zoom);
@@ -155,11 +164,13 @@ public class MercatorPower2MapSpace implements IfMapSpace
 		return -1 * Math.toDegrees(latitude);
 	}
 
+	@Override
 	public int getTileSize()
 	{
 		return tileSize;
 	}
 
+	@Override
 	public int moveOnLatitude(int startX, int y, int zoom, double angularDist)
 	{
 		y += falseNorthing(zoom);
@@ -174,6 +185,7 @@ public class MercatorPower2MapSpace implements IfMapSpace
 		return w;
 	}
 
+	@Override
 	public double horizontalDistance(int zoom, int y, int xDist)
 	{
 		y = Math.max(y, 0);
@@ -191,18 +203,21 @@ public class MercatorPower2MapSpace implements IfMapSpace
 		return 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 	}
 
+	@Override
 	public int xChangeZoom(int x, int oldZoom, int newZoom)
 	{
 		int zoomDiff = oldZoom - newZoom;
 		return (zoomDiff > 0) ? x >> zoomDiff : x << -zoomDiff;
 	}
 
+	@Override
 	public int yChangeZoom(int y, int oldZoom, int newZoom)
 	{
 		int zoomDiff = oldZoom - newZoom;
 		return (zoomDiff > 0) ? y >> zoomDiff : y << -zoomDiff;
 	}
 
+	@Override
 	public Point changeZoom(Point pixelCoordinate, int oldZoom, int newZoom)
 	{
 		int x = xChangeZoom(pixelCoordinate.x, oldZoom, newZoom);

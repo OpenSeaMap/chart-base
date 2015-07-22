@@ -25,23 +25,20 @@ import org.apache.log4j.Logger;
 import osmb.mapsources.mapspace.MercatorPower2MapSpace;
 import osmb.program.map.IfMapSpace;
 
-//import osmcd.gui.MainGUI;
-
-public class CoordinateTileFormat extends NumberFormat  
+public class CoordinateTileFormat extends NumberFormat
 {
-
 	protected static Logger log = Logger.getLogger(CoordinateTileFormat.class);
 
 	private final boolean isLongitude;
 
-	public CoordinateTileFormat(boolean isLongitude) {
+	public CoordinateTileFormat(boolean isLongitude)
+	{
 		this.isLongitude = isLongitude;
 	}
 
 	@Override
 	public StringBuffer format(double number, StringBuffer toAppendTo, FieldPosition pos)
 	{
-		// MainGUI gui = MainGUI.getMainGUI();
 		IfMapSpace mapSpace = MercatorPower2MapSpace.INSTANCE_256;
 		int zoom = 1;
 		int tileNum = 0;
@@ -62,7 +59,6 @@ public class CoordinateTileFormat extends NumberFormat
 	@Override
 	public Number parse(String source, ParsePosition parsePosition)
 	{
-		// MainGUI gui = MainGUI.getMainGUI();
 		IfMapSpace mapSpace = MercatorPower2MapSpace.INSTANCE_256;
 		try
 		{

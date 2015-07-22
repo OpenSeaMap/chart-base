@@ -36,7 +36,7 @@ import osmb.program.tiles.IfTileFilter;
 import osmb.program.tiles.TileImageParameters;
 import osmb.utilities.geo.EastNorthCoordinate;
 
-//public class Map implements IfMap, IfCapabilityDeletable, IfDownloadableElement, TreeNode
+// public class Map implements IfMap, IfCapabilityDeletable, IfDownloadableElement, TreeNode
 public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 {
 	// class/static data
@@ -50,22 +50,23 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	protected String name;
 	/**
 	 * the osm internal number, the numbering scheme is still to be defined
+	 * 20150722 AH proposal: ZL-LON-LAT-WID-HEI, LON and LAT in tiles/8 since this is our map alignment grid, WID, HEI in tiles.
 	 */
 	protected String number;
 	/**
 	 * the INT conformant name - if there is one; for a lot of maps this is empty
 	 */
 	@XmlAttribute
-	protected String intName;
+	protected String intName = null;
 	/**
 	 * the INT conformant number - if there is one; for a lot of maps this is empty
 	 */
 	@XmlAttribute
-	protected String intNumber;
+	protected String intNumber = null;
 	/**
 	 * the INT national name - if there is one; for a lot of maps this is empty
 	 */
-	protected String natName;
+	protected String natName = null;
 	protected Point maxTileCoordinate = null;
 	protected Point minTileCoordinate = null;
 	@XmlAttribute
@@ -89,6 +90,12 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		this.zoom = zoom;
 		this.parameters = parameters;
 		calculateRuntimeValues();
+		// 20150722 AH fixed numbers in here
+		String mapNumber = zoom + "-" + minTileCoordinate.y / 8 + "-" + minTileCoordinate.x / 8 + "-"
+				+ ((maxTileCoordinate.y - minTileCoordinate.y + 1) / tileDimension.height) + "-"
+				+ ((maxTileCoordinate.x - minTileCoordinate.x + 1) / tileDimension.width);
+		log.trace("new map: '" + mapNumber + "'");
+		this.number = mapNumber;
 	}
 
 	protected void calculateRuntimeValues()
@@ -124,14 +131,18 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	}
 
 	@Override
-	// /W ? @XmlJavaTypeAdapter(PointAdapter.class) als package-info!
+	/**
+	 * 	@XmlJavaTypeAdapter(PointAdapter.class) annotation in package-info.java
+	 */
 	public Point getMaxTileCoordinate()
 	{
 		return this.maxTileCoordinate;
 	}
 
 	@Override
-	// /W ? @XmlJavaTypeAdapter(PointAdapter.class) als package-info!
+	/**
+	 * 	@XmlJavaTypeAdapter(PointAdapter.class) annotation in package-info.java
+	 */
 	public Point getMinTileCoordinate()
 	{
 		return this.minTileCoordinate;

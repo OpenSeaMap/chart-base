@@ -56,6 +56,15 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	// static/class data
 	private static Logger log = Logger.getLogger(Layer.class);
 
+	private class MapDescr
+	{
+		private String name;
+		private int nZoomLvl;
+		Point minTileC;
+		Point maxTileC;
+		IfMapSource mapSource;
+	}
+
 	static public Layer GetLayerByZoom(IfCatalog catalog, int zoom)
 	{
 		if (catalog != null)
@@ -110,6 +119,14 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		log.trace("Adding new map(s): \"" + mapNameBase + "\" " + mapSource + " zoom=" + zoom + " min=" + minTileCoordinate.x + "/" + minTileCoordinate.y + " max="
 				+ maxTileCoordinate.x + "/" + maxTileCoordinate.y);
 
+		MapDescr mD = new MapDescr();
+
+		mD.name = mapNameBase;
+		mD.nZoomLvl = zoom;
+		mD.maxTileC = maxTileCoordinate;
+		mD.minTileC = minTileCoordinate;
+		mD.mapSource = mapSource;
+
 		// if no zoom level yet, set it, else check if it is correct
 		if (nZoomLvl == -1)
 			nZoomLvl = zoom;
@@ -128,10 +145,10 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 
 			// fit into encouraged map grid widths (8, 16, 32, 64, 128 tiles)
 			int nXGridSize = 0, nYGridSize = 0;
-			nXExp = Math.max(3, Math.min(7, nXExp));// /W == 3 ? min <-> max vertauscht
+			nXExp = Math.max(3, Math.min(7, nXExp));
 			nXExp = Math.min(zoom, nXExp);// /W sonst Problem bei zoom 0, 1, 2
 			nXGridSize = tileSize << nXExp;
-			nYExp = Math.max(3, Math.min(7, nYExp));// /W dto
+			nYExp = Math.max(3, Math.min(7, nYExp));
 			nYExp = Math.min(zoom, nYExp);// /W dto
 			nYGridSize = tileSize << nYExp;
 
@@ -230,6 +247,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	/**
 	 * checks if the new map from MinC to MaxC is not covered by an already existing map
 	 * 
+	 * 
 	 * @param MinC
 	 *          minimum coordinate (upper left corner, NW-C)
 	 * @param MaxC
@@ -242,11 +260,14 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		for (int mapNr = 0; mapNr < getMapCount(); ++mapNr)
 		{
 			IfMap map = getMap(mapNr);
+			log.trace("checking against map: \"" + map.getName() + "\" " + map.getMapSource().getName() + " zoom=" + map.getZoom() + " min="
+					+ map.getMinTileCoordinate().x + "/" + map.getMinTileCoordinate().y + " max=" + map.getMaxTileCoordinate().x + "/" + map.getMaxTileCoordinate().y);
 			if ((map.getMinTileCoordinate().x <= MinC.getX()) && (map.getMinTileCoordinate().y <= MinC.getY()))
 			{
 				if ((map.getMaxTileCoordinate().x >= MaxC.getX()) && (map.getMaxTileCoordinate().y >= MaxC.getY()))
 				{
 					bSub = false;
+					log.trace("match found (new is smaller): " + " min=" + MinC.getX() + "/" + MinC.getY() + " max=" + MaxC.getX() + "/" + MaxC.getY());
 					break;
 				}
 			}
@@ -254,6 +275,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			{
 				if ((map.getMaxTileCoordinate().x <= MaxC.getX()) && (map.getMaxTileCoordinate().y <= MaxC.getY()))
 				{
+					log.trace("match found (delete old): " + " min=" + MinC.getX() + "/" + MinC.getY() + " max=" + MaxC.getX() + "/" + MaxC.getY());
 					map.delete();
 					--mapNr;
 				}
