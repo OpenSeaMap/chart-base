@@ -263,8 +263,8 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	{
 		if (name == null) // name set?
 			return true;
-		///W Check for empty catalogs
-		if(layers.size() < 1)
+		// /W Check for empty catalogs
+		if (layers.size() < 1)
 			return true;
 		// Check for duplicate layer names
 		HashSet<String> names = new HashSet<String>(layers.size());
@@ -525,7 +525,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		{
 			if (file == null)
 			{
-				///W Pfad angepasst: ACSettings.getInstance().getCatalogsDirectory()
+				// /W Pfad angepasst: ACSettings.getInstance().getCatalogsDirectory()
 				file = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(name));
 			}
 			fo = new FileOutputStream(file);

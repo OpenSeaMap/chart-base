@@ -38,7 +38,9 @@ import osmb.program.tiles.TileImageParameters;
 import osmb.utilities.geo.EastNorthCoordinate;
 
 // public class Map implements IfMap, IfCapabilityDeletable, IfDownloadableElement, TreeNode
-@XmlType(propOrder={ "name", "mapSource", "ULC", "LRC", "minTileCoordinate", "maxTileCoordinate", "number" }) // /W ? oder number als attribute?
+@XmlType(propOrder =
+{ "name", "mapSource", "ULC", "LRC", "minTileCoordinate", "maxTileCoordinate", "number" })
+// /W ? oder number als attribute?
 public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 {
 	// class/static data
@@ -95,9 +97,9 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		this.parameters = parameters;
 		calculateRuntimeValues();
 		// 20150722 AH fixed numbers in here
-		String mapNumber = zoom + "-" + minTileCoordinate.y / 8 + "-" + minTileCoordinate.x / 8 + "-"
-				+ ((maxTileCoordinate.y - minTileCoordinate.y + 1) / tileDimension.height) + "-"
-				+ ((maxTileCoordinate.x - minTileCoordinate.x + 1) / tileDimension.width);
+		String mapNumber = zoom + "-" + minTileCoordinate.x / (tileDimension.width * 8) + "-" + minTileCoordinate.y / (tileDimension.height * 8) + "-"
+				+ ((maxTileCoordinate.x - minTileCoordinate.x + 1) / tileDimension.width) + "-"
+				+ ((maxTileCoordinate.y - minTileCoordinate.y + 1) / tileDimension.height);
 		log.trace("new map: '" + mapNumber + "'");
 		this.number = mapNumber;
 	}
@@ -116,7 +118,8 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	}
 
 	@Override
-	@XmlTransient // /W s. setter
+	@XmlTransient
+	// /W s. setter
 	public IfLayer getLayer()
 	{
 		return layer;
@@ -206,7 +209,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 
 	@Override
 	// /W @XmlAttribute
-	// /W zoom??? getter MUSS (zum "direkten" Wiederladen: saveNewCatalog, reloadTheCatalogsListFromTheFileSystem, auswählen und Load) geändert werden! 
+	// /W zoom??? getter MUSS (zum "direkten" Wiederladen: saveNewCatalog, reloadTheCatalogsListFromTheFileSystem, auswählen und Load) geändert werden!
 	// /W (Änderungen: Konstruktor & (public IfMap deepClone(IfLayer newLayer)) möglich?)
 	public int getZoom()
 	{
@@ -215,12 +218,12 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	}
 
 	// /W wieder auskommentiert
-//	// /WTest einlesen_catalog ? XmlAttribute zoom ohne setter?
-//	// /W -> Map/PolygonMap können nicht eingelesen werden
-//	public void setZoom(int zoom)
-//	{
-//		this.zoom = zoom;
-//	}
+	// // /WTest einlesen_catalog ? XmlAttribute zoom ohne setter?
+	// // /W -> Map/PolygonMap können nicht eingelesen werden
+	// public void setZoom(int zoom)
+	// {
+	// this.zoom = zoom;
+	// }
 
 	@Override
 	public String toString()
@@ -229,7 +232,8 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	}
 
 	@Override
-	@XmlTransient // /W ??? nur nicht initialisiert! soll aber rausfliegen!
+	@XmlTransient
+	// /W ??? nur nicht initialisiert! soll aber rausfliegen!
 	public TileImageParameters getParameters()
 	{
 		return parameters;

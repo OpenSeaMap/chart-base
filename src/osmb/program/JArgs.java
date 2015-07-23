@@ -620,7 +620,8 @@ public class JArgs
 					break;
 				}
 				String valueArg = null;
-				if (curArg.startsWith("--"))
+				// if (curArg.startsWith("--"))
+				if (curArg.startsWith("-"))
 				{ // handle --arg=value
 					int equalsPos = curArg.indexOf("=");
 					if (equalsPos != -1)
@@ -629,7 +630,7 @@ public class JArgs
 						curArg = curArg.substring(0, equalsPos);
 					}
 				}
-				else if (curArg.length() > 2)
+				else if ((curArg.startsWith("-")) && (curArg.length() > 2))
 				{ // handle -abcd
 					for (int i = 1; i < curArg.length(); i++)
 					{

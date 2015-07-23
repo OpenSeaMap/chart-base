@@ -37,8 +37,8 @@ public abstract class ACSettings implements IfSettings
 		return log = Logger.getLogger(ACSettings.class);
 	}
 
-	///W getter/setter ??? <->
-	/// => //W? @XmlElement(name = "directories")	protected Directories cfgDirectories = new Directories();
+	// /W getter/setter ??? <->
+	// / => //W? @XmlElement(name = "directories") protected Directories cfgDirectories = new Directories();
 	public static class Directories
 	{
 		// standard directories applied in DirectoryManager.static
@@ -49,11 +49,8 @@ public abstract class ACSettings implements IfSettings
 		protected String tileStoreDirectory = null;
 		@XmlElement
 		protected String catalogsDirectory = null;
-		
-		///W ? weg? @XmlElement
-		/// wurde gebraucht in: public File getMapSourcesDirectory()
-		//protected String mapSourcesDirectory = null;
-		
+		@XmlElement
+		protected String mapSourcesDirectory = null; // wird immer noch gebraucht, oder wo kommt der Wert her?
 	}
 
 	protected static long SETTINGS_LAST_MODIFIED = 0;
@@ -91,7 +88,7 @@ public abstract class ACSettings implements IfSettings
 		return (SETTINGS_LAST_MODIFIED != lastModified);
 	}
 
-	///W ? xml-Element? static?
+	// /W ? xml-Element? static?
 	public static long getTileDefaultExpirationTime()
 	{
 		return cfgTileDefaultExpirationTime;
@@ -104,11 +101,11 @@ public abstract class ACSettings implements IfSettings
 
 	// instance data, usually all protected
 	// esp. this classes instances are load from a xml-file by loadOrQuit()
-	
+
 	/**
 	 * Version of this settings file
 	 */
-	//@XmlElement(defaultValue = "")///WTest auskommentiert wg cfgVersion (+ version)?
+	// @XmlElement(defaultValue = "")///WTest auskommentiert wg cfgVersion (+ version)?
 	protected String cfgVersion;
 	/**
 	 * user agent used for connections to tile servers
@@ -131,7 +128,7 @@ public abstract class ACSettings implements IfSettings
 	 */
 	@XmlElement(name = "wgsGrid")
 	protected final WgsGridSettings cfgWgsGrid = new WgsGridSettings();
-	protected transient UnitSystem cfgUnitSystem = UnitSystem.Metric; ///W ? transient <-> XmlElement ? s.u.
+	protected transient UnitSystem cfgUnitSystem = UnitSystem.Metric; // /W ? transient <-> XmlElement ? s.u.
 	protected String cfgLocaleLanguage = Locale.getDefault().getLanguage();
 	protected String cfgLocaleCountry = Locale.getDefault().getCountry();
 	/**
@@ -171,9 +168,11 @@ public abstract class ACSettings implements IfSettings
 	@XmlElement(name = "mapSource")
 	public Vector<String> mapSourcesEnabled = new Vector<String>();
 
-	protected ACSettings() {
+	protected ACSettings()
+	{
 	}
 
+	@Override
 	public String getUserAgent()
 	{
 		if (cfgUserAgent != null)
@@ -193,6 +192,7 @@ public abstract class ACSettings implements IfSettings
 		this.cfgUserAgent = userAgent;
 	}
 
+	@Override
 	public String getVersion()
 	{
 		return cfgVersion;
@@ -203,7 +203,9 @@ public abstract class ACSettings implements IfSettings
 		this.cfgVersion = cfgVersion;
 	}
 
-	@XmlElement ///W ? transient <-> XmlElement ? s.o.
+	@Override
+	@XmlElement
+	// /W ? transient <-> XmlElement ? s.o.
 	public UnitSystem getUnitSystem()
 	{
 		return cfgUnitSystem;
@@ -236,28 +238,28 @@ public abstract class ACSettings implements IfSettings
 	{
 		this.cfgTileImageFormat = tileImageFormat;
 	}
-	
-///W auskommentiert => @XmlElement(name = "directories") bei:	protected Directories cfgDirectories = new Directories();
-//	///W unused
-//	public Directories getDirectories()
-//	{
-//		return cfgDirectories;
-//	}
-//
-//	///W unused (wie auch???)
-//	public void setDirectories(Directories cfgDirectories)
-//	{
-//		this.cfgDirectories = cfgDirectories;
-//	}
-	
-	///W ? keine vom User einstellbare Directory -> Pfad wird in DirectoryManager festgelegt
+
+	// /W auskommentiert => @XmlElement(name = "directories") bei: protected Directories cfgDirectories = new Directories();
+	// ///W unused
+	// public Directories getDirectories()
+	// {
+	// return cfgDirectories;
+	// }
+	//
+	// ///W unused (wie auch???)
+	// public void setDirectories(Directories cfgDirectories)
+	// {
+	// this.cfgDirectories = cfgDirectories;
+	// }
+
+	// /W ? keine vom User einstellbare Directory -> Pfad wird in DirectoryManager festgelegt
 	public File getMapSourcesDirectory()
 	{
 		File mapSourcesDir;
 		mapSourcesDir = DirectoryManager.mapSourcesDir;
 		return mapSourcesDir;
 	}
-	
+
 	@XmlTransient
 	public File getTileStoreDirectory()
 	{
@@ -269,8 +271,8 @@ public abstract class ACSettings implements IfSettings
 			tileStoreDir = new File(tileStoreDirSet);
 		return tileStoreDir;
 	}
-	
-	///W
+
+	// /W
 	public void setTileStoreDirectory(File tileStoreDir)
 	{
 		cfgDirectories.tileStoreDirectory = tileStoreDir.toString();
@@ -287,14 +289,14 @@ public abstract class ACSettings implements IfSettings
 			catalogsDir = new File(dirSetting);
 		return catalogsDir;
 	}
-	
-	///W 
+
+	// /W
 	public void setCatalogsDirectory(File catalogsDir)
 	{
 		cfgDirectories.catalogsDirectory = catalogsDir.toString();
 	}
-	
-	///W test
+
+	// /W test
 	@XmlTransient
 	public File getChartBundleOutputDirectory()
 	{
@@ -306,8 +308,8 @@ public abstract class ACSettings implements IfSettings
 			bundlesDir = new File(dirSetting);
 		return bundlesDir;
 	}
-	
-	///W 
+
+	// /W
 	public void setChartBundleOutputDirectory(File bundlesDir)
 	{
 		cfgDirectories.bundleOutputDirectory = bundlesDir.toString();

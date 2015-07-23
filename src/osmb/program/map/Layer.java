@@ -30,8 +30,6 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
-// /W ? import javax.xml.bind.annotation.XmlRootElement;
-// /W import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.log4j.Logger;
 
@@ -56,7 +54,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	// static/class data
 	private static Logger log = Logger.getLogger(Layer.class);
 
-	@XmlTransient
+	// @XmlTransient
 	private class MapDescr
 	{
 		private String name;
@@ -189,15 +187,13 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			{
 				// check if this map is not a sub/superset of another already existing map
 				mD = CheckMapIsExtension(mD);
-				{
-					mD = CheckMapArea(mD);
-					{
-						// String mapName = String.format(mapNameFormat, new Object[] {mapNameBase, mapCounter++});
-						String mapName = MakeValidMapName(mD.name, "0000");
-						Map s = new Map(this, mapName, mD.mapSource, mD.nZoomLvl, mD.minTileC, mD.maxTileC, parameters);
-						maps.add(s);
-					}
-				}
+				mD = CheckMapArea(mD);
+
+				// String mapName = String.format(mapNameFormat, new Object[] {mapNameBase, mapCounter++});
+				String mapName = MakeValidMapName(mD.name, "0000");
+				Map s = new Map(this, mapName, mD.mapSource, mD.nZoomLvl, mD.minTileC, mD.maxTileC, parameters);
+				maps.add(s);
+
 			}
 			// else
 			// {
@@ -267,17 +263,17 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			{
 				if ((map.getMaxTileCoordinate().x >= mD.maxTileC.x) && (map.getMaxTileCoordinate().y >= mD.maxTileC.y))
 				{
-					map.delete();
-					--mapNr;
 					log.trace("match found (new is smaller): " + " min=" + mD.minTileC.x + "/" + mD.minTileC.y + " max=" + mD.maxTileC.x + "/" + mD.maxTileC.y);
 					mD.minTileC.x = map.getMinTileCoordinate().x;
 					mD.minTileC.y = map.getMinTileCoordinate().y;
 					mD.maxTileC.x = map.getMaxTileCoordinate().x;
 					mD.maxTileC.y = map.getMaxTileCoordinate().y;
 					log.trace("match found (new after modif): " + " min=" + mD.minTileC.x + "/" + mD.minTileC.y + " max=" + mD.maxTileC.x + "/" + mD.maxTileC.y);
+					map.delete();
+					--mapNr;
 				}
 			}
-			if ((map.getMinTileCoordinate().x >= mD.minTileC.x) && (map.getMinTileCoordinate().y >= mD.minTileC.y))
+			else if ((map.getMinTileCoordinate().x >= mD.minTileC.x) && (map.getMinTileCoordinate().y >= mD.minTileC.y))
 			{
 				if ((map.getMaxTileCoordinate().x <= mD.maxTileC.x) && (map.getMaxTileCoordinate().y <= mD.maxTileC.y))
 				{
@@ -316,7 +312,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 					map.delete();
 					--mapNr;
 				}
-				if ((map.getMaxTileCoordinate().x <= mD.maxTileC.x) && (map.getMaxTileCoordinate().x >= mD.minTileC.x)
+				else if ((map.getMaxTileCoordinate().x <= mD.maxTileC.x) && (map.getMaxTileCoordinate().x >= mD.minTileC.x)
 						&& (map.getMinTileCoordinate().x < mD.minTileC.x))
 				{
 					mD.minTileC.x = map.getMinTileCoordinate().x;
@@ -324,7 +320,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 					--mapNr;
 				}
 			}
-			if ((map.getMinTileCoordinate().x == mD.minTileC.x) && (map.getMaxTileCoordinate().x == mD.maxTileC.x))
+			else if ((map.getMinTileCoordinate().x == mD.minTileC.x) && (map.getMaxTileCoordinate().x == mD.maxTileC.x))
 			{
 				if ((map.getMinTileCoordinate().y >= mD.minTileC.y) && (map.getMinTileCoordinate().y <= mD.maxTileC.y)
 						&& (map.getMaxTileCoordinate().y > mD.maxTileC.y))
@@ -333,7 +329,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 					map.delete();
 					--mapNr;
 				}
-				if ((map.getMaxTileCoordinate().y <= mD.maxTileC.y) && (map.getMaxTileCoordinate().y >= mD.minTileC.y)
+				else if ((map.getMaxTileCoordinate().y <= mD.maxTileC.y) && (map.getMaxTileCoordinate().y >= mD.minTileC.y)
 						&& (map.getMinTileCoordinate().y < mD.minTileC.y))
 				{
 					mD.minTileC.y = map.getMinTileCoordinate().y;
@@ -560,7 +556,8 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	}
 
 	@Override
-	@XmlAttribute // /W
+	@XmlAttribute
+	// /W
 	public int getZoomLvl()
 	{
 		return nZoomLvl;
