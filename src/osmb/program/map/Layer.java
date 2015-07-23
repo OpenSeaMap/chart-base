@@ -56,6 +56,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	// static/class data
 	private static Logger log = Logger.getLogger(Layer.class);
 
+	@XmlTransient
 	private class MapDescr
 	{
 		private String name;
@@ -187,44 +188,44 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			if ((mapWidth < maxMapDimension.width) && (mapHeight < maxMapDimension.height))
 			{
 				// check if this map is not a sub/superset of another already existing map
-				if (!CheckMapIsExtension(minTileCoordinate, maxTileCoordinate))
+				mD = CheckMapIsExtension(mD);
 				{
-					if (CheckMapArea(minTileCoordinate, maxTileCoordinate))
+					mD = CheckMapArea(mD);
 					{
 						// String mapName = String.format(mapNameFormat, new Object[] {mapNameBase, mapCounter++});
-						String mapName = MakeValidMapName(mapNameBase, "0000");
-						Map s = new Map(this, mapName, mapSource, zoom, minTileCoordinate, maxTileCoordinate, parameters);
+						String mapName = MakeValidMapName(mD.name, "0000");
+						Map s = new Map(this, mapName, mD.mapSource, mD.nZoomLvl, mD.minTileC, mD.maxTileC, parameters);
 						maps.add(s);
 					}
 				}
 			}
-			else
-			{
-				Dimension nextMapStep = new Dimension(maxMapDimension.width - (tileDimension.width * overlapTiles), maxMapDimension.height
-						- (tileDimension.height * overlapTiles));
-
-				for (int mapX = minTileCoordinate.x; mapX < maxTileCoordinate.x; mapX += nextMapStep.width)
-				{
-					for (int mapY = minTileCoordinate.y; mapY < maxTileCoordinate.y; mapY += nextMapStep.height)
-					{
-						int maxX = Math.min(mapX + maxMapDimension.width, maxTileCoordinate.x);
-						int maxY = Math.min(mapY + maxMapDimension.height, maxTileCoordinate.y);
-						Point min = new Point(mapX, mapY);
-						Point max = new Point(maxX - 1, maxY - 1);
-						// check if this map is not a sub/superset of another already existing map
-						if (!CheckMapIsExtension(min, max))
-						{
-							if (CheckMapArea(min, max))
-							{
-								// String mapName = String.format(mapNameFormat, new Object[] {mapNameBase, mapCounter++});
-								String mapName = MakeValidMapName(mapNameBase, "0000");
-								Map s = new Map(this, mapName, mapSource, zoom, min, max, parameters);
-								maps.add(s);
-							}
-						}
-					}
-				}
-			}
+			// else
+			// {
+			// Dimension nextMapStep = new Dimension(maxMapDimension.width - (tileDimension.width * overlapTiles), maxMapDimension.height
+			// - (tileDimension.height * overlapTiles));
+			//
+			// for (int mapX = minTileCoordinate.x; mapX < maxTileCoordinate.x; mapX += nextMapStep.width)
+			// {
+			// for (int mapY = minTileCoordinate.y; mapY < maxTileCoordinate.y; mapY += nextMapStep.height)
+			// {
+			// int maxX = Math.min(mapX + maxMapDimension.width, maxTileCoordinate.x);
+			// int maxY = Math.min(mapY + maxMapDimension.height, maxTileCoordinate.y);
+			// Point min = new Point(mapX, mapY);
+			// Point max = new Point(maxX - 1, maxY - 1);
+			// // check if this map is not a sub/superset of another already existing map
+			// if (!CheckMapIsExtension(min, max))
+			// {
+			// if (CheckMapArea(min, max))
+			// {
+			// // String mapName = String.format(mapNameFormat, new Object[] {mapNameBase, mapCounter++});
+			// String mapName = MakeValidMapName(mapNameBase, "0000");
+			// Map s = new Map(this, mapName, mapSource, zoom, min, max, parameters);
+			// maps.add(s);
+			// }
+			// }
+			// }
+			// }
+			// }
 		}
 	}
 
@@ -254,7 +255,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	 *          maximum coordinate (lower right corner, SE-C)
 	 * @return true if it truly is new map
 	 */
-	public boolean CheckMapArea(Point MinC, Point MaxC)
+	public MapDescr CheckMapArea(MapDescr mD)
 	{
 		boolean bSub = true;
 		for (int mapNr = 0; mapNr < getMapCount(); ++mapNr)
@@ -262,27 +263,32 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			IfMap map = getMap(mapNr);
 			log.trace("checking against map: \"" + map.getName() + "\" " + map.getMapSource().getName() + " zoom=" + map.getZoom() + " min="
 					+ map.getMinTileCoordinate().x + "/" + map.getMinTileCoordinate().y + " max=" + map.getMaxTileCoordinate().x + "/" + map.getMaxTileCoordinate().y);
-			if ((map.getMinTileCoordinate().x <= MinC.getX()) && (map.getMinTileCoordinate().y <= MinC.getY()))
+			if ((map.getMinTileCoordinate().x <= mD.minTileC.x) && (map.getMinTileCoordinate().y <= mD.minTileC.y))
 			{
-				if ((map.getMaxTileCoordinate().x >= MaxC.getX()) && (map.getMaxTileCoordinate().y >= MaxC.getY()))
+				if ((map.getMaxTileCoordinate().x >= mD.maxTileC.x) && (map.getMaxTileCoordinate().y >= mD.maxTileC.y))
 				{
-					bSub = false;
-					log.trace("match found (new is smaller): " + " min=" + MinC.getX() + "/" + MinC.getY() + " max=" + MaxC.getX() + "/" + MaxC.getY());
-					break;
-				}
-			}
-			if ((map.getMinTileCoordinate().x >= MinC.getX()) && (map.getMinTileCoordinate().y >= MinC.getY()))
-			{
-				if ((map.getMaxTileCoordinate().x <= MaxC.getX()) && (map.getMaxTileCoordinate().y <= MaxC.getY()))
-				{
-					log.trace("match found (delete old): " + " min=" + MinC.getX() + "/" + MinC.getY() + " max=" + MaxC.getX() + "/" + MaxC.getY());
 					map.delete();
 					--mapNr;
+					log.trace("match found (new is smaller): " + " min=" + mD.minTileC.x + "/" + mD.minTileC.y + " max=" + mD.maxTileC.x + "/" + mD.maxTileC.y);
+					mD.minTileC.x = map.getMinTileCoordinate().x;
+					mD.minTileC.y = map.getMinTileCoordinate().y;
+					mD.maxTileC.x = map.getMaxTileCoordinate().x;
+					mD.maxTileC.y = map.getMaxTileCoordinate().y;
+					log.trace("match found (new after modif): " + " min=" + mD.minTileC.x + "/" + mD.minTileC.y + " max=" + mD.maxTileC.x + "/" + mD.maxTileC.y);
+				}
+			}
+			if ((map.getMinTileCoordinate().x >= mD.minTileC.x) && (map.getMinTileCoordinate().y >= mD.minTileC.y))
+			{
+				if ((map.getMaxTileCoordinate().x <= mD.maxTileC.x) && (map.getMaxTileCoordinate().y <= mD.maxTileC.y))
+				{
+					map.delete();
+					--mapNr;
+					log.trace("match found (delete old): " + " min=" + mD.minTileC.x + "/" + mD.minTileC.y + " max=" + mD.maxTileC.x + "/" + mD.maxTileC.y);
 				}
 			}
 
 		}
-		return bSub;
+		return mD;
 	}
 
 	/**
@@ -295,40 +301,48 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	 *          maximum coordinate (lower right corner, SE-C)
 	 * @return true if the new map is an extension to an existing map
 	 */
-	public boolean CheckMapIsExtension(Point MinC, Point MaxC)
+	public MapDescr CheckMapIsExtension(MapDescr mD)
 	{
 		boolean bIsExt = false;
 		for (int mapNr = 0; mapNr < getMapCount(); ++mapNr)
 		{
 			IfMap map = getMap(mapNr);
-			if ((map.getMinTileCoordinate().y == MinC.getY()) && (map.getMaxTileCoordinate().y == MaxC.getY()))
+			if ((map.getMinTileCoordinate().y == mD.minTileC.y) && (map.getMaxTileCoordinate().y == mD.maxTileC.y))
 			{
-				if ((map.getMinTileCoordinate().x >= MinC.getX()) && (map.getMinTileCoordinate().x <= MaxC.getX()))
+				if ((map.getMinTileCoordinate().x >= mD.minTileC.x) && (map.getMinTileCoordinate().x <= mD.maxTileC.x)
+						&& (map.getMaxTileCoordinate().x > mD.maxTileC.x))
 				{
-					map.setMinTileCoordinate(MinC);
-					bIsExt = true;
+					mD.maxTileC.x = map.getMaxTileCoordinate().x;
+					map.delete();
+					--mapNr;
 				}
-				if ((map.getMaxTileCoordinate().x <= MaxC.getX()) && (map.getMaxTileCoordinate().x >= MinC.getX()))
+				if ((map.getMaxTileCoordinate().x <= mD.maxTileC.x) && (map.getMaxTileCoordinate().x >= mD.minTileC.x)
+						&& (map.getMinTileCoordinate().x < mD.minTileC.x))
 				{
-					map.setMaxTileCoordinate(MaxC);
-					bIsExt = true;
+					mD.minTileC.x = map.getMinTileCoordinate().x;
+					map.delete();
+					--mapNr;
 				}
 			}
-			if ((map.getMinTileCoordinate().x == MinC.getX()) && (map.getMaxTileCoordinate().x == MaxC.getX()))
+			if ((map.getMinTileCoordinate().x == mD.minTileC.x) && (map.getMaxTileCoordinate().x == mD.maxTileC.x))
 			{
-				if ((map.getMinTileCoordinate().y >= MinC.getY()) && (map.getMinTileCoordinate().y <= MaxC.getY()))
+				if ((map.getMinTileCoordinate().y >= mD.minTileC.y) && (map.getMinTileCoordinate().y <= mD.maxTileC.y)
+						&& (map.getMaxTileCoordinate().y > mD.maxTileC.y))
 				{
-					map.setMinTileCoordinate(MinC);
-					bIsExt = true;
+					mD.maxTileC.y = map.getMaxTileCoordinate().y;
+					map.delete();
+					--mapNr;
 				}
-				if ((map.getMaxTileCoordinate().y <= MaxC.getY()) && (map.getMaxTileCoordinate().y >= MinC.getY()))
+				if ((map.getMaxTileCoordinate().y <= mD.maxTileC.y) && (map.getMaxTileCoordinate().y >= mD.minTileC.y)
+						&& (map.getMinTileCoordinate().y < mD.minTileC.y))
 				{
-					map.setMaxTileCoordinate(MaxC);
-					bIsExt = true;
+					mD.minTileC.y = map.getMinTileCoordinate().y;
+					map.delete();
+					--mapNr;
 				}
 			}
 		}
-		return bIsExt;
+		return mD;
 	}
 
 	@Override
