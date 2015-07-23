@@ -30,8 +30,8 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
-///W ? import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
+// /W ? import javax.xml.bind.annotation.XmlRootElement;
+// /W import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.log4j.Logger;
 
@@ -79,7 +79,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	}
 
 	// instance data
-	@XmlTransient
+	// /W @XmlTransient // /W unwirksam
 	private IfCatalog mCatalog;
 
 	private String name;
@@ -546,6 +546,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	}
 
 	@Override
+	@XmlAttribute // /W
 	public int getZoomLvl()
 	{
 		return nZoomLvl;

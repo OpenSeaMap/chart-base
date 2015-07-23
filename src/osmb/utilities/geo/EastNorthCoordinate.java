@@ -19,18 +19,18 @@ package osmb.utilities.geo;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
+// /W import javax.xml.bind.annotation.XmlAttribute;
+// /W import javax.xml.bind.annotation.XmlRootElement;
 
 import osmb.program.map.IfMapSpace;
 import osmb.utilities.OSMBUtilities;
 
-@XmlRootElement
+// /W @XmlRootElement
 public class EastNorthCoordinate
 {
-	@XmlAttribute
+	// /W @XmlAttribute
 	public double lat;
-	@XmlAttribute
+	// /W @XmlAttribute
 	public double lon;
 
 	public EastNorthCoordinate()
@@ -73,6 +73,7 @@ public class EastNorthCoordinate
 	public String toCatalog()
 	{
 		// TODO Auto-generated method stub
-		return "" + lat + ", " + lon;
+		// return "" + lat + ", " + lon; // /W
+		return String.format(null, "%.8f, %.8f", new Object[] { lat, lon });
 	}
 }

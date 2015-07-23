@@ -25,6 +25,7 @@ import javax.swing.tree.TreeNode;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlType;
 
 import org.apache.log4j.Logger;
 
@@ -37,6 +38,7 @@ import osmb.program.tiles.TileImageParameters;
 import osmb.utilities.geo.EastNorthCoordinate;
 
 // public class Map implements IfMap, IfCapabilityDeletable, IfDownloadableElement, TreeNode
+@XmlType(propOrder={ "name", "mapSource", "ULC", "LRC", "minTileCoordinate", "maxTileCoordinate", "number" }) // /W ? oder number als attribute?
 public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 {
 	// class/static data
@@ -46,7 +48,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	/**
 	 * the osm internal name
 	 */
-	@XmlTransient
+	// /W @XmlTransient // /W unwirksam
 	protected String name;
 	/**
 	 * the osm internal number, the numbering scheme is still to be defined
@@ -56,12 +58,12 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	/**
 	 * the INT conformant name - if there is one; for a lot of maps this is empty
 	 */
-	@XmlAttribute
+	// /W @XmlAttribute // /W zurzeit unbenutzt
 	protected String intName = null;
 	/**
 	 * the INT conformant number - if there is one; for a lot of maps this is empty
 	 */
-	@XmlAttribute
+	// /W @XmlAttribute // /W zurzeit unbenutzt
 	protected String intNumber = null;
 	/**
 	 * the INT national name - if there is one; for a lot of maps this is empty
@@ -80,6 +82,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	{
 	}
 
+	// /W zoom??? (suche: "zoom =")
 	protected Map(Layer layer, String name, IfMapSource mapSource, int zoom, Point minTileCoordinate, Point maxTileCoordinate, TileImageParameters parameters)
 	{
 		this.layer = layer;
@@ -88,6 +91,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		this.name = name;
 		this.mapSource = mapSource;
 		this.zoom = zoom;
+		// /W this.zoom = layer.getZoomLvl(); // /W zoom??? KANN?
 		this.parameters = parameters;
 		calculateRuntimeValues();
 		// 20150722 AH fixed numbers in here
@@ -112,13 +116,14 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	}
 
 	@Override
+	@XmlTransient // /W s. setter
 	public IfLayer getLayer()
 	{
 		return layer;
 	}
 
 	@Override
-	@XmlTransient
+	// /W @XmlTransient // /W einheitlich bei getter?
 	public void setLayer(IfLayer layer)
 	{
 		this.layer = (Layer) layer;
@@ -200,18 +205,22 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	}
 
 	@Override
-	@XmlAttribute
+	// /W @XmlAttribute
+	// /W zoom??? getter MUSS (zum "direkten" Wiederladen: saveNewCatalog, reloadTheCatalogsListFromTheFileSystem, auswählen und Load) geändert werden! 
+	// /W (Änderungen: Konstruktor & (public IfMap deepClone(IfLayer newLayer)) möglich?)
 	public int getZoom()
 	{
-		return zoom;
+		// /W return zoom;
+		return layer.getZoomLvl(); // /W MUSS!!!
 	}
 
-	// /WTest einlesen_catalog ? XmlAttribute zoom ohne setter?
-	// / -> Map/PolygonMap können nicht eingelesen werden
-	public void setZoom(int zoom)
-	{
-		this.zoom = zoom;
-	}
+	// /W wieder auskommentiert
+//	// /WTest einlesen_catalog ? XmlAttribute zoom ohne setter?
+//	// /W -> Map/PolygonMap können nicht eingelesen werden
+//	public void setZoom(int zoom)
+//	{
+//		this.zoom = zoom;
+//	}
 
 	@Override
 	public String toString()
@@ -220,6 +229,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	}
 
 	@Override
+	@XmlTransient // /W ??? nur nicht initialisiert! soll aber rausfliegen!
 	public TileImageParameters getParameters()
 	{
 		return parameters;
@@ -425,6 +435,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		return result;
 	}
 
+	// /W zoom??? (suche: "zoom =")
 	@Override
 	public IfMap deepClone(IfLayer newLayer)
 	{
@@ -442,6 +453,10 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 				map.parameters = null;
 			map.tileDimension = (Dimension) tileDimension.clone();
 			map.zoom = zoom;
+			// /W map.zoom = layer.getZoomLvl(); // /W zoom??? KANN?
+
+			// /W hier auch? s. Konstruktor // 20150722 AH fixed numbers in here
+
 			return map;
 		}
 		catch (Exception e)
