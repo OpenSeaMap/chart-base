@@ -142,6 +142,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	/**
 	 * 	@XmlJavaTypeAdapter(PointAdapter.class) annotation in package-info.java
 	 */
+	@XmlAttribute
 	public Point getMaxTileCoordinate()
 	{
 		return this.maxTileCoordinate;
@@ -151,6 +152,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	/**
 	 * 	@XmlJavaTypeAdapter(PointAdapter.class) annotation in package-info.java
 	 */
+	@XmlAttribute
 	public Point getMinTileCoordinate()
 	{
 		return this.minTileCoordinate;
@@ -197,6 +199,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		return name;
 	}
 
+	@XmlAttribute
 	public String getNumber()
 	{
 		return number;

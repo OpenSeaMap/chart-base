@@ -19,8 +19,6 @@ package osmb.program.map;
 import java.awt.Dimension;
 import java.awt.Point;
 
-import javax.xml.bind.annotation.XmlAttribute;
-
 import osmb.mapsources.IfMapSource;
 import osmb.program.catalog.IfCapabilityDeletable;
 import osmb.program.catalog.IfCatalogObject;
@@ -52,7 +50,6 @@ public interface IfMap extends IfCatalogObject, IfCapabilityDeletable
 	 * 
 	 * @return
 	 */
-	@XmlAttribute
 	public Point getMinTileCoordinate();
 
 	public void setMinTileCoordinate(Point MinC);
@@ -62,7 +59,6 @@ public interface IfMap extends IfCatalogObject, IfCapabilityDeletable
 	 * 
 	 * @return
 	 */
-	@XmlAttribute
 	public Point getMaxTileCoordinate();
 
 	public void setMaxTileCoordinate(Point MaxC);
