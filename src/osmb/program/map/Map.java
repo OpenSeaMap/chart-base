@@ -39,8 +39,7 @@ import osmb.utilities.geo.EastNorthCoordinate;
 
 // public class Map implements IfMap, IfCapabilityDeletable, IfDownloadableElement, TreeNode
 @XmlType(propOrder =
-{ "name", "mapSource", "ULC", "LRC", "minTileCoordinate", "maxTileCoordinate", "number" })
-// /W ? oder number als attribute?
+{ "name", "zoom", "mapSource", "ULC", "LRC", "minTileCoordinate", "maxTileCoordinate", "number" })
 public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 {
 	// class/static data
@@ -93,7 +92,6 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		this.name = name;
 		this.mapSource = mapSource;
 		this.zoom = zoom;
-		// /W this.zoom = layer.getZoomLvl(); // /W zoom??? KANN?
 		this.parameters = parameters;
 		calculateRuntimeValues();
 		// 20150722 AH fixed numbers in here
@@ -211,22 +209,18 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	}
 
 	@Override
-	// /W @XmlAttribute
-	// /W zoom??? getter MUSS (zum "direkten" Wiederladen: saveNewCatalog, reloadTheCatalogsListFromTheFileSystem, auswählen und Load) geändert werden!
-	// /W (Änderungen: Konstruktor & (public IfMap deepClone(IfLayer newLayer)) möglich?)
+	@XmlAttribute
 	public int getZoom()
 	{
-		// /W return zoom;
-		return layer.getZoomLvl(); // /W MUSS!!!
+		return zoom;
 	}
 
-	// /W wieder auskommentiert
-	// // /WTest einlesen_catalog ? XmlAttribute zoom ohne setter?
-	// // /W -> Map/PolygonMap können nicht eingelesen werden
-	// public void setZoom(int zoom)
-	// {
-	// this.zoom = zoom;
-	// }
+	// /WTest einlesen_catalog ? XmlAttribute zoom ohne setter?
+	// /W -> Map/PolygonMap können nicht eingelesen werden => setZoom eingefügt
+	public void setZoom(int zoom)
+	{
+		this.zoom = zoom;
+	}
 
 	@Override
 	public String toString()
@@ -460,7 +454,6 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 				map.parameters = null;
 			map.tileDimension = (Dimension) tileDimension.clone();
 			map.zoom = zoom;
-			// /W map.zoom = layer.getZoomLvl(); // /W zoom??? KANN?
 
 			// /W hier auch? s. Konstruktor // 20150722 AH fixed numbers in here
 
