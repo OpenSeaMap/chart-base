@@ -21,8 +21,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -108,11 +111,10 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 * This updates the listing of the available catalogs in the catalogs directory.
 	 * It is used by {@link #JCatalogsComboBox}
 	 */
-	public static void updateCatalogs()
+	public static void updateCatalogs()// /W #???	
 	{
+		catalogs.clear();
 		File catalogsDir = ACSettings.getInstance().getCatalogsDirectory();
-		final Set<Catalog> deletedCatalogs = new HashSet<Catalog>();
-		deletedCatalogs.addAll(catalogs);
 		catalogsDir.list(new FilenameFilter()
 		{
 			@Override
@@ -122,23 +124,128 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 				if (m.matches())
 				{
 					String catalogName = m.group(1);
-					Catalog catalog = new Catalog(new File(dir, fileName), catalogName);
-					if (!deletedCatalogs.remove(catalog))
-						catalogs.add(catalog);
+					Catalog catalog = new Catalog(new File(dir, fileName), catalogName); // /W #name!!!!!
+					// /W Catalog catalog = makeCatalog(catalogName); // Cannot make a static reference to the non-static method makeCatalog(String) from the type Catalog
+					catalogs.add(catalog);
 				}
 				return false;
 			}
 		});
-		for (IfCatalogProfile p : deletedCatalogs)
-			catalogs.remove(p);
 		Collections.sort(catalogs);
 	}
+					
+//	public static void updateCatalogs()// /W #???	
+//	{					
+//		File catalogsDir = ACSettings.getInstance().getCatalogsDirectory();
+//		final Set<Catalog> deletedCatalogs = new HashSet<Catalog>();
+//		deletedCatalogs.addAll(catalogs);
+		
+//		final Vector<String> iii = new Vector<String>();// TEST
+//		iii.add("a");
+//		iii.add("b");
+//		iii.add("x");
+//		final Set<String> iiiSet = new HashSet<String>();
+//		iiiSet.addAll(iii);
+//		Set<Catalog> testCatalogs = new HashSet<Catalog>();
+//		testCatalogs.addAll(catalogs);
+//		Vector<Catalog> kkk = catalogs;
+//		int setSize = deletedCatalogs.size();
+//		int testSetSize = testCatalogs.size();
+//		int vecSize = kkk.size();
+//		int breakpoint = vecSize;
 
+//		// /W ???
+//		catalogsDir.list(new FilenameFilter()
+//		{
+//			@Override
+//			public boolean accept(File dir, String fileName)
+//			{
+//				Matcher m = CATALOG_FILENAME_PATTERN.matcher(fileName);
+//				if (m.matches())
+//				{
+//					String catalogName = m.group(1);
+//					Catalog catalog = new Catalog(new File(dir, fileName), catalogName);
+
+//					boolean aaa = iiiSet.remove("x");// TEST
+//					boolean bbb = deletedCatalogs.remove(catalog);
+//					if (iii.remove("a"))
+//					{
+//						iii.add("c");
+//						iii.add("d");
+//					}
+
+//					if (!deletedCatalogs.remove(catalog)) // /W ??? tut nix!!!!!!!!!!!!!
+//						catalogs.add(catalog);
+//				}
+				
+//				Set<Catalog> xxx = deletedCatalogs;// TEST
+//				Vector<Catalog> lll = catalogs;
+//				int setSize = deletedCatalogs.size();
+//				int vecSize = lll.size();
+//				int i = iii.size();
+//				int breakpoint = vecSize;
+				
+//				return false;
+//			}
+//		});
+	
+//		iii.add("f");// TEST
+	
+//		for (IfCatalogProfile p : deletedCatalogs)
+//		{
+//			catalogs.remove(p);
+	
+//			iii.add("e");// TEST
+//			setSize = deletedCatalogs.size();
+//			testSetSize = testCatalogs.size();
+//			vecSize = kkk.size();
+//			breakpoint = vecSize;
+	
+//		}
+//		Collections.sort(catalogs);
+//	}
+	
+	/**
+	 * This checks whether testName is the name of an existing catalog in catalogsDirectory.
+	 */
+	public static boolean isCatalogsName(String testName)
+	{
+		boolean bRet = false;
+		for (Catalog cTest : getCatalogs())
+		{
+			if (cTest.getName().equals(testName))
+				bRet = true;
+		}
+		return bRet;
+	}
+	
+	/**
+	 * This checks whether testName is the independent part in the filename of an existing catalogFile in catalogsDirectory.
+	 */
+	public static boolean isCatalogsFileNamePart(final String testName)
+	{
+		File testFile = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(testName)); // , CATALOG_FILENAME_PREFIX + testName + ".xml");
+		return Files.exists(testFile.toPath()); // /W exception?
+	}
+	
+	/**
+	 * This creates a name for a new catalog
+	 */
+	public static String makeNewCatalogsName()
+	{
+		Calendar date = new GregorianCalendar();
+		String newName = String.format("%4d%02d%02d_", date.get(Calendar.YEAR), date.get(Calendar.MONTH) + 1, date.get(Calendar.DATE));
+		int nAppend = 1;
+		while (isCatalogsFileNamePart(newName + nAppend))
+			nAppend++;
+		return newName + nAppend;
+	}
+	
 	// instance data
 	@XmlTransient
 	protected File file = null;
 
-	protected String name = OSMBStrs.RStr("Unnamed");
+	protected String name = OSMBStrs.RStr("Unnamed"); // /W name =
 	protected int version = 1;
 
 	@XmlElements(
@@ -153,7 +260,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 */
 	private Catalog()
 	{
-		name = "NoName";
+		name = "new ..."; // /W name = NoName default in content!!!!!!!!!
 		log.trace("default constructor catalog() called");
 	}
 
@@ -162,24 +269,40 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 * 
 	 * @param name
 	 */
-	public Catalog(String catalogName)
+	public Catalog(String catalogName) // /W TUT'S nicht!!!!!!!!!!
 	{
 		this(new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(catalogName)), catalogName);
 	}
 
-	protected Catalog(File file, String name)
+	protected Catalog(File file, String name) // /W TUT'S nicht!!!!!!!!!!
 	{
 		this.file = file;
-		this.name = name;
+		this.name = name; // /W name = #???  name wird nicht aus Datei überschrieben??? default ist OSMBStrs.RStr("Unnamed")
 		try
 		{
-			load();
+			load(); // /W hier wird ins Leere geschrieben!!!!!!!!!!!!
 		}
 		catch (JAXBException e)
 		{
 			e.printStackTrace();
 		}
 	}
+	
+	// /W test -> müsste static sein, ruft aber "public abstract IfCatalog load() throws JAXBException;" auf, darf nicht static sein!!!
+//	protected Catalog makeCatalog(String catalogName)
+//	{
+//		Catalog newCatalog = new Catalog();
+//		newCatalog.file = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(catalogName));
+//		try
+//		{
+//			newCatalog = (Catalog) load();
+//		}
+//		catch (JAXBException e)
+//		{
+//			e.printStackTrace();
+//		}
+//		return newCatalog;
+//	}
 
 	public Catalog(Catalog catalog)
 	{
@@ -240,7 +363,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	public String toString()
 	{
 		// return getName() + " (" + ")";
-		return name;
+		return name; // /W #combobox: toString() sets items in dropdownList! But name is fileNamesPart!!!
 	}
 
 	@Override
