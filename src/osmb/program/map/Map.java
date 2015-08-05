@@ -39,12 +39,7 @@ import osmb.utilities.geo.EastNorthCoordinate;
 
 // public class Map implements IfMap, IfCapabilityDeletable, IfDownloadableElement, TreeNode
 @XmlType(propOrder =
-<<<<<<< HEAD
 { "name", "mapSource", "ULC", "LRC", "minTileCoordinate", "maxTileCoordinate", "number" })
-// /W ? oder number als attribute?
-=======
-{ "name", "zoom", "mapSource", "ULC", "LRC", "minTileCoordinate", "maxTileCoordinate", "number" })
->>>>>>> origin/master
 public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 {
 	// class/static data
@@ -54,58 +49,29 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	/**
 	 * the osm internal name
 	 */
-<<<<<<< HEAD
-	@XmlAttribute
-=======
-	// /W @XmlTransient // /W unwirksam
->>>>>>> origin/master
 	protected String name;
 	/**
 	 * the osm internal number, the numbering scheme is still to be defined
 	 * 20150722 AH proposal: ZL-LON-LAT-WID-HEI, LON and LAT in tiles/8 since this is our map alignment grid, WID, HEI in tiles.
 	 */
-<<<<<<< HEAD
-	@XmlAttribute
-=======
->>>>>>> origin/master
 	protected String number;
 	/**
 	 * the INT conformant name - if there is one; for a lot of maps this is empty
 	 */
-<<<<<<< HEAD
-	@XmlAttribute
-=======
-	// /W @XmlAttribute // /W zurzeit unbenutzt
->>>>>>> origin/master
 	protected String intName = null;
 	/**
 	 * the INT conformant number - if there is one; for a lot of maps this is empty
 	 */
-<<<<<<< HEAD
-	@XmlAttribute
-=======
-	// /W @XmlAttribute // /W zurzeit unbenutzt
->>>>>>> origin/master
 	protected String intNumber = null;
 	/**
 	 * the INT national name - if there is one; for a lot of maps this is empty
 	 */
 	protected String natName = null;
-<<<<<<< HEAD
-	@XmlAttribute
 	protected Point maxTileCoordinate = null;
-	@XmlAttribute
 	protected Point minTileCoordinate = null;
 	@XmlAttribute
 	protected IfMapSource mapSource = null;
 	// protected int zoom;
-=======
-	protected Point maxTileCoordinate = null;
-	protected Point minTileCoordinate = null;
-	@XmlAttribute
-	protected IfMapSource mapSource = null;
-	protected int zoom;
->>>>>>> origin/master
 	protected Layer layer;
 	protected TileImageParameters parameters = null;
 	protected Dimension tileDimension = null;
@@ -122,12 +88,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		this.minTileCoordinate = minTileCoordinate;
 		this.name = name;
 		this.mapSource = mapSource;
-<<<<<<< HEAD
 		// this.zoom = zoom;
-		// /W this.zoom = layer.getZoomLvl(); // /W zoom??? KANN?
-=======
-		this.zoom = zoom;
->>>>>>> origin/master
 		this.parameters = parameters;
 		calculateRuntimeValues();
 		// 20150722 AH fixed numbers in here
@@ -176,10 +137,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	/**
 	 * 	@XmlJavaTypeAdapter(PointAdapter.class) annotation in package-info.java
 	 */
-<<<<<<< HEAD
-=======
 	@XmlAttribute
->>>>>>> origin/master
 	public Point getMaxTileCoordinate()
 	{
 		return this.maxTileCoordinate;
@@ -189,10 +147,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	/**
 	 * 	@XmlJavaTypeAdapter(PointAdapter.class) annotation in package-info.java
 	 */
-<<<<<<< HEAD
-=======
 	@XmlAttribute
->>>>>>> origin/master
 	public Point getMinTileCoordinate()
 	{
 		return this.minTileCoordinate;
@@ -213,11 +168,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@XmlAttribute
 	public String getULC()
 	{
-<<<<<<< HEAD
 		return new EastNorthCoordinate(mapSource.getMapSpace(), getZoom(), minTileCoordinate.x, minTileCoordinate.y).toCatalog();// /W max->min
-=======
-		return new EastNorthCoordinate(mapSource.getMapSpace(), zoom, minTileCoordinate.x, minTileCoordinate.y).toCatalog();// /W max->min
->>>>>>> origin/master
 	}
 
 	public void setULC(String strULC)
@@ -228,11 +179,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@XmlAttribute
 	public String getLRC()
 	{
-<<<<<<< HEAD
 		return new EastNorthCoordinate(mapSource.getMapSpace(), getZoom(), maxTileCoordinate.x, maxTileCoordinate.y).toCatalog();// /W min->max
-=======
-		return new EastNorthCoordinate(mapSource.getMapSpace(), zoom, maxTileCoordinate.x, maxTileCoordinate.y).toCatalog();// /W min->max
->>>>>>> origin/master
 	}
 
 	public void setLRC(String strLRC)
@@ -247,10 +194,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		return name;
 	}
 
-<<<<<<< HEAD
-=======
 	@XmlAttribute
->>>>>>> origin/master
 	public String getNumber()
 	{
 		return number;
@@ -262,37 +206,11 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	}
 
 	@Override
-<<<<<<< HEAD
-	// /W @XmlAttribute
-	// /W zoom??? getter MUSS (zum "direkten" Wiederladen: saveNewCatalog, reloadTheCatalogsListFromTheFileSystem, auswählen und Load) geändert werden!
-	// /W (Änderungen: Konstruktor & (public IfMap deepClone(IfLayer newLayer)) möglich?)
 	public int getZoom()
 	{
 		// /W return zoom;
 		return layer.getZoomLvl(); // /W MUSS!!!
 	}
-
-	// /W wieder auskommentiert
-	// // /WTest einlesen_catalog ? XmlAttribute zoom ohne setter?
-	// // /W -> Map/PolygonMap können nicht eingelesen werden
-	// public void setZoom(int zoom)
-	// {
-	// this.zoom = zoom;
-	// }
-=======
-	@XmlAttribute
-	public int getZoom()
-	{
-		return zoom;
-	}
-
-	// /WTest einlesen_catalog ? XmlAttribute zoom ohne setter?
-	// /W -> Map/PolygonMap können nicht eingelesen werden => setZoom eingefügt
-	public void setZoom(int zoom)
-	{
-		this.zoom = zoom;
-	}
->>>>>>> origin/master
 
 	@Override
 	public String toString()
@@ -317,25 +235,15 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public String getInfoText()
 	{
-<<<<<<< HEAD
 		return "Map\n name=" + name + "\n mapSource=" + mapSource + "\n zoom=" + getZoom() + "\n maxTileCoordinate=" + maxTileCoordinate.x + "/"
 				+ maxTileCoordinate.y + "\n minTileCoordinate=" + minTileCoordinate.x + "/" + minTileCoordinate.y + "\n parameters=" + parameters;
-=======
-		return "Map\n name=" + name + "\n mapSource=" + mapSource + "\n zoom=" + zoom + "\n maxTileCoordinate=" + maxTileCoordinate.x + "/" + maxTileCoordinate.y
-				+ "\n minTileCoordinate=" + minTileCoordinate.x + "/" + minTileCoordinate.y + "\n parameters=" + parameters;
->>>>>>> origin/master
 	}
 
 	public String getToolTip()
 	{
 		IfMapSpace mapSpace = mapSource.getMapSpace();
-<<<<<<< HEAD
 		EastNorthCoordinate tl = new EastNorthCoordinate(mapSpace, getZoom(), minTileCoordinate.x, minTileCoordinate.y);
 		EastNorthCoordinate br = new EastNorthCoordinate(mapSpace, getZoom(), maxTileCoordinate.x, maxTileCoordinate.y);
-=======
-		EastNorthCoordinate tl = new EastNorthCoordinate(mapSpace, zoom, minTileCoordinate.x, minTileCoordinate.y);
-		EastNorthCoordinate br = new EastNorthCoordinate(mapSpace, zoom, maxTileCoordinate.x, maxTileCoordinate.y);
->>>>>>> origin/master
 
 		StringWriter sw = new StringWriter(1024);
 		// sw.write("<html>");
@@ -371,41 +279,25 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public double getMinLat()
 	{
-<<<<<<< HEAD
 		return mapSource.getMapSpace().cYToLat(maxTileCoordinate.y, getZoom());
-=======
-		return mapSource.getMapSpace().cYToLat(maxTileCoordinate.y, zoom);
->>>>>>> origin/master
 	}
 
 	@Override
 	public double getMaxLat()
 	{
-<<<<<<< HEAD
 		return mapSource.getMapSpace().cYToLat(minTileCoordinate.y, getZoom());
-=======
-		return mapSource.getMapSpace().cYToLat(minTileCoordinate.y, zoom);
->>>>>>> origin/master
 	}
 
 	@Override
 	public double getMinLon()
 	{
-<<<<<<< HEAD
 		return mapSource.getMapSpace().cXToLon(minTileCoordinate.x, getZoom());
-=======
-		return mapSource.getMapSpace().cXToLon(minTileCoordinate.x, zoom);
->>>>>>> origin/master
 	}
 
 	@Override
 	public double getMaxLon()
 	{
-<<<<<<< HEAD
 		return mapSource.getMapSpace().cXToLon(maxTileCoordinate.x, getZoom());
-=======
-		return mapSource.getMapSpace().cXToLon(maxTileCoordinate.x, zoom);
->>>>>>> origin/master
 	}
 
 	@Override
@@ -502,11 +394,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 				maxTileCoordinate == null, // 2
 				minTileCoordinate == null, // 3
 				mapSource == null, // 4
-<<<<<<< HEAD
 				getZoom() < 0
-=======
-				zoom < 0
->>>>>>> origin/master
 		// 5
 		};
 
@@ -555,15 +443,6 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 			else
 				map.parameters = null;
 			map.tileDimension = (Dimension) tileDimension.clone();
-<<<<<<< HEAD
-			// map.zoom = zoom;
-			// /W map.zoom = layer.getZoomLvl(); // /W zoom??? KANN?
-=======
-			map.zoom = zoom;
->>>>>>> origin/master
-
-			// /W hier auch? s. Konstruktor // 20150722 AH fixed numbers in here
-
 			return map;
 		}
 		catch (Exception e)

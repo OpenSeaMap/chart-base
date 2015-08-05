@@ -30,7 +30,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -111,7 +110,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 * This updates the listing of the available catalogs in the catalogs directory.
 	 * It is used by {@link #JCatalogsComboBox}
 	 */
-	public static void updateCatalogs()// /W #???	
+	public static void updateCatalogs()// /W #???
 	{
 		catalogs.clear();
 		File catalogsDir = ACSettings.getInstance().getCatalogsDirectory();
@@ -133,7 +132,6 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		});
 		Collections.sort(catalogs);
 	}
-<<<<<<< HEAD
 
 	/**
 	 * This actually creates a new catalog object and fills it with the content from the {@link #file} *
@@ -170,79 +168,77 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		}
 	}
 
-=======
-					
-//	public static void updateCatalogs()// /W #???	
-//	{					
-//		File catalogsDir = ACSettings.getInstance().getCatalogsDirectory();
-//		final Set<Catalog> deletedCatalogs = new HashSet<Catalog>();
-//		deletedCatalogs.addAll(catalogs);
-		
-//		final Vector<String> iii = new Vector<String>();// TEST
-//		iii.add("a");
-//		iii.add("b");
-//		iii.add("x");
-//		final Set<String> iiiSet = new HashSet<String>();
-//		iiiSet.addAll(iii);
-//		Set<Catalog> testCatalogs = new HashSet<Catalog>();
-//		testCatalogs.addAll(catalogs);
-//		Vector<Catalog> kkk = catalogs;
-//		int setSize = deletedCatalogs.size();
-//		int testSetSize = testCatalogs.size();
-//		int vecSize = kkk.size();
-//		int breakpoint = vecSize;
+	// public static void updateCatalogs()// /W #???
+	// {
+	// File catalogsDir = ACSettings.getInstance().getCatalogsDirectory();
+	// final Set<Catalog> deletedCatalogs = new HashSet<Catalog>();
+	// deletedCatalogs.addAll(catalogs);
 
-//		// /W ???
-//		catalogsDir.list(new FilenameFilter()
-//		{
-//			@Override
-//			public boolean accept(File dir, String fileName)
-//			{
-//				Matcher m = CATALOG_FILENAME_PATTERN.matcher(fileName);
-//				if (m.matches())
-//				{
-//					String catalogName = m.group(1);
-//					Catalog catalog = new Catalog(new File(dir, fileName), catalogName);
+	// final Vector<String> iii = new Vector<String>();// TEST
+	// iii.add("a");
+	// iii.add("b");
+	// iii.add("x");
+	// final Set<String> iiiSet = new HashSet<String>();
+	// iiiSet.addAll(iii);
+	// Set<Catalog> testCatalogs = new HashSet<Catalog>();
+	// testCatalogs.addAll(catalogs);
+	// Vector<Catalog> kkk = catalogs;
+	// int setSize = deletedCatalogs.size();
+	// int testSetSize = testCatalogs.size();
+	// int vecSize = kkk.size();
+	// int breakpoint = vecSize;
 
-//					boolean aaa = iiiSet.remove("x");// TEST
-//					boolean bbb = deletedCatalogs.remove(catalog);
-//					if (iii.remove("a"))
-//					{
-//						iii.add("c");
-//						iii.add("d");
-//					}
+	// // /W ???
+	// catalogsDir.list(new FilenameFilter()
+	// {
+	// @Override
+	// public boolean accept(File dir, String fileName)
+	// {
+	// Matcher m = CATALOG_FILENAME_PATTERN.matcher(fileName);
+	// if (m.matches())
+	// {
+	// String catalogName = m.group(1);
+	// Catalog catalog = new Catalog(new File(dir, fileName), catalogName);
 
-//					if (!deletedCatalogs.remove(catalog)) // /W ??? tut nix!!!!!!!!!!!!!
-//						catalogs.add(catalog);
-//				}
-				
-//				Set<Catalog> xxx = deletedCatalogs;// TEST
-//				Vector<Catalog> lll = catalogs;
-//				int setSize = deletedCatalogs.size();
-//				int vecSize = lll.size();
-//				int i = iii.size();
-//				int breakpoint = vecSize;
-				
-//				return false;
-//			}
-//		});
-	
-//		iii.add("f");// TEST
-	
-//		for (IfCatalogProfile p : deletedCatalogs)
-//		{
-//			catalogs.remove(p);
-	
-//			iii.add("e");// TEST
-//			setSize = deletedCatalogs.size();
-//			testSetSize = testCatalogs.size();
-//			vecSize = kkk.size();
-//			breakpoint = vecSize;
-	
-//		}
-//		Collections.sort(catalogs);
-//	}
-	
+	// boolean aaa = iiiSet.remove("x");// TEST
+	// boolean bbb = deletedCatalogs.remove(catalog);
+	// if (iii.remove("a"))
+	// {
+	// iii.add("c");
+	// iii.add("d");
+	// }
+
+	// if (!deletedCatalogs.remove(catalog)) // /W ??? tut nix!!!!!!!!!!!!!
+	// catalogs.add(catalog);
+	// }
+
+	// Set<Catalog> xxx = deletedCatalogs;// TEST
+	// Vector<Catalog> lll = catalogs;
+	// int setSize = deletedCatalogs.size();
+	// int vecSize = lll.size();
+	// int i = iii.size();
+	// int breakpoint = vecSize;
+
+	// return false;
+	// }
+	// });
+
+	// iii.add("f");// TEST
+
+	// for (IfCatalogProfile p : deletedCatalogs)
+	// {
+	// catalogs.remove(p);
+
+	// iii.add("e");// TEST
+	// setSize = deletedCatalogs.size();
+	// testSetSize = testCatalogs.size();
+	// vecSize = kkk.size();
+	// breakpoint = vecSize;
+
+	// }
+	// Collections.sort(catalogs);
+	// }
+
 	/**
 	 * This checks whether testName is the name of an existing catalog in catalogsDirectory.
 	 */
@@ -256,7 +252,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		}
 		return bRet;
 	}
-	
+
 	/**
 	 * This checks whether testName is the independent part in the filename of an existing catalogFile in catalogsDirectory.
 	 */
@@ -265,7 +261,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		File testFile = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(testName)); // , CATALOG_FILENAME_PREFIX + testName + ".xml");
 		return Files.exists(testFile.toPath()); // /W exception?
 	}
-	
+
 	/**
 	 * This creates a name for a new catalog
 	 */
@@ -278,8 +274,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 			nAppend++;
 		return newName + nAppend;
 	}
-	
->>>>>>> origin/master
+
 	// instance data
 	@XmlTransient
 	protected File file = null;
@@ -316,7 +311,6 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	protected Catalog(File file, String name) // /W TUT'S nicht!!!!!!!!!!
 	{
 		this.file = file;
-<<<<<<< HEAD
 		this.name = name;
 		// try
 		// {
@@ -326,34 +320,23 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		// {
 		// e.printStackTrace();
 		// }
-=======
-		this.name = name; // /W name = #???  name wird nicht aus Datei überschrieben??? default ist OSMBStrs.RStr("Unnamed")
-		try
-		{
-			load(); // /W hier wird ins Leere geschrieben!!!!!!!!!!!!
-		}
-		catch (JAXBException e)
-		{
-			e.printStackTrace();
-		}
->>>>>>> origin/master
 	}
-	
+
 	// /W test -> müsste static sein, ruft aber "public abstract IfCatalog load() throws JAXBException;" auf, darf nicht static sein!!!
-//	protected Catalog makeCatalog(String catalogName)
-//	{
-//		Catalog newCatalog = new Catalog();
-//		newCatalog.file = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(catalogName));
-//		try
-//		{
-//			newCatalog = (Catalog) load();
-//		}
-//		catch (JAXBException e)
-//		{
-//			e.printStackTrace();
-//		}
-//		return newCatalog;
-//	}
+	// protected Catalog makeCatalog(String catalogName)
+	// {
+	// Catalog newCatalog = new Catalog();
+	// newCatalog.file = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(catalogName));
+	// try
+	// {
+	// newCatalog = (Catalog) load();
+	// }
+	// catch (JAXBException e)
+	// {
+	// e.printStackTrace();
+	// }
+	// return newCatalog;
+	// }
 
 	public Catalog(Catalog catalog)
 	{

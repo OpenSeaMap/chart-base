@@ -38,14 +38,11 @@ public interface IfCatalog extends IfCatalogObject, Iterable<IfLayer>
 
 	IfLayer getLayer(int index);
 
-<<<<<<< HEAD
 	/**
 	 * has to be a @XmlAttribute
 	 * 
 	 * @return version number
 	 */
-=======
->>>>>>> origin/master
 	int getVersion();
 
 	IfCatalog deepClone();
