@@ -30,23 +30,32 @@ public class CoordinateTileFormat extends NumberFormat
 	protected static Logger log = Logger.getLogger(CoordinateTileFormat.class);
 
 	private final boolean isLongitude;
+	// /W #selCoord MainFrame.getMainGUI().previewMap.getGridZoom() (0 to 18) || osmcd.gui.mapview.JMapViewer.MAX_ZOOM (22)
+	private static int nActZoom; 
 
 	public CoordinateTileFormat(boolean isLongitude)
 	{
 		this.isLongitude = isLongitude;
 	}
 
+	// /W #selCoord
+	public static void setActZoom(int zoom)
+	{
+		nActZoom = zoom;
+	}
+	
 	@Override
 	public StringBuffer format(double number, StringBuffer toAppendTo, FieldPosition pos)
 	{
 		IfMapSpace mapSpace = MercatorPower2MapSpace.INSTANCE_256;
-		int zoom = 1;
+		// int zoom = 1;  // /W #selCoord zoom -> nActZoom
 		int tileNum = 0;
 		if (isLongitude)
-			tileNum = mapSpace.cLonToX(number, zoom);
+			tileNum = mapSpace.cLonToX(number, nActZoom);
 		else
-			tileNum = mapSpace.cLatToY(number, zoom);
-		toAppendTo.append(String.format("%d / z%d ", tileNum / mapSpace.getTileSize(), zoom));
+			tileNum = mapSpace.cLatToY(number, nActZoom);
+		toAppendTo.append(String.format("%d / z%d ", tileNum / mapSpace.getTileSize(), nActZoom));
+		// /W #selCoord test: toAppendTo.append(String.format("%d / z%d ", tileNum, nActZoom));
 		return toAppendTo;
 	}
 
