@@ -19,7 +19,6 @@ package osmb.program.catalog;
 import java.io.File;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.annotation.XmlAttribute;
 
 import osmb.program.map.IfLayer;
 
@@ -39,7 +38,11 @@ public interface IfCatalog extends IfCatalogObject, Iterable<IfLayer>
 
 	IfLayer getLayer(int index);
 
-	@XmlAttribute
+	/**
+	 * has to be a @XmlAttribute
+	 * 
+	 * @return version number
+	 */
 	int getVersion();
 
 	IfCatalog deepClone();

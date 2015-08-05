@@ -22,7 +22,7 @@ public interface IfCatalogProfile
 	@Override
 	public abstract boolean equals(Object other);
 
-	public abstract IfCatalog load() throws JAXBException;
+	// public abstract IfCatalog load() throws JAXBException;
 
 	public abstract void save() throws JAXBException;
 }

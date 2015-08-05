@@ -21,7 +21,6 @@ import java.awt.geom.Point2D;
 
 // /W import javax.xml.bind.annotation.XmlAttribute;
 // /W import javax.xml.bind.annotation.XmlRootElement;
-
 import osmb.program.map.IfMapSpace;
 import osmb.utilities.OSMBUtilities;
 
@@ -74,6 +73,8 @@ public class EastNorthCoordinate
 	{
 		// TODO Auto-generated method stub
 		// return "" + lat + ", " + lon; // /W
-		return String.format(null, "%.8f, %.8f", new Object[] { lat, lon });
+		return String.format(null, "%.8f, %.8f", new Object[]
+		{ lat, lon });
+		// return String.format(null, "%.8f, %.8f", lat, lon);
 	}
 }

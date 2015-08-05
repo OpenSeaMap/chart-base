@@ -50,32 +50,35 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	/**
 	 * the osm internal name
 	 */
-	// /W @XmlTransient // /W unwirksam
+	@XmlAttribute
 	protected String name;
 	/**
 	 * the osm internal number, the numbering scheme is still to be defined
 	 * 20150722 AH proposal: ZL-LON-LAT-WID-HEI, LON and LAT in tiles/8 since this is our map alignment grid, WID, HEI in tiles.
 	 */
+	@XmlAttribute
 	protected String number;
 	/**
 	 * the INT conformant name - if there is one; for a lot of maps this is empty
 	 */
-	// /W @XmlAttribute // /W zurzeit unbenutzt
+	@XmlAttribute
 	protected String intName = null;
 	/**
 	 * the INT conformant number - if there is one; for a lot of maps this is empty
 	 */
-	// /W @XmlAttribute // /W zurzeit unbenutzt
+	@XmlAttribute
 	protected String intNumber = null;
 	/**
 	 * the INT national name - if there is one; for a lot of maps this is empty
 	 */
 	protected String natName = null;
+	@XmlAttribute
 	protected Point maxTileCoordinate = null;
+	@XmlAttribute
 	protected Point minTileCoordinate = null;
 	@XmlAttribute
 	protected IfMapSource mapSource = null;
-	protected int zoom;
+	// protected int zoom;
 	protected Layer layer;
 	protected TileImageParameters parameters = null;
 	protected Dimension tileDimension = null;
@@ -92,7 +95,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		this.minTileCoordinate = minTileCoordinate;
 		this.name = name;
 		this.mapSource = mapSource;
-		this.zoom = zoom;
+		// this.zoom = zoom;
 		// /W this.zoom = layer.getZoomLvl(); // /W zoom??? KANN?
 		this.parameters = parameters;
 		calculateRuntimeValues();
@@ -171,7 +174,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@XmlAttribute
 	public String getULC()
 	{
-		return new EastNorthCoordinate(mapSource.getMapSpace(), zoom, minTileCoordinate.x, minTileCoordinate.y).toCatalog();// /W max->min
+		return new EastNorthCoordinate(mapSource.getMapSpace(), getZoom(), minTileCoordinate.x, minTileCoordinate.y).toCatalog();// /W max->min
 	}
 
 	public void setULC(String strULC)
@@ -182,7 +185,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@XmlAttribute
 	public String getLRC()
 	{
-		return new EastNorthCoordinate(mapSource.getMapSpace(), zoom, maxTileCoordinate.x, maxTileCoordinate.y).toCatalog();// /W min->max
+		return new EastNorthCoordinate(mapSource.getMapSpace(), getZoom(), maxTileCoordinate.x, maxTileCoordinate.y).toCatalog();// /W min->max
 	}
 
 	public void setLRC(String strLRC)
@@ -248,15 +251,15 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public String getInfoText()
 	{
-		return "Map\n name=" + name + "\n mapSource=" + mapSource + "\n zoom=" + zoom + "\n maxTileCoordinate=" + maxTileCoordinate.x + "/" + maxTileCoordinate.y
-				+ "\n minTileCoordinate=" + minTileCoordinate.x + "/" + minTileCoordinate.y + "\n parameters=" + parameters;
+		return "Map\n name=" + name + "\n mapSource=" + mapSource + "\n zoom=" + getZoom() + "\n maxTileCoordinate=" + maxTileCoordinate.x + "/"
+				+ maxTileCoordinate.y + "\n minTileCoordinate=" + minTileCoordinate.x + "/" + minTileCoordinate.y + "\n parameters=" + parameters;
 	}
 
 	public String getToolTip()
 	{
 		IfMapSpace mapSpace = mapSource.getMapSpace();
-		EastNorthCoordinate tl = new EastNorthCoordinate(mapSpace, zoom, minTileCoordinate.x, minTileCoordinate.y);
-		EastNorthCoordinate br = new EastNorthCoordinate(mapSpace, zoom, maxTileCoordinate.x, maxTileCoordinate.y);
+		EastNorthCoordinate tl = new EastNorthCoordinate(mapSpace, getZoom(), minTileCoordinate.x, minTileCoordinate.y);
+		EastNorthCoordinate br = new EastNorthCoordinate(mapSpace, getZoom(), maxTileCoordinate.x, maxTileCoordinate.y);
 
 		StringWriter sw = new StringWriter(1024);
 		// sw.write("<html>");
@@ -292,25 +295,25 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public double getMinLat()
 	{
-		return mapSource.getMapSpace().cYToLat(maxTileCoordinate.y, zoom);
+		return mapSource.getMapSpace().cYToLat(maxTileCoordinate.y, getZoom());
 	}
 
 	@Override
 	public double getMaxLat()
 	{
-		return mapSource.getMapSpace().cYToLat(minTileCoordinate.y, zoom);
+		return mapSource.getMapSpace().cYToLat(minTileCoordinate.y, getZoom());
 	}
 
 	@Override
 	public double getMinLon()
 	{
-		return mapSource.getMapSpace().cXToLon(minTileCoordinate.x, zoom);
+		return mapSource.getMapSpace().cXToLon(minTileCoordinate.x, getZoom());
 	}
 
 	@Override
 	public double getMaxLon()
 	{
-		return mapSource.getMapSpace().cXToLon(maxTileCoordinate.x, zoom);
+		return mapSource.getMapSpace().cXToLon(maxTileCoordinate.x, getZoom());
 	}
 
 	@Override
@@ -407,7 +410,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 				maxTileCoordinate == null, // 2
 				minTileCoordinate == null, // 3
 				mapSource == null, // 4
-				zoom < 0
+				getZoom() < 0
 		// 5
 		};
 
@@ -456,7 +459,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 			else
 				map.parameters = null;
 			map.tileDimension = (Dimension) tileDimension.clone();
-			map.zoom = zoom;
+			// map.zoom = zoom;
 			// /W map.zoom = layer.getZoomLvl(); // /W zoom??? KANN?
 
 			// /W hier auch? s. Konstruktor // 20150722 AH fixed numbers in here

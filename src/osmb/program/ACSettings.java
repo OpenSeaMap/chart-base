@@ -49,8 +49,8 @@ public abstract class ACSettings implements IfSettings
 		protected String tileStoreDirectory = null;
 		@XmlElement
 		protected String catalogsDirectory = null;
-		@XmlElement
-		protected String mapSourcesDirectory = null; // wird immer noch gebraucht, oder wo kommt der Wert her?
+		// @XmlElement
+		// protected String mapSourcesDirectory = null; // wird immer noch gebraucht, oder wo kommt der Wert her?
 	}
 
 	protected static long SETTINGS_LAST_MODIFIED = 0;

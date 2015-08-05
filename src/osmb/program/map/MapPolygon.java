@@ -39,7 +39,6 @@ import osmb.utilities.geo.EastNorthCoordinate;
 ///W ? @XmlRootElement
 public class MapPolygon extends Map implements IfMap
 {
-
 	@XmlElement
 	protected Polygon polygon;
 	protected long calculatedTileCount = -1;
@@ -51,7 +50,6 @@ public class MapPolygon extends Map implements IfMap
 	public static MapPolygon createTrackEnclosure(Layer layer, String name, IfMapSource mapSource, int zoom, EastNorthCoordinate[] trackPoints,
 			int pixelDistance, TileImageParameters parameters)
 	{
-
 		IfMapSpace mapSpace = mapSource.getMapSpace();
 		Area area = new Area();
 		for (int i = 1; i < trackPoints.length; i++)
@@ -202,8 +200,8 @@ public class MapPolygon extends Map implements IfMap
 	public String getToolTip()
 	{
 		IfMapSpace mapSpace = mapSource.getMapSpace();
-		EastNorthCoordinate tl = new EastNorthCoordinate(mapSpace, zoom, minTileCoordinate.x, minTileCoordinate.y);
-		EastNorthCoordinate br = new EastNorthCoordinate(mapSpace, zoom, maxTileCoordinate.x, maxTileCoordinate.y);
+		EastNorthCoordinate tl = new EastNorthCoordinate(mapSpace, getZoom(), minTileCoordinate.x, minTileCoordinate.y);
+		EastNorthCoordinate br = new EastNorthCoordinate(mapSpace, getZoom(), maxTileCoordinate.x, maxTileCoordinate.y);
 
 		StringWriter sw = new StringWriter(1024);
 		// sw.write("<html>");

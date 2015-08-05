@@ -134,6 +134,41 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		Collections.sort(catalogs);
 	}
 
+	/**
+	 * This actually creates a new catalog object and fills it with the content from the {@link #file} *
+	 */
+	public static IfCatalog load(File file) throws JAXBException
+	{
+		JAXBContext context = JAXBContext.newInstance(Catalog.class);
+		Unmarshaller um = context.createUnmarshaller();
+		um.setEventHandler(new ValidationEventHandler()
+		{
+			@Override
+			public boolean handleEvent(ValidationEvent event)
+			{
+				ValidationEventLocator loc = event.getLocator();
+				String file = loc.getURL().getFile();
+				int lastSlash = file.lastIndexOf('/');
+				if (lastSlash > 0)
+					file = file.substring(lastSlash + 1);
+				int ret = JOptionPane.showConfirmDialog(null,
+						String.format(OSMBStrs.RStr("Catalog.Loading.ErrMsg"), event.getMessage(), file, loc.getLineNumber(), loc.getColumnNumber()),
+						OSMBStrs.RStr("Catalog.Loading.Title"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+				log.error(event.toString());
+				return (ret == JOptionPane.YES_OPTION);
+			}
+		});
+		try
+		{
+			IfCatalog newCatalog = (IfCatalog) um.unmarshal(file);
+			return newCatalog;
+		}
+		catch (Exception e)
+		{
+			throw new JAXBException(e.getMessage(), e);
+		}
+	}
+
 	// instance data
 	@XmlTransient
 	protected File file = null;
@@ -171,17 +206,23 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	{
 		this.file = file;
 		this.name = name;
-		try
-		{
-			load();
-		}
-		catch (JAXBException e)
-		{
-			e.printStackTrace();
-		}
+		// try
+		// {
+		// // load();
+		// }
+		// catch (JAXBException e)
+		// {
+		// e.printStackTrace();
+		// }
 	}
 
 	public Catalog(Catalog catalog)
+	{
+		// make a clone or not ????
+		log.info("copy constructor catalog(catalog) called");
+	}
+
+	public Catalog(IfCatalog ifCatalog)
 	{
 		// make a clone or not ????
 		log.info("copy constructor catalog(catalog) called");
@@ -469,44 +510,6 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 			bEq = file.equals(p.getFile());
 		}
 		return bEq;
-	}
-
-	/**
-	 * This actually loads the catalog from the {@link #file}
-	 * 
-	 * @see osmb.program.catalog.IfCatalogProfile#load()
-	 */
-	@Override
-	public IfCatalog load() throws JAXBException
-	{
-		JAXBContext context = JAXBContext.newInstance(Catalog.class);
-		Unmarshaller um = context.createUnmarshaller();
-		um.setEventHandler(new ValidationEventHandler()
-		{
-			@Override
-			public boolean handleEvent(ValidationEvent event)
-			{
-				ValidationEventLocator loc = event.getLocator();
-				String file = loc.getURL().getFile();
-				int lastSlash = file.lastIndexOf('/');
-				if (lastSlash > 0)
-					file = file.substring(lastSlash + 1);
-				int ret = JOptionPane.showConfirmDialog(null,
-						String.format(OSMBStrs.RStr("Catalog.Loading.ErrMsg"), event.getMessage(), file, loc.getLineNumber(), loc.getColumnNumber()),
-						OSMBStrs.RStr("Catalog.Loading.Title"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
-				log.error(event.toString());
-				return (ret == JOptionPane.YES_OPTION);
-			}
-		});
-		try
-		{
-			IfCatalog newBundle = (IfCatalog) um.unmarshal(file);
-			return newBundle;
-		}
-		catch (Exception e)
-		{
-			throw new JAXBException(e.getMessage(), e);
-		}
 	}
 
 	/**
