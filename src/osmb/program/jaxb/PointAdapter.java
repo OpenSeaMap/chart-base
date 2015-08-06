@@ -25,13 +25,16 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * Required {@link XmlAdapter} implementation for serializing a {@link Point} as
  * the default one creates a {@link StackOverflowError}
  * 
+ * 20150816 AH exchanged x and y in xml to comply to lat,lon sequence in geo coords
+ * 
  */
 public class PointAdapter extends XmlAdapter<String, Point>
 {
 	@Override
 	public String marshal(Point point) throws Exception
 	{
-		return point.x + "/" + point.y;
+		// return point.x + "/" + point.y;
+		return point.y + "/" + point.x;
 	}
 
 	@Override
@@ -40,8 +43,10 @@ public class PointAdapter extends XmlAdapter<String, Point>
 		int i = value.indexOf('/');
 		if (i < 0)
 			throw new UnmarshalException("Invalid format");
-		int x = Integer.parseInt(value.substring(0, i).trim());
-		int y = Integer.parseInt(value.substring(i + 1).trim());
+		// int x = Integer.parseInt(value.substring(0, i).trim());
+		// int y = Integer.parseInt(value.substring(i + 1).trim());
+		int y = Integer.parseInt(value.substring(0, i).trim());
+		int x = Integer.parseInt(value.substring(i + 1).trim());
 		return new Point(x, y);
 	}
 }

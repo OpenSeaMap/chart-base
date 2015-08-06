@@ -150,6 +150,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 				int lastSlash = file.lastIndexOf('/');
 				if (lastSlash > 0)
 					file = file.substring(lastSlash + 1);
+				// UI should be separated from program logic -> remove to UI components
 				int ret = JOptionPane.showConfirmDialog(null,
 						String.format(OSMBStrs.RStr("Catalog.Loading.ErrMsg"), event.getMessage(), file, loc.getLineNumber(), loc.getColumnNumber()),
 						OSMBStrs.RStr("Catalog.Loading.Title"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);

@@ -92,9 +92,9 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		this.parameters = parameters;
 		calculateRuntimeValues();
 		// 20150722 AH fixed numbers in here
-		String mapNumber = zoom + "-" + minTileCoordinate.x / (tileDimension.width * 8) + "-" + minTileCoordinate.y / (tileDimension.height * 8) + "-"
-				+ ((maxTileCoordinate.x - minTileCoordinate.x + 1) / tileDimension.width) + "-"
-				+ ((maxTileCoordinate.y - minTileCoordinate.y + 1) / tileDimension.height);
+		String mapNumber = zoom + "-" + minTileCoordinate.y / (tileDimension.height * 8) + "-" + minTileCoordinate.x / (tileDimension.width * 8) + "-"
+				+ ((maxTileCoordinate.y - minTileCoordinate.y + 1) / tileDimension.height) + "-"
+				+ ((maxTileCoordinate.x - minTileCoordinate.x + 1) / tileDimension.width);
 		log.trace("new map: '" + mapNumber + "'");
 		this.number = mapNumber;
 	}

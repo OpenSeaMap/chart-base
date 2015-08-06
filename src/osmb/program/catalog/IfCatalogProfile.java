@@ -4,6 +4,13 @@ import java.io.File;
 
 import javax.xml.bind.JAXBException;
 
+/**
+ * An IfCatalogProfile is a file which (probably) contains a catalog. It usually is not loaded from the harddisk, but you can check if it exists.
+ * Obviously a Catalog implements an IFCatalogProfile.
+ * 
+ * @author humbach
+ *
+ */
 public interface IfCatalogProfile
 {
 	@Override

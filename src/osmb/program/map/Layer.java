@@ -136,40 +136,51 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			int nYSize = (maxTileCoordinate.y - minTileCoordinate.y) / tileSize + 1;
 			int nXExp = 1, nYExp = 1;
 
+			log.trace("addMapsAutocut(): tile=" + tileSize + ", XSize=" + nXSize + ", YSize=" + nYSize + ", XExp=" + nXExp);
+
 			// get requested size in 2^n grid
-			while ((nXSize >>= 1) >= 1)
+			while ((nXSize >>= 1) > 1)
 				++nXExp;
-			while ((nYSize >>= 1) >= 1)
+			while ((nYSize >>= 1) > 1)
 				++nYExp;
 
 			// fit into encouraged map grid widths (8, 16, 32, 64, 128 tiles)
-			int nXGridSize = 0, nYGridSize = 0;
-			nXExp = Math.max(3, Math.min(7, nXExp));
-			nXExp = Math.min(zoom, nXExp);// /W sonst Problem bei zoom 0, 1, 2
-			nXGridSize = tileSize << nXExp;
-			nYExp = Math.max(3, Math.min(7, nYExp));
-			nYExp = Math.min(zoom, nYExp);// /W dto
-			nYGridSize = tileSize << nYExp;
+			nXExp = Math.min(zoom, Math.max(3, Math.min(7, nXExp)));
+			int nXGridSize = tileSize << nXExp;
+			nYExp = Math.min(zoom, Math.max(3, Math.min(7, nYExp)));
+			int nYGridSize = tileSize << nYExp;
+
+			log.trace("addMapsAutocut(): nXExp=" + nXExp + ", nXGridSize=" + nXGridSize + ", nYExp=" + nYExp + ", nYGridSize=" + nYGridSize);
 
 			// align left/top with map grid
 			int nXOff = 0, nYOff = 0;
-			nXOff = minTileCoordinate.x % (nXGridSize / 2);
-			minTileCoordinate.x -= (nXOff > (nXGridSize / 4) ? nXOff : nXOff + nXGridSize / 2);
-			nYOff = minTileCoordinate.y % (nYGridSize / 2);
-			minTileCoordinate.y -= (nYOff > (nYGridSize / 4) ? nYOff : nYOff + nYGridSize / 2);
+			nXOff = minTileCoordinate.x % (nXGridSize);
+			// minTileCoordinate.x -= (nXOff > (nXGridSize / 4) ? nXOff : nXOff + nXGridSize / 2);
+			minTileCoordinate.x -= nXOff;
+			nYOff = minTileCoordinate.y % (nYGridSize);
+			// minTileCoordinate.y -= (nYOff > (nYGridSize / 4) ? nYOff : nYOff + nYGridSize / 2);
+			minTileCoordinate.y -= nYOff;
+
+			log.trace("addMapsAutocut(): nXOff=" + nXOff + ", mtc.x=" + minTileCoordinate.x + ", nYOff=" + nYOff + ", mtc.y=" + minTileCoordinate.y);
 
 			// align right/bottom with map grid
-			nXOff = nXGridSize / 2 + tileSize * overlapTiles - maxTileCoordinate.x % (nXGridSize / 2) - 1;// /W -1 statt + 1 -> Werte in catalog ok
-			maxTileCoordinate.x += (nXOff > (nXGridSize / 4) ? nXOff : nXOff + nXGridSize / 2);
-			nYOff = nYGridSize / 2 + tileSize * overlapTiles - maxTileCoordinate.y % (nYGridSize / 2) - 1;// /W dto
-			maxTileCoordinate.y += (nYOff > (nYGridSize / 4) ? nYOff : nYOff + nYGridSize / 2);
+			nXOff = nXGridSize + tileSize * overlapTiles - maxTileCoordinate.x % (nXGridSize) - 1;// /W -1 statt + 1 -> Werte in catalog ok
+			// maxTileCoordinate.x += (nXOff > (nXGridSize / 4) ? nXOff : nXOff + nXGridSize / 2);
+			maxTileCoordinate.x += nXOff;
+			nYOff = nYGridSize + tileSize * overlapTiles - maxTileCoordinate.y % (nYGridSize) - 1;// /W dto
+			// maxTileCoordinate.y += (nYOff > (nYGridSize / 4) ? nYOff : nYOff + nYGridSize / 2);
+			maxTileCoordinate.y += nYOff;
 
+			log.trace("addMapsAutocut(): nXOff=" + nXOff + ", xtc.x=" + maxTileCoordinate.x + ", nYOff=" + nYOff + ", xtc.y=" + maxTileCoordinate.y);
+
+			// we only use fixed size tiles (256 x 256)
+			Dimension tileDimension = new Dimension(tileSize, tileSize);
 			// if the user set parameters we use them
-			Dimension tileDimension;
-			if (parameters == null)
-				tileDimension = new Dimension(tileSize, tileSize);
-			else
-				tileDimension = parameters.getDimension();
+			// Dimension tileDimension;
+			// if (parameters == null)
+			// tileDimension = new Dimension(tileSize, tileSize);
+			// else
+			// tileDimension = parameters.getDimension();
 
 			// We adapt the max map size to the tile size so that we do not get ugly cut/incomplete tiles at the borders
 			Dimension maxMapDimension = new Dimension(maxMapSize, maxMapSize);
