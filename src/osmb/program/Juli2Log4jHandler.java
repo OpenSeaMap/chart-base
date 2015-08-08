@@ -59,7 +59,7 @@ public class Juli2Log4jHandler extends Handler
 		// Format message
 		try
 		{
-			Object parameters[] = record.getParameters();
+			Object[] parameters = record.getParameters();
 			if (parameters != null && parameters.length != 0)
 			{
 				// Check for the first few parameters ?

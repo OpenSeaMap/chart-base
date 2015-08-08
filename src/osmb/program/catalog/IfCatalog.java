@@ -17,6 +17,7 @@
 package osmb.program.catalog;
 
 import java.io.File;
+import java.util.List;
 
 import javax.xml.bind.JAXBException;
 
@@ -45,15 +46,17 @@ public interface IfCatalog extends IfCatalogObject, Iterable<IfLayer>
 	 */
 	int getVersion();
 
-	IfCatalog deepClone();
+	List<IfLayer> getLayers();
 
+	// IfCatalog deepClone();
+	//
 	boolean check();
 
 	void addLayer(IfLayer l);
 
 	void deleteLayer(IfLayer l);
 
-	public void save() throws JAXBException;
+	void save() throws JAXBException;
 
 	File getFile();
 }

@@ -84,7 +84,7 @@ public class WgsGrid
 		BOTTOM_RIGHT, BOTTOM_LEFT, TOP_RIGHT, TOP_LEFT
 	}
 
-	private static final WgsDensity DENSITIES[] = WgsDensity.values();
+	private static final WgsDensity[] DENSITIES = WgsDensity.values();
 	private static final Stroke BASIC_STROKE = new BasicStroke(1f);
 	private static final int LABEL_OFFSET = 2;
 

@@ -150,7 +150,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 				int lastSlash = file.lastIndexOf('/');
 				if (lastSlash > 0)
 					file = file.substring(lastSlash + 1);
-				// UI should be separated from program logic -> remove to UI components
+				// UI should be separated from program logic -> relocate to UI components
 				int ret = JOptionPane.showConfirmDialog(null,
 						String.format(OSMBStrs.RStr("Catalog.Loading.ErrMsg"), event.getMessage(), file, loc.getLineNumber(), loc.getColumnNumber()),
 						OSMBStrs.RStr("Catalog.Loading.Title"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
@@ -160,7 +160,8 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		});
 		try
 		{
-			IfCatalog newCatalog = (IfCatalog) um.unmarshal(file);
+			Catalog newCatalog = (Catalog) um.unmarshal(file);
+			newCatalog.file = file;
 			return newCatalog;
 		}
 		catch (Exception e)
@@ -168,77 +169,6 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 			throw new JAXBException(e.getMessage(), e);
 		}
 	}
-
-	// public static void updateCatalogs()// /W #???
-	// {
-	// File catalogsDir = ACSettings.getInstance().getCatalogsDirectory();
-	// final Set<Catalog> deletedCatalogs = new HashSet<Catalog>();
-	// deletedCatalogs.addAll(catalogs);
-
-	// final Vector<String> iii = new Vector<String>();// TEST
-	// iii.add("a");
-	// iii.add("b");
-	// iii.add("x");
-	// final Set<String> iiiSet = new HashSet<String>();
-	// iiiSet.addAll(iii);
-	// Set<Catalog> testCatalogs = new HashSet<Catalog>();
-	// testCatalogs.addAll(catalogs);
-	// Vector<Catalog> kkk = catalogs;
-	// int setSize = deletedCatalogs.size();
-	// int testSetSize = testCatalogs.size();
-	// int vecSize = kkk.size();
-	// int breakpoint = vecSize;
-
-	// // /W ???
-	// catalogsDir.list(new FilenameFilter()
-	// {
-	// @Override
-	// public boolean accept(File dir, String fileName)
-	// {
-	// Matcher m = CATALOG_FILENAME_PATTERN.matcher(fileName);
-	// if (m.matches())
-	// {
-	// String catalogName = m.group(1);
-	// Catalog catalog = new Catalog(new File(dir, fileName), catalogName);
-
-	// boolean aaa = iiiSet.remove("x");// TEST
-	// boolean bbb = deletedCatalogs.remove(catalog);
-	// if (iii.remove("a"))
-	// {
-	// iii.add("c");
-	// iii.add("d");
-	// }
-
-	// if (!deletedCatalogs.remove(catalog)) // /W ??? tut nix!!!!!!!!!!!!!
-	// catalogs.add(catalog);
-	// }
-
-	// Set<Catalog> xxx = deletedCatalogs;// TEST
-	// Vector<Catalog> lll = catalogs;
-	// int setSize = deletedCatalogs.size();
-	// int vecSize = lll.size();
-	// int i = iii.size();
-	// int breakpoint = vecSize;
-
-	// return false;
-	// }
-	// });
-
-	// iii.add("f");// TEST
-
-	// for (IfCatalogProfile p : deletedCatalogs)
-	// {
-	// catalogs.remove(p);
-
-	// iii.add("e");// TEST
-	// setSize = deletedCatalogs.size();
-	// testSetSize = testCatalogs.size();
-	// vecSize = kkk.size();
-	// breakpoint = vecSize;
-
-	// }
-	// Collections.sort(catalogs);
-	// }
 
 	/**
 	 * This checks whether testName is the name of an existing catalog in catalogsDirectory.
@@ -260,7 +190,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	public static boolean isCatalogsFileNamePart(final String testName)
 	{
 		File testFile = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(testName)); // , CATALOG_FILENAME_PREFIX + testName + ".xml");
-		return Files.exists(testFile.toPath()); // /W exception?
+		return Files.exists(testFile.toPath());
 	}
 
 	/**
@@ -295,7 +225,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 */
 	private Catalog()
 	{
-		name = "new ..."; // /W name = NoName default in content!!!!!!!!!
+		name = "new ..."; // /W name = NoName default in content
 		log.trace("default constructor catalog() called");
 	}
 
@@ -304,23 +234,15 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 * 
 	 * @param name
 	 */
-	public Catalog(String catalogName) // /W TUT'S nicht!!!!!!!!!!
+	public Catalog(String catalogName)
 	{
 		this(new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(catalogName)), catalogName);
 	}
 
-	protected Catalog(File file, String name) // /W TUT'S nicht!!!!!!!!!!
+	protected Catalog(File file, String name)
 	{
 		this.file = file;
 		this.name = name;
-		// try
-		// {
-		// // load();
-		// }
-		// catch (JAXBException e)
-		// {
-		// e.printStackTrace();
-		// }
 	}
 
 	// /W test -> müsste static sein, ruft aber "public abstract IfCatalog load() throws JAXBException;" auf, darf nicht static sein!!!
@@ -341,13 +263,21 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 
 	public Catalog(Catalog catalog)
 	{
-		// make a clone or not ????
+		this.file = catalog.file;
+		this.name = catalog.name;
+		this.version = catalog.version;
+		this.layers = catalog.layers;
+
 		log.info("copy constructor catalog(catalog) called");
 	}
 
 	public Catalog(IfCatalog ifCatalog)
 	{
-		// make a clone or not ????
+		this.file = ifCatalog.getFile();
+		this.name = ifCatalog.getName();
+		this.version = ifCatalog.getVersion();
+		// how to copy layers ?
+		this.layers = ifCatalog.getLayers();
 		log.info("copy constructor catalog(catalog) called");
 	}
 
@@ -375,6 +305,12 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		return layers.size();
 	}
 
+	@Override
+	public List<IfLayer> getLayers()
+	{
+		return layers;
+	}
+
 	@XmlAttribute
 	public int getSize()
 	{
@@ -383,8 +319,6 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 
 	public void setSize(int newSize)
 	{
-		// do nothing, ignore value in settings.xml
-		;
 	}
 
 	@Override
@@ -554,19 +488,19 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		version = newVersion;
 	}
 
-	@Override
-	public IfCatalog deepClone()
-	{
-		Catalog catalog = new Catalog();
-		catalog.version = version;
-		catalog.name = name;
-		// bundle.outputFormat = outputFormat;
-		for (IfLayer layer : layers)
-		{
-			catalog.layers.add(layer.deepClone(catalog));
-		}
-		return catalog;
-	}
+	// @Override
+	// public IfCatalog deepClone()
+	// {
+	// Catalog catalog = new Catalog();
+	// catalog.version = version;
+	// catalog.name = name;
+	// // bundle.outputFormat = outputFormat;
+	// for (IfLayer layer : layers)
+	// {
+	// catalog.layers.add(layer.deepClone(catalog));
+	// }
+	// return catalog;
+	// }
 
 	@Override
 	public boolean check()

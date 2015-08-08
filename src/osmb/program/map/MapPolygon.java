@@ -136,8 +136,8 @@ public class MapPolygon extends Map implements IfMap
 		Polygon oldPolygon = map.getPolygon();
 		int oldZoom = map.getZoom();
 		IfMapSpace mapSpace = map.getMapSource().getMapSpace();
-		int xPoints[] = new int[oldPolygon.npoints];
-		int yPoints[] = new int[oldPolygon.npoints];
+		int[] xPoints = new int[oldPolygon.npoints];
+		int[] yPoints = new int[oldPolygon.npoints];
 		Point p = new Point();
 		for (int i = 0; i < xPoints.length; i++)
 		{

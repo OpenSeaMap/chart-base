@@ -80,7 +80,12 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	{
 	}
 
-	// /W zoom??? (suche: "zoom =")
+	protected Map(Map map)
+	{
+		name = map.name;
+
+	}
+
 	protected Map(Layer layer, String name, IfMapSource mapSource, int zoom, Point minTileCoordinate, Point maxTileCoordinate, TileImageParameters parameters)
 	{
 		this.layer = layer;
@@ -102,7 +107,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	protected void calculateRuntimeValues()
 	{
 		if (mapSource == null)
-			throw new RuntimeException("The map source of map " + name + " is unknown to OSMCB");
+			throw new RuntimeException("The map source of map '" + name + "' is unknown to OSMCB");
 		if (parameters == null)
 		{
 			int tileSize = mapSource.getMapSpace().getTileSize();
@@ -426,7 +431,6 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		return result;
 	}
 
-	// /W zoom??? (suche: "zoom =")
 	@Override
 	public IfMap deepClone(IfLayer newLayer)
 	{
@@ -451,9 +455,6 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		}
 	}
 
-	/**
-	 * Needs to be public - otherwise it will be kicked by ProGuard!
-	 */
 	public void afterUnmarshal(Unmarshaller u, Object parent)
 	{
 		this.layer = (Layer) parent;
