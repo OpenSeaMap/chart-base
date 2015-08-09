@@ -138,7 +138,6 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 		BufferedImage image = getTileImage(zoom, x, y, loadMethod);
 		if (image == null)
 			return null;
-		// TODO: here can write with compress
 		ImageIO.write(image, tileType.getFileExt(), buf);
 		return buf.toByteArray();
 	}
@@ -158,7 +157,7 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 				BufferedImage layerImage = layerMapSource.getTileImage(zoom, x, y, loadMethod);
 				if (layerImage != null)
 				{
-					log.debug("Multi layer loaded: " + layerMapSource + " " + x + " " + y + " " + zoom + "; Layer=" + i);
+					log.trace("Multi layer loaded: " + layerMapSource + " " + x + " " + y + " " + zoom + "; Layer=" + i);
 					layerImages.add(layerImage);
 					int size = layerImage.getWidth();
 					if (size > maxSize)
@@ -187,7 +186,7 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 					BufferedImage layerImage = layerImages.get(i);
 					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, getLayerAlpha(i)));
 					g2.drawImage(layerImage, 0, 0, maxSize, maxSize, null);
-					log.debug("Multi layer added: Alpha=" + getLayerAlpha(i) + "; Layer=" + i);
+					log.trace("Multi layer added: Alpha=" + getLayerAlpha(i) + "; Layer=" + i);
 				}
 				return image;
 			}
