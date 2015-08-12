@@ -26,8 +26,8 @@ import java.text.ParsePosition;
 
 import org.apache.log4j.Logger;
 
-public class CoordinateDms2Format extends NumberFormat {
-
+public class CoordinateDms2Format extends NumberFormat
+{
 	protected static Logger log = Logger.getLogger(CoordinateDms2Format.class);
 
 	NumberFormat degFmt;
@@ -35,7 +35,8 @@ public class CoordinateDms2Format extends NumberFormat {
 	NumberFormat secFmt;
 	NumberFormat secFmtParser;
 
-	public CoordinateDms2Format(DecimalFormatSymbols dfs) {
+	public CoordinateDms2Format(DecimalFormatSymbols dfs)
+	{
 		degFmt = new DecimalFormat("00°", dfs);
 		minFmt = new DecimalFormat("00''", dfs);
 		minFmt.setRoundingMode(RoundingMode.FLOOR);
@@ -45,7 +46,8 @@ public class CoordinateDms2Format extends NumberFormat {
 	}
 
 	@Override
-	public StringBuffer format(double numberOrg, StringBuffer toAppendTo, FieldPosition pos) {
+	public StringBuffer format(double numberOrg, StringBuffer toAppendTo, FieldPosition pos)
+	{
 		double number = numberOrg;
 		int degrees;
 		int minutes;
@@ -66,21 +68,25 @@ public class CoordinateDms2Format extends NumberFormat {
 	}
 
 	@Override
-	public StringBuffer format(long number, StringBuffer toAppendTo, FieldPosition pos) {
+	public StringBuffer format(long number, StringBuffer toAppendTo, FieldPosition pos)
+	{
 		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public Number parse(String source) throws ParseException {
+	public Number parse(String source) throws ParseException
+	{
 		return parse(source, new ParsePosition(0));
 	}
 
 	@Override
-	public Number parse(String source, ParsePosition parsePosition) {
+	public Number parse(String source, ParsePosition parsePosition)
+	{
 		String[] tokens = source.trim().split("[°\\'\\\"]");
 		if (tokens.length != 3)
 			return null;
-		try {
+		try
+		{
 			String degStr = tokens[0].trim();
 			int deg = Integer.parseInt(degStr);
 			int min = Integer.parseInt(tokens[1].trim());
@@ -91,11 +97,12 @@ public class CoordinateDms2Format extends NumberFormat {
 			else
 				coord = deg + sec / 3600 + min / 60.0;
 			return new Double(coord);
-		} catch (Exception e) {
+		}
+		catch (Exception e)
+		{
 			parsePosition.setErrorIndex(0);
 			log.error("e");
 			return null;
 		}
 	}
-
 }

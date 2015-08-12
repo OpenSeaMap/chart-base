@@ -30,11 +30,16 @@ public interface IfMap extends IfCatalogObject, IfCapabilityDeletable
 	public IfMapSource getMapSource();
 
 	/**
-	 * a map is of exactly on zoom level
+	 * a map is of exactly one zoom level
 	 * 
 	 * @return zoom level of this map
 	 */
 	public int getZoom();
+
+	/**
+	 * a map has a name stating the maps zoom, position and size
+	 */
+	public String getNumber();
 
 	/**
 	 * A map belongs to one layer
