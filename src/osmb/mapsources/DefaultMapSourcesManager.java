@@ -33,6 +33,7 @@ import osmb.utilities.OSMBStrs;
 
 public class DefaultMapSourcesManager extends ACMapSourcesManager
 {
+	@SuppressWarnings("unused") // /W #unused
 	private Logger log = Logger.getLogger(DefaultMapSourcesManager.class);
 
 	/**
@@ -236,7 +237,7 @@ public class DefaultMapSourcesManager extends ACMapSourcesManager
 	@Override
 	public IfMapSource getDefaultMapSource()
 	{
-		IfMapSource ms = getSourceByName("MapQuest");// DEFAULT;///W ändern? momentan == null 20150713
+		IfMapSource ms = getSourceByName("MapQuest");// DEFAULT;// /W #??? change! (ms == null) 20150713
 		if (ms != null)
 			return ms;
 		// Fallback: return first

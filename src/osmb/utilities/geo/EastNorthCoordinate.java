@@ -71,10 +71,8 @@ public class EastNorthCoordinate
 
 	public String toCatalog()
 	{
-		// TODO Auto-generated method stub
 		// return "" + lat + ", " + lon; // /W
 		return String.format(null, "%.8f, %.8f", new Object[]
 		{ lat, lon });
-		// return String.format(null, "%.8f, %.8f", lat, lon);
 	}
 }

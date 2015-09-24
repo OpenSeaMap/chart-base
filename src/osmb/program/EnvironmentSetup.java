@@ -36,6 +36,7 @@ import osmb.utilities.file.NamePatternFileFilter;
  */
 public class EnvironmentSetup
 {
+	@SuppressWarnings("unused") // /W #unused
 	private static boolean FIRST_START = false;
 
 	public static Logger log = Logger.getLogger(EnvironmentSetup.class);
@@ -69,8 +70,11 @@ public class EnvironmentSetup
 	}
 
 	/**
+	 *  method is	practically unused
+	 * 
 	 * Note: This method has to be called before {@link OSMCBSettings#loadOrQuit()}. Therefore no localization is available at this point.
 	 */
+	// /W #unused method is	practically unused
 	public static void checkSettingsSetup()
 	{
 		checkDirectory(DirectoryManager.userSettingsDir, "user settings", true);
@@ -86,6 +90,7 @@ public class EnvironmentSetup
 				log.error("Error while creating settings.xml: " + e.getMessage(), e);
 				String[] options =
 				{ "Exit", "Show error report" };
+				@SuppressWarnings("unused") // /W #unused
 				int a = JOptionPane.showOptionDialog(null, "Could not create file settings.xml - program will exit.", "Error", 0, JOptionPane.ERROR_MESSAGE, null,
 						options, options[0]);
 				// if (a == 1)
@@ -100,7 +105,6 @@ public class EnvironmentSetup
 	 */
 	public static void checkFileSetup()
 	{
-
 		checkDirectory(ACSettings.getInstance().getCatalogsDirectory(), "catalog profile", true);
 		checkDirectory(ACSettings.getInstance().getTileStoreDirectory(), "tile store", true);
 	}

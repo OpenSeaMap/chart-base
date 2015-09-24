@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.xml.bind.annotation.XmlElement;
-///W ? import javax.xml.bind.annotation.XmlRootElement;
+// /W ? import javax.xml.bind.annotation.XmlRootElement;
 
 import osmb.mapsources.IfMapSource;
 import osmb.program.Logging;
@@ -36,7 +36,8 @@ import osmb.program.tiles.TileImageParameters;
 import osmb.utilities.MyMath;
 import osmb.utilities.geo.EastNorthCoordinate;
 
-///W ? @XmlRootElement
+// /W ? @XmlRootElement
+// /W #deprecated
 public class MapPolygon extends Map implements IfMap
 {
 	@XmlElement
@@ -200,7 +201,9 @@ public class MapPolygon extends Map implements IfMap
 	public String getToolTip()
 	{
 		IfMapSpace mapSpace = mapSource.getMapSpace();
+		@SuppressWarnings("unused") // /W #unused
 		EastNorthCoordinate tl = new EastNorthCoordinate(mapSpace, getZoom(), minTileCoordinate.x, minTileCoordinate.y);
+		@SuppressWarnings("unused") // /W #unused
 		EastNorthCoordinate br = new EastNorthCoordinate(mapSpace, getZoom(), maxTileCoordinate.x, maxTileCoordinate.y);
 
 		StringWriter sw = new StringWriter(1024);

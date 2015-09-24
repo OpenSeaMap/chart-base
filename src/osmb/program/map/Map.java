@@ -83,7 +83,6 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	protected Map(Map map)
 	{
 		name = map.name;
-
 	}
 
 	protected Map(Layer layer, String name, IfMapSource mapSource, int zoom, Point minTileCoordinate, Point maxTileCoordinate, TileImageParameters parameters)
@@ -247,7 +246,9 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	public String getToolTip()
 	{
 		IfMapSpace mapSpace = mapSource.getMapSpace();
+		@SuppressWarnings("unused") // /W #unused
 		EastNorthCoordinate tl = new EastNorthCoordinate(mapSpace, getZoom(), minTileCoordinate.x, minTileCoordinate.y);
+		@SuppressWarnings("unused") // /W #unused
 		EastNorthCoordinate br = new EastNorthCoordinate(mapSpace, getZoom(), maxTileCoordinate.x, maxTileCoordinate.y);
 
 		StringWriter sw = new StringWriter(1024);

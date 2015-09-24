@@ -43,6 +43,6 @@ public abstract class ACWindowsApp extends ACApp implements IfWinApp
 
 	protected boolean showSplashScreen()
 	{
-		return false;///W true -> tut's dann auch mit Linux
+		return false; // /W if true, it works with Linux too
 	}
 }

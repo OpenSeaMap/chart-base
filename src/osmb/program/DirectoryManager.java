@@ -17,7 +17,7 @@
 package osmb.program;
 
 import java.io.File;
-import java.util.Properties;
+// import java.util.Properties;
 
 import osmb.utilities.OSMBUtilities;
 
@@ -48,7 +48,7 @@ public class DirectoryManager
 	public static File tileStoreDir;
 	public static File bundlesDir;
 
-	private static Properties dirConfig = null;
+	// private static Properties dirConfig = null; // /W #unused
 
 	static
 	{
@@ -62,14 +62,13 @@ public class DirectoryManager
 		toolsDir = new File(programDir, "tools");
 		userSettingsDir = programDir;
 
-		///W Standardpfade geändert
+		// /W standard directories
 		catalogsDir = new File(userHomeDir, "catalogs");
-		mapSourcesDir = new File(programDir, "../OSeaMChartBase/mapsources"); ///W ?
+		mapSourcesDir = new File(programDir, "../OSeaMChartBase/mapsources"); // /W #???
 		tileStoreDir = new File(userHomeDir, "tilestore");
 		bundlesDir = new File(userHomeDir, "bundles");
 	}
 
-	///W //keine Warnung: unused??? in OSMCBApp.java Z. 73 auskommentiert: // DirectoryManager.initialize();
 	public static void initialize(File programDir)
 	{
 
@@ -78,10 +77,12 @@ public class DirectoryManager
 	}
 
 	/**
-	 * Returns the directory from which this java program is executed
+	 * unused see {@link ACApp#getProgramDir()}
 	 * 
 	 * @return
+	 *		Returns the directory from which this java program is executed
 	 */
+	@SuppressWarnings("unused") // /W ACApp.getProgramDir() ...
 	private static File getProgramDir()
 	{
 		File f = null;
