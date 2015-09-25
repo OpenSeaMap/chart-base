@@ -105,7 +105,7 @@ public abstract class ACSettings implements IfSettings
 	/**
 	 * Version of this settings file
 	 */
-	// @XmlElement(defaultValue = "")///WTest auskommentiert wg cfgVersion (+ version)?
+	// @XmlElement(defaultValue = "") // /W  cfgVersion <-> version?
 	protected String cfgVersion;
 	/**
 	 * user agent used for connections to tile servers
@@ -229,6 +229,7 @@ public abstract class ACSettings implements IfSettings
 		this.cfgTileSize = tileSize;
 	}
 
+	// #??? @XmlTransient // /W #---
 	public TileImageFormat getTileImageFormat()
 	{
 		return cfgTileImageFormat;
@@ -239,20 +240,20 @@ public abstract class ACSettings implements IfSettings
 		this.cfgTileImageFormat = tileImageFormat;
 	}
 
-	// /W auskommentiert => @XmlElement(name = "directories") bei: protected Directories cfgDirectories = new Directories();
-	// ///W unused
+	// /W see => @XmlElement(name = "directories") at: protected Directories cfgDirectories = new Directories();
+	// // /W unused
 	// public Directories getDirectories()
 	// {
 	// return cfgDirectories;
 	// }
 	//
-	// ///W unused (wie auch???)
+	// // /W unused (how to?)
 	// public void setDirectories(Directories cfgDirectories)
 	// {
 	// this.cfgDirectories = cfgDirectories;
 	// }
 
-	// /W ? keine vom User einstellbare Directory -> Pfad wird in DirectoryManager festgelegt
+	// /W not a directory adjustable by user -> is determined in DirectoryManager
 	public File getMapSourcesDirectory()
 	{
 		File mapSourcesDir;
@@ -296,7 +297,7 @@ public abstract class ACSettings implements IfSettings
 		cfgDirectories.catalogsDirectory = catalogsDir.toString();
 	}
 
-	// /W test
+	// /W
 	@XmlTransient
 	public File getChartBundleOutputDirectory()
 	{

@@ -34,15 +34,11 @@ import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JOptionPane;
 import javax.swing.tree.TreeNode;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.ValidationEvent;
-import javax.xml.bind.ValidationEventHandler;
-import javax.xml.bind.ValidationEventLocator;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElements;
@@ -54,10 +50,8 @@ import org.apache.log4j.Logger;
 import osmb.program.ACSettings;
 import osmb.program.map.IfLayer;
 import osmb.program.map.Layer;
-import osmb.utilities.OSMBStrs;
 import osmb.utilities.OSMBUtilities;
 
-//import osmcd.program.interfaces.ToolTipProvider;
 
 @XmlRootElement
 public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparable<IfCatalogProfile>
@@ -71,28 +65,36 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	public static final String CATALOG_FILENAME_PREFIX = "osmcb-catalog-";
 	public static final Pattern CATALOG_FILENAME_PATTERN = Pattern.compile(CATALOG_FILENAME_PREFIX + "(" + CATALOG_NAME_REGEX + ").xml");
 	// public static final Catalog DEFAULT = new Catalog();
-	protected static Vector<Catalog> catalogs = new Vector<Catalog>();
+	protected static Vector<Catalog> catalogs = new Vector<Catalog>(); // /W #deprecated
 
 	/**
 	 * Builds a (hopefully) valid filename for a given catalog name
 	 * 
 	 * @param catalogName
-	 * @return valid filename
+	 * @return valid filename or null!
 	 */
 	public static String getCatalogFileName(String catalogName)
 	{
 		// do a check, if the name is valid
-		return CATALOG_FILENAME_PREFIX + catalogName + ".xml";
+		if (catalogName == null)
+			return null; // otherwise returns "osmcb-catalog-null.xml"!
+		else
+			return CATALOG_FILENAME_PREFIX + catalogName + ".xml";
 	}
 
 	/**
-	 * This creates a new default instance of a catalog
+	 * This creates a new default instance of a catalog: an empty catalog with name, current version
+	 * and a (from name derived empty) file member != null (to enable Catalog: boolean equals(Object)!)
 	 * 
-	 * @return The current catalog, which is a default instance at the moment.
+	 * @param name		has to be not null, otherwise file member becomes null!
+	 * 
+	 * @return	The current catalog, which is a default instance at the moment.
 	 */
-	public static Catalog newInstance()
+	public static Catalog newInstance(String name)
 	{
 		Catalog catalog = new Catalog();
+		catalog.name = name;
+		catalog.file = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(name));
 		catalog.version = CURRENT_CATALOG_VERSION;
 		return catalog;
 	}
@@ -100,6 +102,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	/**
 	 * Catalogs management method
 	 */
+	// /W #deprecated
 	public static Vector<Catalog> getCatalogs()
 	{
 		updateCatalogs();
@@ -110,7 +113,8 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 * This updates the listing of the available catalogs in the catalogs directory.
 	 * It is used by {@link #JCatalogsComboBox}
 	 */
-	public static void updateCatalogs()// /W #???
+	// /W #deprecated
+	public static void updateCatalogs()
 	{
 		catalogs.clear();
 		File catalogsDir = ACSettings.getInstance().getCatalogsDirectory();
@@ -140,24 +144,25 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	{
 		JAXBContext context = JAXBContext.newInstance(Catalog.class);
 		Unmarshaller um = context.createUnmarshaller();
-		um.setEventHandler(new ValidationEventHandler()
-		{
-			@Override
-			public boolean handleEvent(ValidationEvent event)
-			{
-				ValidationEventLocator loc = event.getLocator();
-				String file = loc.getURL().getFile();
-				int lastSlash = file.lastIndexOf('/');
-				if (lastSlash > 0)
-					file = file.substring(lastSlash + 1);
-				// UI should be separated from program logic -> relocate to UI components
-				int ret = JOptionPane.showConfirmDialog(null,
-						String.format(OSMBStrs.RStr("Catalog.Loading.ErrMsg"), event.getMessage(), file, loc.getLineNumber(), loc.getColumnNumber()),
-						OSMBStrs.RStr("Catalog.Loading.Title"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
-				log.error(event.toString());
-				return (ret == JOptionPane.YES_OPTION);
-			}
-		});
+		// ValidationEventHandler is not helpful, user will get an info from GUIExceptionHandler
+		// um.setEventHandler(new ValidationEventHandler()
+		// {
+		// @Override
+		// public boolean handleEvent(ValidationEvent event)
+		// {
+		// ValidationEventLocator loc = event.getLocator();
+		// String file = loc.getURL().getFile();
+		// int lastSlash = file.lastIndexOf('/');
+		// if (lastSlash > 0)
+		// file = file.substring(lastSlash + 1);
+		// // UI should be separated from program logic -> relocate to UI components
+		// int ret = JOptionPane.showConfirmDialog(null,
+		// String.format(OSMBStrs.RStr("Catalog.Loading.ErrMsg"), event.getMessage(), file, loc.getLineNumber(), loc.getColumnNumber()),
+		// OSMBStrs.RStr("Catalog.Loading.Title"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+		// log.error(event.toString());
+		// return (ret == JOptionPane.YES_OPTION);
+		// }
+		// });
 		try
 		{
 			Catalog newCatalog = (Catalog) um.unmarshal(file);
@@ -173,6 +178,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	/**
 	 * This checks whether testName is the name of an existing catalog in catalogsDirectory.
 	 */
+	// /W #deprecated
 	public static boolean isCatalogsName(String testName)
 	{
 		boolean bRet = false;
@@ -189,12 +195,14 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 */
 	public static boolean isCatalogsFileNamePart(final String testName)
 	{
-		File testFile = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(testName)); // , CATALOG_FILENAME_PREFIX + testName + ".xml");
+		if (testName == null)
+			return false;
+		File testFile = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(testName));
 		return Files.exists(testFile.toPath());
 	}
 
 	/**
-	 * This creates a name for a new catalog
+	 * This creates a standard name for a new catalog: YYYYMMDD_currentNumber
 	 */
 	public static String makeNewCatalogsName()
 	{
@@ -210,7 +218,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	@XmlTransient
 	protected File file = null;
 
-	protected String name = OSMBStrs.RStr("Unnamed"); // /W name =
+	protected String name = null;
 	protected int version = 1;
 
 	@XmlElements(
@@ -225,7 +233,6 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 */
 	private Catalog()
 	{
-		name = "new ..."; // /W name = NoName default in content
 		log.trace("default constructor catalog() called");
 	}
 
@@ -234,32 +241,18 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 * 
 	 * @param name
 	 */
+	// /W #deprecated
 	public Catalog(String catalogName)
 	{
 		this(new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(catalogName)), catalogName);
 	}
 
+	// /W #deprecated
 	protected Catalog(File file, String name)
 	{
 		this.file = file;
 		this.name = name;
 	}
-
-	// /W test -> müsste static sein, ruft aber "public abstract IfCatalog load() throws JAXBException;" auf, darf nicht static sein!!!
-	// protected Catalog makeCatalog(String catalogName)
-	// {
-	// Catalog newCatalog = new Catalog();
-	// newCatalog.file = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(catalogName));
-	// try
-	// {
-	// newCatalog = (Catalog) load();
-	// }
-	// catch (JAXBException e)
-	// {
-	// e.printStackTrace();
-	// }
-	// return newCatalog;
-	// }
 
 	public Catalog(Catalog catalog)
 	{
@@ -337,7 +330,6 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	@Override
 	public String toString()
 	{
-		// return getName() + " (" + ")";
 		return name; // /W #combobox: toString() sets items in dropdownList! But name is fileNamesPart!!!
 	}
 
@@ -362,7 +354,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		if (name == null) // name set?
 			return true;
 		// /W Check for empty catalogs
-		if (layers.size() < 1)
+		if (calculateTilesToDownload() < 1)
 			return true;
 		// Check for duplicate layer names
 		HashSet<String> names = new HashSet<String>(layers.size());
@@ -583,11 +575,9 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		FileOutputStream fo = null;
 		try
 		{
-			if (file == null)
-			{
-				// /W Pfad angepasst: ACSettings.getInstance().getCatalogsDirectory()
-				file = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(name));
-			}
+			// /W every catalog will be saved in(to) CatalogsDirectory with filename based on catalogs name.
+			// The saved file member is needed to discard changes
+			file = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(name));
 			fo = new FileOutputStream(file);
 			m.marshal(this, fo);
 		}
