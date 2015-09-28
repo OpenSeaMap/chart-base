@@ -20,11 +20,11 @@ import java.awt.Dimension;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAnyAttribute;
-///W ? import javax.xml.bind.annotation.XmlRootElement;
+// /W ? import javax.xml.bind.annotation.XmlRootElement;
 
 import osmb.utilities.AnyAttributeMap;
 
-///W ? @XmlRootElement
+// /W ? @XmlRootElement
 public final class TileImageParameters implements Cloneable
 {
 	public static enum Name

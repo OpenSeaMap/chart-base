@@ -86,7 +86,6 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	protected Map(Map map)
 	{
 		name = map.name;
-
 	}
 
 	protected Map(Layer layer, String name, IfMapSource mapSource, int zoom, Point minTileCoordinate, Point maxTileCoordinate, TileImageParameters parameters)
@@ -194,21 +193,25 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	{
 	}
 
+	@Override
 	public int getXMin()
 	{
 		return minTileCoordinate.x;
 	}
 
+	@Override
 	public int getXMax()
 	{
 		return minTileCoordinate.y;
 	}
 
+	@Override
 	public int getYMin()
 	{
 		return maxTileCoordinate.x;
 	}
 
+	@Override
 	public int getYMax()
 	{
 		return maxTileCoordinate.y;
@@ -270,7 +273,9 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	public String getToolTip()
 	{
 		IfMapSpace mapSpace = mapSource.getMapSpace();
+		@SuppressWarnings("unused") // /W #unused
 		EastNorthCoordinate tl = new EastNorthCoordinate(mapSpace, getZoom(), minTileCoordinate.x, minTileCoordinate.y);
+		@SuppressWarnings("unused") // /W #unused
 		EastNorthCoordinate br = new EastNorthCoordinate(mapSpace, getZoom(), maxTileCoordinate.x, maxTileCoordinate.y);
 
 		StringWriter sw = new StringWriter(1024);
@@ -502,7 +507,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public IfTileFilter getTileFilter()
 	{
-		// TODO Auto-generated method stub
+		// return new DummyTileFilter();
 		return null;
 	}
 
@@ -511,11 +516,6 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	{
 		return this.layer.getCatalog();
 	}
-
-	// public IfTileFilter getTileFilter()
-	// {
-	// return new DummyTileFilter();
-	// }
 
 	// @Override
 	// public Enumeration<Job> getDownloadJobs(TarIndexedArchive tileArchive,
