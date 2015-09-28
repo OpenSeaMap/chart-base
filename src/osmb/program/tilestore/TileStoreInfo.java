@@ -16,12 +16,19 @@
  ******************************************************************************/
 package osmb.program.tilestore;
 
-public class TileStoreInfo {
-
+/**
+ * This class provides some information about a tile store: The physical size of the tile store on the disk as well as the number of tiles in this store.
+ * 
+ * @author humbach
+ *
+ */
+public class TileStoreInfo
+{
 	int tileCount;
 	long storeSize;
 
-	public TileStoreInfo(long storeSize, int tileCount) {
+	public TileStoreInfo(long storeSize, int tileCount)
+	{
 		super();
 		this.storeSize = storeSize;
 		this.tileCount = tileCount;
@@ -30,15 +37,16 @@ public class TileStoreInfo {
 	/**
 	 * @return Number of tiles stored in the tile store
 	 */
-	public int getTileCount() {
+	public int getTileCount()
+	{
 		return tileCount;
 	}
 
 	/**
-	 * @return store size in bytes
+	 * @return Tile store size in bytes on the disk
 	 */
-	public long getStoreSize() {
+	public long getStoreSize()
+	{
 		return storeSize;
 	}
-
 }

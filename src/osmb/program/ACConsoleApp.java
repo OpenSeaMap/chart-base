@@ -16,10 +16,15 @@
  ******************************************************************************/
 package osmb.program;
 
+import org.apache.log4j.Logger;
 
 public abstract class ACConsoleApp extends ACApp
 {
-	public ACConsoleApp() {
+	protected final Logger log;
+
+	public ACConsoleApp()
+	{
+		log = Logger.getLogger(this.getClass());
 		try
 		{
 			;

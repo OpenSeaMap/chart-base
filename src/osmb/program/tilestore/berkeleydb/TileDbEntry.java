@@ -18,12 +18,12 @@ package osmb.program.tilestore.berkeleydb;
 
 import java.util.Date;
 
-import osmb.program.tilestore.IfTileStoreEntry;
-
 import com.sleepycat.persist.model.Entity;
 import com.sleepycat.persist.model.KeyField;
 import com.sleepycat.persist.model.Persistent;
 import com.sleepycat.persist.model.PrimaryKey;
+
+import osmb.program.tilestore.IfTileStoreEntry;
 
 @Entity(version = 7)
 public class TileDbEntry implements IfTileStoreEntry
@@ -48,7 +48,7 @@ public class TileDbEntry implements IfTileStoreEntry
 	{
 		tileKey = new TileDbKey(x, y, zoom);
 		if (data == null)
-			throw new NullPointerException("Tile data can not be null!");
+			throw new NullPointerException("Tile data must not be null!");
 		this.data = data;
 		this.timeDownloaded = System.currentTimeMillis();
 	}

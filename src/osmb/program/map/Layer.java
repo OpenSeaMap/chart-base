@@ -34,6 +34,7 @@ import javax.xml.bind.annotation.XmlElements;
 import org.apache.log4j.Logger;
 
 import osmb.exceptions.InvalidNameException;
+import osmb.mapsources.IfFileBasedMapSource;
 import osmb.mapsources.IfMapSource;
 import osmb.program.catalog.Catalog;
 import osmb.program.catalog.IfCapabilityDeletable;
@@ -42,8 +43,10 @@ import osmb.program.tiles.TileImageParameters;
 import osmb.utilities.geo.EastNorthCoordinate;
 
 /**
- * A layer holding one or multiple maps of the same map source and the same zoom level. The number of maps depends on the size of the covered area - if it is
- * smaller than the specified <code>maxMapSize</code> then there will be only one map.
+ * A layer holding one or multiple maps of the same map source and the same zoom
+ * level. The number of maps depends on the size of the covered area - if it is
+ * smaller than the specified <code>maxMapSize</code> then there will be only
+ * one map.
  * 
  * 20140128 Ah zoom level introduced as property of layer
  * 
@@ -78,7 +81,6 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	}
 
 	// instance data
-	// /W @XmlTransient // /W unwirksam
 	private IfCatalog mCatalog;
 
 	private String name;
@@ -87,6 +89,15 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	@XmlElements(
 	{ @XmlElement(name = "PolygonMap", type = MapPolygon.class), @XmlElement(name = "Map", type = Map.class) })
 	private LinkedList<IfMap> maps = new LinkedList<IfMap>();
+
+	/**
+	 * @return the maps list
+	 */
+	@Override
+	public LinkedList<IfMap> getMaps()
+	{
+		return maps;
+	}
 
 	protected Layer()
 	{
@@ -101,22 +112,23 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 
 	@Override
 	public void addMapsAutocut(String mapNameBase, IfMapSource ms, EastNorthCoordinate minCoordinate, EastNorthCoordinate maxCoordinate, int zoom,
-			TileImageParameters parameters, int maxMapSize) throws InvalidNameException
+	    TileImageParameters parameters, int maxMapSize) throws InvalidNameException
 	{
 		IfMapSpace mapSpace = ms.getMapSpace();
 		addMapsAutocut(mapNameBase, ms, minCoordinate.toTileCoordinate(mapSpace, zoom), maxCoordinate.toTileCoordinate(mapSpace, zoom), zoom, parameters,
-				maxMapSize, 0);
+		    maxMapSize, 0);
 	}
 
 	/**
-	 * addMapsAutocut() checks if the new map is already completely covered in another map or other way round
+	 * addMapsAutocut() checks if the new map is already completely covered in
+	 * another map or other way round
 	 */
 	@Override
 	public void addMapsAutocut(String mapNameBase, IfMapSource mapSource, Point minTileCoordinate, Point maxTileCoordinate, int zoom,
-			TileImageParameters parameters, int maxMapSize, int overlapTiles) throws InvalidNameException
+	    TileImageParameters parameters, int maxMapSize, int overlapTiles) throws InvalidNameException
 	{
 		log.trace("Adding new map(s): \"" + mapNameBase + "\" " + mapSource + " zoom=" + zoom + " min=" + minTileCoordinate.x + "/" + minTileCoordinate.y + " max="
-				+ maxTileCoordinate.x + "/" + maxTileCoordinate.y);
+		    + maxTileCoordinate.x + "/" + maxTileCoordinate.y);
 
 		MapDescr mD = new MapDescr();
 
@@ -155,20 +167,34 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			// align left/top with map grid
 			int nXOff = 0, nYOff = 0;
 			nXOff = minTileCoordinate.x % (nXGridSize);
-			// minTileCoordinate.x -= (nXOff > (nXGridSize / 4) ? nXOff : nXOff + nXGridSize / 2);
+			// minTileCoordinate.x -= (nXOff > (nXGridSize / 4) ? nXOff : nXOff
+			// + nXGridSize / 2);
 			minTileCoordinate.x -= nXOff;
 			nYOff = minTileCoordinate.y % (nYGridSize);
-			// minTileCoordinate.y -= (nYOff > (nYGridSize / 4) ? nYOff : nYOff + nYGridSize / 2);
+			// minTileCoordinate.y -= (nYOff > (nYGridSize / 4) ? nYOff : nYOff
+			// + nYGridSize / 2);
 			minTileCoordinate.y -= nYOff;
 
 			log.trace("addMapsAutocut(): nXOff=" + nXOff + ", mtc.x=" + minTileCoordinate.x + ", nYOff=" + nYOff + ", mtc.y=" + minTileCoordinate.y);
 
 			// align right/bottom with map grid
-			nXOff = nXGridSize + tileSize * overlapTiles - maxTileCoordinate.x % (nXGridSize) - 1;// /W -1 statt + 1 -> Werte in catalog ok
-			// maxTileCoordinate.x += (nXOff > (nXGridSize / 4) ? nXOff : nXOff + nXGridSize / 2);
+			nXOff = nXGridSize + tileSize * overlapTiles - maxTileCoordinate.x % (nXGridSize) - 1;// /W
+			// -1
+			// statt
+			// +
+			// 1
+			// ->
+			// Werte
+			// in
+			// catalog
+			// ok
+			// maxTileCoordinate.x += (nXOff > (nXGridSize / 4) ? nXOff : nXOff
+			// + nXGridSize / 2);
 			maxTileCoordinate.x += nXOff;
-			nYOff = nYGridSize + tileSize * overlapTiles - maxTileCoordinate.y % (nYGridSize) - 1;// /W dto
-			// maxTileCoordinate.y += (nYOff > (nYGridSize / 4) ? nYOff : nYOff + nYGridSize / 2);
+			nYOff = nYGridSize + tileSize * overlapTiles - maxTileCoordinate.y % (nYGridSize) - 1;// /W
+			// dto
+			// maxTileCoordinate.y += (nYOff > (nYGridSize / 4) ? nYOff : nYOff
+			// + nYGridSize / 2);
 			maxTileCoordinate.y += nYOff;
 
 			log.trace("addMapsAutocut(): nXOff=" + nXOff + ", xtc.x=" + maxTileCoordinate.x + ", nYOff=" + nYOff + ", xtc.y=" + maxTileCoordinate.y);
@@ -182,25 +208,29 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			// else
 			// tileDimension = parameters.getDimension();
 
-			// We adapt the max map size to the tile size so that we do not get ugly cut/incomplete tiles at the borders
+			// We adapt the max map size to the tile size so that we do not get
+			// ugly cut/incomplete tiles at the borders
 			Dimension maxMapDimension = new Dimension(maxMapSize, maxMapSize);
 			maxMapDimension.width -= maxMapSize % tileDimension.width;
 			maxMapDimension.height -= maxMapSize % tileDimension.height;
 
 			log.trace("Adding new map(s) after alignment: \"" + mapNameBase + "\" " + mapSource + " zoom=" + zoom + " min=" + minTileCoordinate.x + "/"
-					+ minTileCoordinate.y + " max=" + maxTileCoordinate.x + "/" + maxTileCoordinate.y);
-			// is the new map an extension of an already existing map
+			    + minTileCoordinate.y + " max=" + maxTileCoordinate.x + "/" + maxTileCoordinate.y);
+			    // is the new map an extension of an already existing map
 
-			// does the map fit the allowed size or has it be cut into several maps
+			// does the map fit the allowed size or has it be cut into several
+			// maps
 			int mapWidth = maxTileCoordinate.x - minTileCoordinate.x;
 			int mapHeight = maxTileCoordinate.y - minTileCoordinate.y;
 			if ((mapWidth < maxMapDimension.width) && (mapHeight < maxMapDimension.height))
 			{
-				// check if this map is not a sub/superset of another already existing map
+				// check if this map is not a sub/superset of another already
+				// existing map
 				mD = CheckMapIsExtension(mD);
 				mD = CheckMapArea(mD);
 
-				// String mapName = String.format(mapNameFormat, new Object[] {mapNameBase, mapCounter++});
+				// String mapName = String.format(mapNameFormat, new Object[]
+				// {mapNameBase, mapCounter++});
 				String mapName = MakeValidMapName(mD.name, "0000");
 				Map s = new Map(this, mapName, mD.mapSource, mD.nZoomLvl, mD.minTileC, mD.maxTileC, parameters);
 				maps.add(s);
@@ -208,25 +238,33 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			}
 			// else
 			// {
-			// Dimension nextMapStep = new Dimension(maxMapDimension.width - (tileDimension.width * overlapTiles), maxMapDimension.height
+			// Dimension nextMapStep = new Dimension(maxMapDimension.width -
+			// (tileDimension.width * overlapTiles), maxMapDimension.height
 			// - (tileDimension.height * overlapTiles));
 			//
-			// for (int mapX = minTileCoordinate.x; mapX < maxTileCoordinate.x; mapX += nextMapStep.width)
+			// for (int mapX = minTileCoordinate.x; mapX < maxTileCoordinate.x;
+			// mapX += nextMapStep.width)
 			// {
-			// for (int mapY = minTileCoordinate.y; mapY < maxTileCoordinate.y; mapY += nextMapStep.height)
+			// for (int mapY = minTileCoordinate.y; mapY < maxTileCoordinate.y;
+			// mapY += nextMapStep.height)
 			// {
-			// int maxX = Math.min(mapX + maxMapDimension.width, maxTileCoordinate.x);
-			// int maxY = Math.min(mapY + maxMapDimension.height, maxTileCoordinate.y);
+			// int maxX = Math.min(mapX + maxMapDimension.width,
+			// maxTileCoordinate.x);
+			// int maxY = Math.min(mapY + maxMapDimension.height,
+			// maxTileCoordinate.y);
 			// Point min = new Point(mapX, mapY);
 			// Point max = new Point(maxX - 1, maxY - 1);
-			// // check if this map is not a sub/superset of another already existing map
+			// // check if this map is not a sub/superset of another already
+			// existing map
 			// if (!CheckMapIsExtension(min, max))
 			// {
 			// if (CheckMapArea(min, max))
 			// {
-			// // String mapName = String.format(mapNameFormat, new Object[] {mapNameBase, mapCounter++});
+			// // String mapName = String.format(mapNameFormat, new Object[]
+			// {mapNameBase, mapCounter++});
 			// String mapName = MakeValidMapName(mapNameBase, "0000");
-			// Map s = new Map(this, mapName, mapSource, zoom, min, max, parameters);
+			// Map s = new Map(this, mapName, mapSource, zoom, min, max,
+			// parameters);
 			// maps.add(s);
 			// }
 			// }
@@ -253,7 +291,8 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	}
 
 	/**
-	 * checks if the new map from MinC to MaxC is not covered by an already existing map
+	 * checks if the new map from MinC to MaxC is not covered by an already
+	 * existing map
 	 * 
 	 * 
 	 * @param MinC
@@ -269,7 +308,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		{
 			IfMap map = getMap(mapNr);
 			log.trace("checking against map: \"" + map.getName() + "\" " + map.getMapSource().getName() + " zoom=" + map.getZoom() + " min="
-					+ map.getMinTileCoordinate().x + "/" + map.getMinTileCoordinate().y + " max=" + map.getMaxTileCoordinate().x + "/" + map.getMaxTileCoordinate().y);
+			    + map.getMinTileCoordinate().x + "/" + map.getMinTileCoordinate().y + " max=" + map.getMaxTileCoordinate().x + "/" + map.getMaxTileCoordinate().y);
 			if ((map.getMinTileCoordinate().x <= mD.minTileC.x) && (map.getMinTileCoordinate().y <= mD.minTileC.y))
 			{
 				if ((map.getMaxTileCoordinate().x >= mD.maxTileC.x) && (map.getMaxTileCoordinate().y >= mD.maxTileC.y))
@@ -299,8 +338,10 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	}
 
 	/**
-	 * checks if the new map is an extension of an already existing map. If it is, the existing map will be changed to new coordinates which include the new
-	 * map. 20140511 case new map lies between two already existing maps is not covered yet. The new map will be extending both
+	 * checks if the new map is an extension of an already existing map. If it
+	 * is, the existing map will be changed to new coordinates which include the
+	 * new map. 20140511 case new map lies between two already existing maps is
+	 * not covered yet. The new map will be extending both
 	 * 
 	 * @param MinC
 	 *          minimum coordinate (upper left corner, NW-C)
@@ -317,14 +358,14 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			if ((map.getMinTileCoordinate().y == mD.minTileC.y) && (map.getMaxTileCoordinate().y == mD.maxTileC.y))
 			{
 				if ((map.getMinTileCoordinate().x >= mD.minTileC.x) && (map.getMinTileCoordinate().x <= mD.maxTileC.x)
-						&& (map.getMaxTileCoordinate().x > mD.maxTileC.x))
+				    && (map.getMaxTileCoordinate().x > mD.maxTileC.x))
 				{
 					mD.maxTileC.x = map.getMaxTileCoordinate().x;
 					map.delete();
 					--mapNr;
 				}
 				else if ((map.getMaxTileCoordinate().x <= mD.maxTileC.x) && (map.getMaxTileCoordinate().x >= mD.minTileC.x)
-						&& (map.getMinTileCoordinate().x < mD.minTileC.x))
+				    && (map.getMinTileCoordinate().x < mD.minTileC.x))
 				{
 					mD.minTileC.x = map.getMinTileCoordinate().x;
 					map.delete();
@@ -334,14 +375,14 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			else if ((map.getMinTileCoordinate().x == mD.minTileC.x) && (map.getMaxTileCoordinate().x == mD.maxTileC.x))
 			{
 				if ((map.getMinTileCoordinate().y >= mD.minTileC.y) && (map.getMinTileCoordinate().y <= mD.maxTileC.y)
-						&& (map.getMaxTileCoordinate().y > mD.maxTileC.y))
+				    && (map.getMaxTileCoordinate().y > mD.maxTileC.y))
 				{
 					mD.maxTileC.y = map.getMaxTileCoordinate().y;
 					map.delete();
 					--mapNr;
 				}
 				else if ((map.getMaxTileCoordinate().y <= mD.maxTileC.y) && (map.getMaxTileCoordinate().y >= mD.minTileC.y)
-						&& (map.getMinTileCoordinate().y < mD.minTileC.y))
+				    && (map.getMinTileCoordinate().y < mD.minTileC.y))
 				{
 					mD.minTileC.y = map.getMinTileCoordinate().y;
 					map.delete();
@@ -400,7 +441,8 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			for (IfLayer layer : mCatalog)
 			{
 				if ((layer != this) && newName.equals(layer.getName()))
-					throw new InvalidNameException("There is already a layer named \"" + newName + "\" in this catalog.\nLayer names have to be unique within a catalog.");
+					throw new InvalidNameException(
+					    "There is already a layer named \"" + newName + "\" in this catalog.\nLayer names have to be unique within a catalog.");
 			}
 		}
 		this.name = newName;
@@ -412,13 +454,20 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		return name;
 	}
 
+	/**
+	 * This skips offline mapsources
+	 */
 	@Override
 	public long calculateTilesToDownload()
 	{
-		long result = 0;
+		long tiles = 0;
 		for (IfMap map : maps)
-			result += map.calculateTilesToDownload();
-		return result;
+		{
+			if (!(map.getMapSource() instanceof IfFileBasedMapSource))
+				tiles += map.calculateTilesToDownload();
+		}
+		log.trace("layer=" + getName() + ", tiles=" + tiles);
+		return tiles;
 	}
 
 	@Override
@@ -470,11 +519,15 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		StringWriter sw = new StringWriter(1024);
 		// sw.write("<html>");
 		// sw.write(OSMCBStrs.RStr("lp_bundle_info_layer_title"));
-		// sw.write(OSMCBStrs.RStr("lp_bundle_info_layer_map_count", maps.size()));
-		// sw.write(OSMCBStrs.RStr("lp_bundle_info_max_tile", calculateTilesToDownload()));
-		// sw.write(OSMCBStrs.RStr("lp_bundle_info_area_start", OSMCBUtilities.prettyPrintLatLon(getMaxLat(), true),
+		// sw.write(OSMCBStrs.RStr("lp_bundle_info_layer_map_count",
+		// maps.size()));
+		// sw.write(OSMCBStrs.RStr("lp_bundle_info_max_tile",
+		// calculateTilesToDownload()));
+		// sw.write(OSMCBStrs.RStr("lp_bundle_info_area_start",
+		// OSMCBUtilities.prettyPrintLatLon(getMaxLat(), true),
 		// OSMCBUtilities.prettyPrintLatLon(getMinLon(), false)));
-		// sw.write(OSMCBStrs.RStr("lp_bundle_info_area_end", OSMCBUtilities.prettyPrintLatLon(getMinLat(), true),
+		// sw.write(OSMCBStrs.RStr("lp_bundle_info_area_end",
+		// OSMCBUtilities.prettyPrintLatLon(getMinLat(), true),
 		// OSMCBUtilities.prettyPrintLatLon(getMaxLon(), false)));
 		// sw.write("</html>");
 		return sw.toString();

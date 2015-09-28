@@ -60,8 +60,7 @@ import osmb.utilities.OSMBUtilities;
 //import osmcd.program.interfaces.ToolTipProvider;
 
 @XmlRootElement
-public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparable<IfCatalogProfile>
-{
+public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparable<IfCatalogProfile> {
 	// standard data
 	public static final int CURRENT_CATALOG_VERSION = 2;
 	protected static Logger log = Logger.getLogger(Catalog.class);
@@ -69,7 +68,8 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	// class/static data
 	public static final String CATALOG_NAME_REGEX = "[\\w _-]+";
 	public static final String CATALOG_FILENAME_PREFIX = "osmcb-catalog-";
-	public static final Pattern CATALOG_FILENAME_PATTERN = Pattern.compile(CATALOG_FILENAME_PREFIX + "(" + CATALOG_NAME_REGEX + ").xml");
+	public static final Pattern CATALOG_FILENAME_PATTERN = Pattern
+			.compile(CATALOG_FILENAME_PREFIX + "(" + CATALOG_NAME_REGEX + ").xml");
 	// public static final Catalog DEFAULT = new Catalog();
 	protected static Vector<Catalog> catalogs = new Vector<Catalog>();
 
@@ -79,8 +79,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 * @param catalogName
 	 * @return valid filename
 	 */
-	public static String getCatalogFileName(String catalogName)
-	{
+	public static String getCatalogFileName(String catalogName) {
 		// do a check, if the name is valid
 		return CATALOG_FILENAME_PREFIX + catalogName + ".xml";
 	}
@@ -90,8 +89,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 * 
 	 * @return The current catalog, which is a default instance at the moment.
 	 */
-	public static Catalog newInstance()
-	{
+	public static Catalog newInstance() {
 		Catalog catalog = new Catalog();
 		catalog.version = CURRENT_CATALOG_VERSION;
 		return catalog;
@@ -100,31 +98,30 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	/**
 	 * Catalogs management method
 	 */
-	public static Vector<Catalog> getCatalogs()
-	{
+	public static Vector<Catalog> getCatalogs() {
 		updateCatalogs();
 		return catalogs;
 	}
 
 	/**
-	 * This updates the listing of the available catalogs in the catalogs directory.
-	 * It is used by {@link #JCatalogsComboBox}
+	 * This updates the listing of the available catalogs in the catalogs
+	 * directory. It is used by {@link #JCatalogsComboBox}
 	 */
 	public static void updateCatalogs()// /W #???
 	{
 		catalogs.clear();
 		File catalogsDir = ACSettings.getInstance().getCatalogsDirectory();
-		catalogsDir.list(new FilenameFilter()
-		{
+		catalogsDir.list(new FilenameFilter() {
 			@Override
-			public boolean accept(File dir, String fileName)
-			{
+			public boolean accept(File dir, String fileName) {
 				Matcher m = CATALOG_FILENAME_PATTERN.matcher(fileName);
-				if (m.matches())
-				{
+				if (m.matches()) {
 					String catalogName = m.group(1);
-					Catalog catalog = new Catalog(new File(dir, fileName), catalogName); // /W #name!!!!!
-					// /W Catalog catalog = makeCatalog(catalogName); // Cannot make a static reference to the non-static method makeCatalog(String) from the type Catalog
+					Catalog catalog = new Catalog(new File(dir, fileName), catalogName); // /W
+																							// #name!!!!!
+					// /W Catalog catalog = makeCatalog(catalogName); // Cannot
+					// make a static reference to the non-static method
+					// makeCatalog(String) from the type Catalog
 					catalogs.add(catalog);
 				}
 				return false;
@@ -134,50 +131,47 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	}
 
 	/**
-	 * This actually creates a new catalog object and fills it with the content from the {@link #file} *
+	 * This actually creates a new catalog object and fills it with the content
+	 * from the {@link #file} *
 	 */
-	public static IfCatalog load(File file) throws JAXBException
-	{
+	public static IfCatalog load(File file) throws JAXBException {
 		JAXBContext context = JAXBContext.newInstance(Catalog.class);
 		Unmarshaller um = context.createUnmarshaller();
-		um.setEventHandler(new ValidationEventHandler()
-		{
+		um.setEventHandler(new ValidationEventHandler() {
 			@Override
-			public boolean handleEvent(ValidationEvent event)
-			{
+			public boolean handleEvent(ValidationEvent event) {
 				ValidationEventLocator loc = event.getLocator();
 				String file = loc.getURL().getFile();
 				int lastSlash = file.lastIndexOf('/');
 				if (lastSlash > 0)
 					file = file.substring(lastSlash + 1);
-				// UI should be separated from program logic -> relocate to UI components
+				// UI should be separated from program logic -> relocate to UI
+				// components
 				int ret = JOptionPane.showConfirmDialog(null,
-						String.format(OSMBStrs.RStr("Catalog.Loading.ErrMsg"), event.getMessage(), file, loc.getLineNumber(), loc.getColumnNumber()),
-						OSMBStrs.RStr("Catalog.Loading.Title"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
+						String.format(OSMBStrs.RStr("Catalog.Loading.ErrMsg"), event.getMessage(), file,
+								loc.getLineNumber(), loc.getColumnNumber()),
+						OSMBStrs.RStr("Catalog.Loading.Title"), JOptionPane.YES_NO_CANCEL_OPTION,
+						JOptionPane.ERROR_MESSAGE);
 				log.error(event.toString());
 				return (ret == JOptionPane.YES_OPTION);
 			}
 		});
-		try
-		{
+		try {
 			Catalog newCatalog = (Catalog) um.unmarshal(file);
 			newCatalog.file = file;
 			return newCatalog;
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			throw new JAXBException(e.getMessage(), e);
 		}
 	}
 
 	/**
-	 * This checks whether testName is the name of an existing catalog in catalogsDirectory.
+	 * This checks whether testName is the name of an existing catalog in
+	 * catalogsDirectory.
 	 */
-	public static boolean isCatalogsName(String testName)
-	{
+	public static boolean isCatalogsName(String testName) {
 		boolean bRet = false;
-		for (Catalog cTest : getCatalogs())
-		{
+		for (Catalog cTest : getCatalogs()) {
 			if (cTest.getName().equals(testName))
 				bRet = true;
 		}
@@ -185,21 +179,26 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	}
 
 	/**
-	 * This checks whether testName is the independent part in the filename of an existing catalogFile in catalogsDirectory.
+	 * This checks whether testName is the independent part in the filename of
+	 * an existing catalogFile in catalogsDirectory.
 	 */
-	public static boolean isCatalogsFileNamePart(final String testName)
-	{
-		File testFile = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(testName)); // , CATALOG_FILENAME_PREFIX + testName + ".xml");
+	public static boolean isCatalogsFileNamePart(final String testName) {
+		File testFile = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(testName)); // ,
+																													// CATALOG_FILENAME_PREFIX
+																													// +
+																													// testName
+																													// +
+																													// ".xml");
 		return Files.exists(testFile.toPath());
 	}
 
 	/**
 	 * This creates a name for a new catalog
 	 */
-	public static String makeNewCatalogsName()
-	{
+	public static String makeNewCatalogsName() {
 		Calendar date = new GregorianCalendar();
-		String newName = String.format("%4d%02d%02d_", date.get(Calendar.YEAR), date.get(Calendar.MONTH) + 1, date.get(Calendar.DATE));
+		String newName = String.format("%4d%02d%02d_", date.get(Calendar.YEAR), date.get(Calendar.MONTH) + 1,
+				date.get(Calendar.DATE));
 		int nAppend = 1;
 		while (isCatalogsFileNamePart(newName + nAppend))
 			nAppend++;
@@ -213,8 +212,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	protected String name = OSMBStrs.RStr("Unnamed"); // /W name =
 	protected int version = 1;
 
-	@XmlElements(
-	{ @XmlElement(name = "Layer", type = Layer.class) })
+	@XmlElements({ @XmlElement(name = "Layer", type = Layer.class) })
 	protected List<IfLayer> layers = new LinkedList<IfLayer>();
 
 	// @XmlElement
@@ -223,8 +221,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	/**
 	 * Will only be called by {@link #newInstance()}
 	 */
-	private Catalog()
-	{
+	private Catalog() {
 		name = "new ..."; // /W name = NoName default in content
 		log.trace("default constructor catalog() called");
 	}
@@ -234,22 +231,23 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 * 
 	 * @param name
 	 */
-	public Catalog(String catalogName)
-	{
+	public Catalog(String catalogName) {
 		this(new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(catalogName)), catalogName);
 	}
 
-	protected Catalog(File file, String name)
-	{
+	protected Catalog(File file, String name) {
 		this.file = file;
 		this.name = name;
 	}
 
-	// /W test -> müsste static sein, ruft aber "public abstract IfCatalog load() throws JAXBException;" auf, darf nicht static sein!!!
+	// /W test -> müsste static sein, ruft aber "public abstract IfCatalog
+	// load() throws JAXBException;" auf, darf nicht static sein!!!
 	// protected Catalog makeCatalog(String catalogName)
 	// {
 	// Catalog newCatalog = new Catalog();
-	// newCatalog.file = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(catalogName));
+	// newCatalog.file = new
+	// File(ACSettings.getInstance().getCatalogsDirectory(),
+	// getCatalogFileName(catalogName));
 	// try
 	// {
 	// newCatalog = (Catalog) load();
@@ -261,8 +259,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	// return newCatalog;
 	// }
 
-	public Catalog(Catalog catalog)
-	{
+	public Catalog(Catalog catalog) {
 		this.file = catalog.file;
 		this.name = catalog.name;
 		this.version = catalog.version;
@@ -271,8 +268,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		log.info("copy constructor catalog(catalog) called");
 	}
 
-	public Catalog(IfCatalog ifCatalog)
-	{
+	public Catalog(IfCatalog ifCatalog) {
 		this.file = ifCatalog.getFile();
 		this.name = ifCatalog.getName();
 		this.version = ifCatalog.getVersion();
@@ -282,83 +278,77 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	}
 
 	@Override
-	public void addLayer(IfLayer layer)
-	{
+	public void addLayer(IfLayer layer) {
 		layers.add(layer);
 	}
 
 	@Override
-	public void deleteLayer(IfLayer layer)
-	{
+	public void deleteLayer(IfLayer layer) {
 		layers.remove(layer);
 	}
 
 	@Override
-	public IfLayer getLayer(int index)
-	{
+	public IfLayer getLayer(int index) {
 		return layers.get(index);
 	}
 
 	@Override
-	public int getLayerCount()
-	{
+	public int getLayerCount() {
 		return layers.size();
 	}
 
 	@Override
-	public List<IfLayer> getLayers()
-	{
+	public List<IfLayer> getLayers() {
 		return layers;
 	}
 
 	@XmlAttribute
-	public int getSize()
-	{
+	public int getSize() {
 		return getLayerCount();
 	}
 
-	public void setSize(int newSize)
-	{
+	public void setSize(int newSize) {
 	}
 
 	@Override
 	@XmlAttribute
-	public String getName()
-	{
+	public String getName() {
 		return name;
 	}
 
 	@Override
-	public void setName(String newName)
-	{
+	public void setName(String newName) {
 		this.name = newName;
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		// return getName() + " (" + ")";
-		return name; // /W #combobox: toString() sets items in dropdownList! But name is fileNamesPart!!!
+		return name; // /W #combobox: toString() sets items in dropdownList! But
+						// name is fileNamesPart!!!
 	}
 
 	@Override
-	public Iterator<IfLayer> iterator()
-	{
+	public Iterator<IfLayer> iterator() {
 		return layers.iterator();
 	}
 
+	/**
+	 * 
+	 */
 	@Override
-	public long calculateTilesToDownload()
-	{
+	public long calculateTilesToDownload() {
 		long tiles = 0;
-		for (IfLayer layer : layers)
+
+		for (IfLayer layer : layers) {
 			tiles += layer.calculateTilesToDownload();
+		}
+		log.trace("catalog=" + getName() + ", tiles=" + tiles);
 		return tiles;
 	}
 
 	@Override
-	public boolean isInvalid()
-	{
+	public boolean isInvalid() {
 		if (name == null) // name set?
 			return true;
 		// /W Check for empty catalogs
@@ -374,117 +364,105 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	}
 
 	@Override
-	public double getMinLat()
-	{
+	public double getMinLat() {
 		double lat = 90d;
-		for (IfLayer l : layers)
-		{
+		for (IfLayer l : layers) {
 			lat = Math.min(lat, l.getMinLat());
 		}
 		return lat;
 	}
 
 	@Override
-	public double getMaxLat()
-	{
+	public double getMaxLat() {
 		double lat = -90d;
-		for (IfLayer l : layers)
-		{
+		for (IfLayer l : layers) {
 			lat = Math.max(lat, l.getMaxLat());
 		}
 		return lat;
 	}
 
 	@Override
-	public double getMinLon()
-	{
+	public double getMinLon() {
 		double lon = 180d;
-		for (IfLayer l : layers)
-		{
+		for (IfLayer l : layers) {
 			lon = Math.min(lon, l.getMinLon());
 		}
 		return lon;
 	}
 
 	@Override
-	public double getMaxLon()
-	{
+	public double getMaxLon() {
 		double lon = -180d;
-		for (IfLayer l : layers)
-		{
+		for (IfLayer l : layers) {
 			lon = Math.max(lon, l.getMaxLon());
 		}
 		return lon;
 	}
 
-	public String getToolTip()
-	{
+	public String getToolTip() {
 		StringWriter sw = new StringWriter(1024);
 		// sw.write("<html>");
 		// sw.write(OSMCBStrs.RStr("lp_bundle_info_bundle_title"));
-		// sw.write(OSMCBStrs.RStr("lp_bundle_info_bundle_name", StringEscapeUtils.escapeHtml4(name)));
-		// sw.write(OSMCBStrs.RStr("lp_bundle_info_bundle_layer", layers.size()));
-		// sw.write(OSMCBStrs.RStr("lp_bundle_info_bundle_format", outputFormat.toString()));
-		// sw.write(OSMCBStrs.RStr("lp_bundle_info_max_tile", calculateTilesToDownload()));
-		// sw.write(OSMCBStrs.RStr("lp_bundle_info_area_start", OSMCBUtilities.prettyPrintLatLon(getMaxLat(), true),
+		// sw.write(OSMCBStrs.RStr("lp_bundle_info_bundle_name",
+		// StringEscapeUtils.escapeHtml4(name)));
+		// sw.write(OSMCBStrs.RStr("lp_bundle_info_bundle_layer",
+		// layers.size()));
+		// sw.write(OSMCBStrs.RStr("lp_bundle_info_bundle_format",
+		// outputFormat.toString()));
+		// sw.write(OSMCBStrs.RStr("lp_bundle_info_max_tile",
+		// calculateTilesToDownload()));
+		// sw.write(OSMCBStrs.RStr("lp_bundle_info_area_start",
+		// OSMCBUtilities.prettyPrintLatLon(getMaxLat(), true),
 		// OSMCBUtilities.prettyPrintLatLon(getMinLon(), false)));
-		// sw.write(OSMCBStrs.RStr("lp_bundle_info_area_end", OSMCBUtilities.prettyPrintLatLon(getMinLat(), true),
+		// sw.write(OSMCBStrs.RStr("lp_bundle_info_area_end",
+		// OSMCBUtilities.prettyPrintLatLon(getMinLat(), true),
 		// OSMCBUtilities.prettyPrintLatLon(getMaxLon(), false)));
 		// sw.write("</html>");
 		return sw.toString();
 	}
 
 	@Override
-	public Enumeration<?> children()
-	{
+	public Enumeration<?> children() {
 		return Collections.enumeration(layers);
 	}
 
 	@Override
-	public boolean getAllowsChildren()
-	{
+	public boolean getAllowsChildren() {
 		return true;
 	}
 
 	@Override
-	public TreeNode getChildAt(int childIndex)
-	{
+	public TreeNode getChildAt(int childIndex) {
 		return layers.get(childIndex);
 	}
 
 	@Override
-	public int getChildCount()
-	{
+	public int getChildCount() {
 		return layers.size();
 	}
 
 	@Override
-	public int getIndex(TreeNode node)
-	{
+	public int getIndex(TreeNode node) {
 		return layers.indexOf(node);
 	}
 
 	@Override
-	public TreeNode getParent()
-	{
+	public TreeNode getParent() {
 		return null;
 	}
 
 	@Override
-	public boolean isLeaf()
-	{
+	public boolean isLeaf() {
 		return false;
 	}
 
 	@Override
 	@XmlAttribute
-	public int getVersion()
-	{
+	public int getVersion() {
 		return version;
 	}
 
-	public void setVersion(int newVersion)
-	{
+	public void setVersion(int newVersion) {
 		version = newVersion;
 	}
 
@@ -503,16 +481,14 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	// }
 
 	@Override
-	public boolean check()
-	{
+	public boolean check() {
 		boolean bOK = !isInvalid();
 
 		return bOK;
 	}
 
 	@Override
-	public File getFile()
-	{
+	public File getFile() {
 		return file;
 	}
 
@@ -522,8 +498,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 * @see osmb.program.catalog.IFCatalogProfile#exists()
 	 */
 	@Override
-	public boolean exists()
-	{
+	public boolean exists() {
 		return file.isFile();
 	}
 
@@ -533,36 +508,34 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 * @see osmb.program.catalog.IfCatalogProfile#delete()
 	 */
 	@Override
-	public void delete()
-	{
+	public void delete() {
 		if (!file.delete())
 			file.deleteOnExit();
 	}
 
 	/**
-	 * Compares the IFCatalogProfile of this object to the IfCatalogProfile of the other one.
-	 * Specifically it compares the files. Currently it does not compare the names or contents of the catalog.
+	 * Compares the IFCatalogProfile of this object to the IfCatalogProfile of
+	 * the other one. Specifically it compares the files. Currently it does not
+	 * compare the names or contents of the catalog.
 	 * 
 	 * @see osmb.program.catalog.IfCatalogProfile#equals(java.lang.Object)
 	 */
 	@Override
-	public int compareTo(IfCatalogProfile other)
-	{
+	public int compareTo(IfCatalogProfile other) {
 		return file.compareTo(other.getFile());
 	}
 
 	/**
-	 * Tests if the IFCatalogProfile of this object equals the IfCatalogProfile of the other one. Specifically it checks if the files are equal.
+	 * Tests if the IFCatalogProfile of this object equals the IfCatalogProfile
+	 * of the other one. Specifically it checks if the files are equal.
 	 * Currently it does not check if names or contents are equal
 	 * 
 	 * @see osmb.program.catalog.IfCatalogProfile#equals(java.lang.Object)
 	 */
 	@Override
-	public boolean equals(Object obj)
-	{
+	public boolean equals(Object obj) {
 		boolean bEq = false;
-		if ((obj != null) && (obj instanceof IfCatalogProfile) && (file != null))
-		{
+		if ((obj != null) && (obj instanceof IfCatalogProfile) && (file != null)) {
 			IfCatalogProfile p = (IfCatalogProfile) obj;
 			bEq = file.equals(p.getFile());
 		}
@@ -570,40 +543,34 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	}
 
 	/**
-	 * Saves the catalog profile. This is the description of the catalog, its layers and maps, but NOT the actual image data.
+	 * Saves the catalog profile. This is the description of the catalog, its
+	 * layers and maps, but NOT the actual image data.
 	 * 
 	 * @see osmb.program.catalog.IfCatalogProfile#save(osmb.program.catalog.IfCatalog)
 	 */
 	@Override
-	public void save() throws JAXBException
-	{
+	public void save() throws JAXBException {
 		JAXBContext context = JAXBContext.newInstance(Catalog.class);
 		Marshaller m = context.createMarshaller();
 		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 		FileOutputStream fo = null;
-		try
-		{
-			if (file == null)
-			{
-				// /W Pfad angepasst: ACSettings.getInstance().getCatalogsDirectory()
+		try {
+			if (file == null) {
+				// /W Pfad angepasst:
+				// ACSettings.getInstance().getCatalogsDirectory()
 				file = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(name));
 			}
 			fo = new FileOutputStream(file);
 			m.marshal(this, fo);
-		}
-		catch (FileNotFoundException e)
-		{
+		} catch (FileNotFoundException e) {
 			throw new JAXBException(e);
-		}
-		finally
-		{
+		} finally {
 			OSMBUtilities.closeStream(fo);
 		}
 	}
 
 	@Override
-	public IfCatalog getCatalog()
-	{
+	public IfCatalog getCatalog() {
 		return this;
 	}
 }

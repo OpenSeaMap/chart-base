@@ -66,6 +66,9 @@ public abstract class ACSiTileStore
 	}
 
 	/**
+	 * This writes one tile into the tile store for the specified {@link IfMapSource}. It employs {@link putTileData(byte[] tileData, int x, int y, int zoom,
+	 * IfMapSource mapSource,
+	 * long timeLastModified, long timeExpires, String eTag)} for this task.
 	 * 
 	 * @param tileData
 	 * @param x
@@ -77,6 +80,7 @@ public abstract class ACSiTileStore
 	public abstract void putTileData(byte[] tileData, int x, int y, int zoom, IfMapSource mapSource) throws IOException;
 
 	/**
+	 * This writes one tile into the tile store for the specified {@link IfMapSource}.
 	 * 
 	 * @param tileData
 	 * @param x
@@ -89,9 +93,10 @@ public abstract class ACSiTileStore
 	 * @throws IOException
 	 */
 	public abstract void putTileData(byte[] tileData, int x, int y, int zoom, IfMapSource mapSource, long timeLastModified, long timeExpires, String eTag)
-			throws IOException;
+	    throws IOException;
 
 	/**
+	 * This retrieves one tile from the tilestore for the specified {@link IfMapSource}.
 	 * 
 	 * @param x
 	 * @param y
@@ -102,6 +107,7 @@ public abstract class ACSiTileStore
 	public abstract IfTileStoreEntry getTile(int x, int y, int zoom, IfMapSource mapSource);
 
 	/**
+	 * This checks if a requested tile exists in the tilestore for a specified {@link IfMapSource}.
 	 * 
 	 * @param x
 	 * @param y
@@ -146,6 +152,7 @@ public abstract class ACSiTileStore
 	public abstract TileStoreInfo getStoreInfo(String mapSourceName) throws InterruptedException;
 
 	/**
+	 * This provides an image visualizing the coverage of the tilestore for the specified {@link IfMapSource}.
 	 * 
 	 * @param mapSource
 	 * @param zoom
@@ -163,7 +170,9 @@ public abstract class ACSiTileStore
 	public abstract IfTileStoreEntry createNewEntry(int x, int y, int zoom, byte[] data, long timeLastModified, long timeExpires, String eTag);
 
 	/**
-	 * Creates a new {@link IfTileStoreEntry} that represents a missing tile in a sparse map source
+	 * Creates a new {@link IfTileStoreEntry} that represents a missing tile in a sparse map source. This we should use twice: For empty tiles in OpenSeaMap AND
+	 * for 'empty' sea tiles in the BaseMap.
+	 * We still have to detect these...
 	 * 
 	 * @param x
 	 * @param y

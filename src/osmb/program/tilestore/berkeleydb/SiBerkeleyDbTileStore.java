@@ -32,6 +32,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.sleepycat.je.DatabaseException;
+import com.sleepycat.je.Environment;
+import com.sleepycat.je.EnvironmentConfig;
+import com.sleepycat.je.EnvironmentLockedException;
+import com.sleepycat.persist.EntityCursor;
+import com.sleepycat.persist.EntityStore;
+import com.sleepycat.persist.PrimaryIndex;
+import com.sleepycat.persist.StoreConfig;
+import com.sleepycat.persist.evolve.Mutations;
+import com.sleepycat.persist.evolve.Renamer;
+
 import osmb.mapsources.IfMapSource;
 import osmb.program.ACSettings;
 import osmb.program.tilestore.ACSiTileStore;
@@ -43,17 +54,6 @@ import osmb.utilities.OSMBUtilities;
 import osmb.utilities.file.DeleteFileFilter;
 import osmb.utilities.file.DirInfoFileFilter;
 import osmb.utilities.file.DirectoryFileFilter;
-
-import com.sleepycat.je.DatabaseException;
-import com.sleepycat.je.Environment;
-import com.sleepycat.je.EnvironmentConfig;
-import com.sleepycat.je.EnvironmentLockedException;
-import com.sleepycat.persist.EntityCursor;
-import com.sleepycat.persist.EntityStore;
-import com.sleepycat.persist.PrimaryIndex;
-import com.sleepycat.persist.StoreConfig;
-import com.sleepycat.persist.evolve.Mutations;
-import com.sleepycat.persist.evolve.Renamer;
 
 /**
  * The database based tile store implementation. It still is a singleton.
@@ -172,8 +172,8 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 	{
 		TileDatabase db;
 		if (tileDbMap == null)
-			// Tile store has been closed already
-			return null;
+		  // Tile store has been closed already
+		  return null;
 		String storeName = mapSource.getName();
 		if (storeName == null)
 			return null;
@@ -209,8 +209,8 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 	{
 		TileDatabase db;
 		if (tileDbMap == null)
-			// Tile store has been closed already
-			return null;
+		  // Tile store has been closed already
+		  return null;
 		if (storeName == null)
 			return null;
 		synchronized (tileDbMap)
@@ -257,7 +257,7 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 
 	@Override
 	public void putTileData(byte[] tileData, int x, int y, int zoom, IfMapSource mapSource, long timeLastModified, long timeExpires, String eTag)
-			throws IOException
+	    throws IOException
 	{
 		TileDbEntry tile = new TileDbEntry(x, y, zoom, tileData, timeLastModified, timeExpires, eTag);
 		TileDatabase db = null;
@@ -273,7 +273,7 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 		{
 			if (db != null)
 				db.close();
-			log.error("Faild to write tile to tile store \"" + mapSource.getName() + "\"", e);
+			log.error("Failed to write tile to tile store \"" + mapSource.getName() + "\"", e);
 		}
 	}
 
@@ -661,7 +661,7 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 			byte ff = (byte) 0xFF;
 			byte[] colors = new byte[]
 			{ 120, 120, 120, 120, // alpha-gray
-					10, ff, 0, 120 // alpha-green
+			    10, ff, 0, 120 // alpha-green
 			};
 			IndexColorModel colorModel = new IndexColorModel(2, 2, colors, 0, true);
 			BufferedImage image = null;
@@ -781,6 +781,5 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 			close();
 			super.finalize();
 		}
-
 	}
 }

@@ -52,15 +52,18 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	protected String name;
 	/**
 	 * the osm internal number, the numbering scheme is still to be defined
-	 * 20150722 AH proposal: ZL-LON-LAT-WID-HEI, LON and LAT in tiles/8 since this is our map alignment grid, WID, HEI in tiles.
+	 * 20150722 AH proposal: ZL-LON-LAT-WID-HEI, LON and LAT in tiles/8 since
+	 * this is our map alignment grid, WID, HEI in tiles.
 	 */
 	protected String number;
 	/**
-	 * the INT conformant name - if there is one; for a lot of maps this is empty
+	 * the INT conformant name - if there is one; for a lot of maps this is
+	 * empty
 	 */
 	protected String intName = null;
 	/**
-	 * the INT conformant number - if there is one; for a lot of maps this is empty
+	 * the INT conformant number - if there is one; for a lot of maps this is
+	 * empty
 	 */
 	protected String intNumber = null;
 	/**
@@ -98,8 +101,8 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		calculateRuntimeValues();
 		// 20150722 AH fixed numbers in here
 		String mapNumber = zoom + "-" + minTileCoordinate.y / (tileDimension.height * 8) + "-" + minTileCoordinate.x / (tileDimension.width * 8) + "-"
-				+ ((maxTileCoordinate.y - minTileCoordinate.y + 1) / tileDimension.height) + "-"
-				+ ((maxTileCoordinate.x - minTileCoordinate.x + 1) / tileDimension.width);
+		    + ((maxTileCoordinate.y - minTileCoordinate.y + 1) / tileDimension.height) + "-"
+		    + ((maxTileCoordinate.x - minTileCoordinate.x + 1) / tileDimension.width);
 		log.trace("new map: '" + mapNumber + "'");
 		this.number = mapNumber;
 	}
@@ -140,7 +143,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 
 	@Override
 	/**
-	 * 	@XmlJavaTypeAdapter(PointAdapter.class) annotation in package-info.java
+	 * @XmlJavaTypeAdapter(PointAdapter.class) annotation in package-info.java
 	 */
 	@XmlAttribute
 	public Point getMaxTileCoordinate()
@@ -150,7 +153,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 
 	@Override
 	/**
-	 * 	@XmlJavaTypeAdapter(PointAdapter.class) annotation in package-info.java
+	 * @XmlJavaTypeAdapter(PointAdapter.class) annotation in package-info.java
 	 */
 	@XmlAttribute
 	public Point getMinTileCoordinate()
@@ -189,7 +192,26 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 
 	public void setLRC(String strLRC)
 	{
-		;
+	}
+
+	public int getXMin()
+	{
+		return minTileCoordinate.x;
+	}
+
+	public int getXMax()
+	{
+		return minTileCoordinate.y;
+	}
+
+	public int getYMin()
+	{
+		return maxTileCoordinate.x;
+	}
+
+	public int getYMax()
+	{
+		return maxTileCoordinate.y;
 	}
 
 	@Override
@@ -199,6 +221,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		return name;
 	}
 
+	@Override
 	@XmlAttribute
 	public String getNumber()
 	{
@@ -241,7 +264,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	public String getInfoText()
 	{
 		return "Map\n name=" + name + "\n mapSource=" + mapSource + "\n zoom=" + getZoom() + "\n maxTileCoordinate=" + maxTileCoordinate.x + "/"
-				+ maxTileCoordinate.y + "\n minTileCoordinate=" + minTileCoordinate.x + "/" + minTileCoordinate.y + "\n parameters=" + parameters;
+		    + maxTileCoordinate.y + "\n minTileCoordinate=" + minTileCoordinate.x + "/" + minTileCoordinate.y + "\n parameters=" + parameters;
 	}
 
 	public String getToolTip()
@@ -253,24 +276,32 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		StringWriter sw = new StringWriter(1024);
 		// sw.write("<html>");
 		// sw.write(OSMCBStrs.RStr("lp_bundle_info_map_title"));
-		// sw.write(OSMCBStrs.getLocalizedString("lp_bundle_info_map_source", StringEscapeUtils.escapeHtml4(mapSource.toString()),
+		// sw.write(OSMCBStrs.getLocalizedString("lp_bundle_info_map_source",
+		// StringEscapeUtils.escapeHtml4(mapSource.toString()),
 		// StringEscapeUtils.escapeHtml4(mapSource.getName())));
-		// sw.write(OSMCBStrs.getLocalizedString("lp_bundle_info_map_zoom_lv", zoom));
-		// sw.write(OSMCBStrs.getLocalizedString("lp_bundle_info_map_area_start", tl.toString(), minTileCoordinate.x, minTileCoordinate.y));
-		// sw.write(OSMCBStrs.getLocalizedString("lp_bundle_info_map_area_end", br.toString(), maxTileCoordinate.x, maxTileCoordinate.y));
-		// sw.write(OSMCBStrs.getLocalizedString("lp_bundle_info_map_size", (maxTileCoordinate.x - minTileCoordinate.x + 1), (maxTileCoordinate.y
+		// sw.write(OSMCBStrs.getLocalizedString("lp_bundle_info_map_zoom_lv",
+		// zoom));
+		// sw.write(OSMCBStrs.getLocalizedString("lp_bundle_info_map_area_start",
+		// tl.toString(), minTileCoordinate.x, minTileCoordinate.y));
+		// sw.write(OSMCBStrs.getLocalizedString("lp_bundle_info_map_area_end",
+		// br.toString(), maxTileCoordinate.x, maxTileCoordinate.y));
+		// sw.write(OSMCBStrs.getLocalizedString("lp_bundle_info_map_size",
+		// (maxTileCoordinate.x - minTileCoordinate.x + 1), (maxTileCoordinate.y
 		// - minTileCoordinate.y + 1)));
 		// if (parameters != null)
 		// {
-		// sw.write(String.format(OSMCBStrs.RStr("lp_bundle_info_tile_size"), parameters.getWidth(), parameters.getHeight()));
-		// sw.write(String.format(OSMCBStrs.RStr("lp_bundle_info_tile_format"), parameters.getFormat().toString()));
+		// sw.write(String.format(OSMCBStrs.RStr("lp_bundle_info_tile_size"),
+		// parameters.getWidth(), parameters.getHeight()));
+		// sw.write(String.format(OSMCBStrs.RStr("lp_bundle_info_tile_format"),
+		// parameters.getFormat().toString()));
 		// }
 		// else
 		// {
 		// sw.write(OSMCBStrs.RStr("lp_bundle_info_tile_format_origin"));
 		// }
 		//
-		// sw.write(String.format(OSMCBStrs.RStr("lp_bundle_info_max_tile"), calculateTilesToDownload()));
+		// sw.write(String.format(OSMCBStrs.RStr("lp_bundle_info_max_tile"),
+		// calculateTilesToDownload()));
 		// sw.write("</html>");
 		return sw.toString();
 	}
@@ -367,26 +398,33 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		return true;
 	}
 
+	/**
+	 * This simply calculates all tiles included in the map.
+	 */
+	@Override
+	public long getTileCount()
+	{
+		long tiles = (maxTileCoordinate.x - minTileCoordinate.x) * (maxTileCoordinate.y - minTileCoordinate.y)
+		    / (mapSource.getMapSpace().getTileSize() * mapSource.getMapSpace().getTileSize());
+		return tiles;
+	}
+
+	/**
+	 * This simply calculates all tiles included in the map. It currently (2015-08) does not take in account that tiles are shared by several maps.
+	 */
 	@Override
 	public long calculateTilesToDownload()
 	{
-		int tileSize = mapSource.getMapSpace().getTileSize();
-		// This algorithm has to be identically to those used in
-		// @DownloadJobEnumerator
-		int xMin = minTileCoordinate.x / tileSize;
-		int xMax = maxTileCoordinate.x / tileSize;
-		int yMin = minTileCoordinate.y / tileSize;
-		int yMax = maxTileCoordinate.y / tileSize;
-		int width = xMax - xMin;
-		int height = yMax - yMin;
-		int tileCount = width * height;
+		long tiles = (maxTileCoordinate.x - minTileCoordinate.x) * (maxTileCoordinate.y - minTileCoordinate.y)
+		    / (mapSource.getMapSpace().getTileSize() * mapSource.getMapSpace().getTileSize());
 		// TODO correct tile count in case of multi-layer maps
 		// if (mapSource instanceof MultiLayerMapSource) {
 		// // We have a map with two layers and for each layer we have to
 		// // download the tiles - therefore double the tileCount
 		// tileCount *= 2;
 		// }
-		return tileCount;
+		log.trace("map=" + getName() + ", tiles=" + tiles);
+		return tiles;
 	}
 
 	@Override
@@ -395,12 +433,12 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		boolean result = false;
 		boolean[] checks =
 		{ name == null, // 0
-				layer == null, // 1
-				maxTileCoordinate == null, // 2
-				minTileCoordinate == null, // 3
-				mapSource == null, // 4
-				getZoom() < 0
-		// 5
+		    layer == null, // 1
+		    maxTileCoordinate == null, // 2
+		    minTileCoordinate == null, // 3
+		    mapSource == null, // 4
+		    getZoom() < 0
+				// 5
 		};
 
 		for (int i = 0; i < checks.length; i++)
@@ -480,7 +518,8 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	// }
 
 	// @Override
-	// public Enumeration<Job> getDownloadJobs(TarIndexedArchive tileArchive, IfDownloadJobListener listener)
+	// public Enumeration<Job> getDownloadJobs(TarIndexedArchive tileArchive,
+	// IfDownloadJobListener listener)
 	// {
 	// return new DownloadJobEnumerator(this, mapSource, tileArchive, listener);
 	// }
