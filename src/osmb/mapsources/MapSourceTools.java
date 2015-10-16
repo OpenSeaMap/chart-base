@@ -71,8 +71,8 @@ public class MapSourceTools
 		tilex *= tileSize;
 		tiley *= tileSize;
 		result[0] = mapSpace.cXToLon(tilex, zoom); // lon_min
-		result[1] = mapSpace.cYToLat(tiley + tileSize, zoom); // lat_max
-		result[2] = mapSpace.cXToLon(tilex + tileSize, zoom); // lon_min
+		result[1] = mapSpace.cYToLat(tiley + tileSize, zoom); // lat_min
+		result[2] = mapSpace.cXToLon(tilex + tileSize, zoom); // lon_max
 		result[3] = mapSpace.cYToLat(tiley, zoom); // lat_max
 		return result;
 	}
