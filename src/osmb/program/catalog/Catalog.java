@@ -49,6 +49,7 @@ import org.apache.log4j.Logger;
 
 import osmb.program.ACSettings;
 import osmb.program.map.IfLayer;
+import osmb.program.map.IfMap;
 import osmb.program.map.Layer;
 import osmb.utilities.OSMBUtilities;
 
@@ -57,7 +58,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 {
 	// standard data
 	public static final int CURRENT_CATALOG_VERSION = 2;
-	public static final int MIN_CATALOG_ZOOMLEVEL = 4; // /W #zoom0-3 used to disable zoomlevels 0 t0 3 in MainFrame 
+	public static final int MIN_CATALOG_ZOOMLEVEL = 4; // /W #zoom0-3 used to disable zoomlevels 0 t0 3 in MainFrame
 	protected static Logger log = Logger.getLogger(Catalog.class);
 
 	// class/static data
@@ -362,14 +363,32 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		log.trace("catalog=" + getName() + ", tiles=" + tiles);
 		return tiles;
 	}
+	
+	/**
+	 * This checks for empty catalogs. A catalog is empty, if there is no map with tiles in it.
+	 * 
+	 * @return 
+	 */
+	// /W #??? to IFCatalog too?
+	public boolean isEmpty()
+	{
+		for (IfLayer layer : layers)
+		{
+			for (IfMap map : layer.getMaps())
+			{
+				if (map.getTileCount() > 0)
+					return false;
+			}
+		}
+		return true;
+	}
 
 	@Override
 	public boolean isInvalid()
 	{
 		if (name == null) // name set?
 			return true;
-		// /W Check for empty catalogs
-		if (calculateTilesToDownload() < 1)
+		if (isEmpty())
 			return true;
 		// Check for duplicate layer names
 		HashSet<String> names = new HashSet<String>(layers.size());
