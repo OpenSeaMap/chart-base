@@ -12,6 +12,16 @@ public interface IfCatalogObject
 	void setName(String newName) throws InvalidNameException;
 
 	boolean isInvalid();
+	
+	///////////////////////
+	public int getXBorderMin();
+
+	public int getXBorderMax();
+
+	public int getYBorderMin();
+
+	public int getYBorderMax();
+	///////////////////////
 
 	double getMinLat();
 

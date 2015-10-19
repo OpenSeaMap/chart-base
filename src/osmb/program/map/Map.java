@@ -33,9 +33,11 @@ import osmb.exceptions.InvalidNameException;
 import osmb.mapsources.IfMapSource;
 import osmb.program.catalog.IfCapabilityDeletable;
 import osmb.program.catalog.IfCatalog;
+import osmb.program.map.IfMapSpace;
 import osmb.program.tiles.IfTileFilter;
 import osmb.program.tiles.TileImageParameters;
 import osmb.utilities.geo.EastNorthCoordinate;
+import osmb.utilities.image.MercatorPixelCoordinate;
 
 // public class Map implements IfMap, IfCapabilityDeletable, IfDownloadableElement, TreeNode
 @XmlType(propOrder =
@@ -314,6 +316,51 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		return tileDimension;
 	}
 
+	/////////////////////////////////////////////////////////////////////////////////
+	// /W mapSource.getMaxZoom() or JMapViewer.MAX_ZOOM = 22 ???????
+	
+	
+	protected MercatorPixelCoordinate ulBordersToMaxZoom()
+	{
+		MercatorPixelCoordinate borderCoord = new MercatorPixelCoordinate(mapSource.getMapSpace(), minTileCoordinate.x, minTileCoordinate.y, getZoom());
+		borderCoord = borderCoord.adaptToZoomlevel(mapSource.getMaxZoom());
+		return borderCoord;
+	}
+	
+	protected MercatorPixelCoordinate lrBordersToMaxZoom()
+	{
+		MercatorPixelCoordinate borderCoord = new MercatorPixelCoordinate(mapSource.getMapSpace(), maxTileCoordinate.x + 1, maxTileCoordinate.y + 1, getZoom());
+		borderCoord = borderCoord.adaptToZoomlevel(mapSource.getMaxZoom());
+		return borderCoord;
+	}
+	
+	@Override
+	public int getXBorderMin()
+	{
+		return ulBordersToMaxZoom().getX();
+	}
+
+	@Override
+	public int getXBorderMax()
+	{
+		//return minTileCoordinate.y;
+		return lrBordersToMaxZoom().getX();
+	}
+
+	@Override
+	public int getYBorderMin()
+	{
+		//return maxTileCoordinate.x;
+		return ulBordersToMaxZoom().getY();
+	}
+
+	@Override
+	public int getYBorderMax()
+	{
+		return lrBordersToMaxZoom().getY();
+	}
+	/////////////////////////////////////////////////////////////////////////////////
+	
 	@Override
 	public double getMinLat()
 	{

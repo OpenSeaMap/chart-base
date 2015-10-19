@@ -83,6 +83,21 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		else
 			return CATALOG_FILENAME_PREFIX + catalogName + ".xml";
 	}
+	
+	/**
+	 * Builds a (hopefully) valid filename from a given catalog name for the overview '.png'
+	 * 
+	 * @param catalogName
+	 * @return valid filename or null!
+	 */
+	public static String getCatalogOverviewFileName(String catalogName)
+	{
+		// do a check, if the name is valid
+		if (catalogName == null)
+			return null; // otherwise returns "osmcb-catalog-null.xml"!
+		else
+			return CATALOG_FILENAME_PREFIX + catalogName + ".png";
+	}
 
 	/**
 	 * This creates a new default instance of a catalog: an empty catalog with name, current version
@@ -398,6 +413,52 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 			return true; // at least one duplicate name found
 		return false;
 	}
+	
+	/////////////////////////////////////////////////////////////
+	@Override
+	public int getXBorderMin()
+	{
+		int xMin = Integer.MAX_VALUE;
+		for (IfLayer l : layers)
+		{
+			xMin = Math.min(xMin, l.getXBorderMin());
+		}
+		return xMin;
+	}
+	
+	@Override
+	public int getXBorderMax()
+	{
+		int xMax = Integer.MIN_VALUE;
+		for (IfLayer l : layers)
+		{
+			xMax = Math.max(xMax, l.getXBorderMax());
+		}
+		return xMax;
+	}
+	
+	@Override
+	public int getYBorderMin()
+	{
+		int yMin = Integer.MAX_VALUE;
+		for (IfLayer l : layers)
+		{
+			yMin = Math.min(yMin, l.getYBorderMin());
+		}
+		return yMin;
+	}
+	
+	@Override
+	public int getYBorderMax()
+	{
+		int yMax = Integer.MIN_VALUE;
+		for (IfLayer l : layers)
+		{
+			yMax = Math.max(yMax, l.getYBorderMax());
+		}
+		return yMax;
+	}
+	/////////////////////////////////////////////////////////////
 
 	@Override
 	public double getMinLat()
