@@ -172,8 +172,8 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 	{
 		TileDatabase db;
 		if (tileDbMap == null)
-		  // Tile store has been closed already
-		  return null;
+			// Tile store has been closed already
+			return null;
 		String storeName = mapSource.getName();
 		if (storeName == null)
 			return null;
@@ -209,8 +209,8 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 	{
 		TileDatabase db;
 		if (tileDbMap == null)
-		  // Tile store has been closed already
-		  return null;
+			// Tile store has been closed already
+			return null;
 		if (storeName == null)
 			return null;
 		synchronized (tileDbMap)

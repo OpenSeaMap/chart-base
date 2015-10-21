@@ -52,6 +52,8 @@ public interface IfCatalog extends IfCatalogObject, Iterable<IfLayer>
 	//
 	boolean check();
 
+	// ? public boolean isEmpty();
+
 	void addLayer(IfLayer l);
 
 	void deleteLayer(IfLayer l);

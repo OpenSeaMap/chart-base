@@ -29,7 +29,8 @@ import osmb.program.catalog.IfCatalogObject;
 import osmb.program.tiles.TileImageParameters;
 import osmb.utilities.geo.EastNorthCoordinate;
 
-public interface IfLayer extends IfCatalogObject, Iterable<IfMap>, IfCapabilityDeletable, TreeNode {
+public interface IfLayer extends IfCatalogObject, Iterable<IfMap>, IfCapabilityDeletable, TreeNode
+{
 	void addMap(IfMap map);
 
 	int getMapCount();

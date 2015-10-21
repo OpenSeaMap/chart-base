@@ -237,7 +237,7 @@ public class DefaultMapSourcesManager extends ACMapSourcesManager
 	@Override
 	public IfMapSource getDefaultMapSource()
 	{
-		IfMapSource ms = getSourceByName("MapQuest");// DEFAULT;// /W #??? change! (ms == null) 20150713
+		IfMapSource ms = getSourceByName("AH OpenSeaMap - Mapnik"); // /W #???  ("MapQuest");// DEFAULT;// /W #??? change! (ms == null) 20150713
 		if (ms != null)
 			return ms;
 		// Fallback: return first

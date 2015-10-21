@@ -43,10 +43,9 @@ import osmb.program.tiles.TileImageParameters;
 import osmb.utilities.geo.EastNorthCoordinate;
 
 /**
- * A layer holding one or multiple maps of the same map source and the same zoom
- * level. The number of maps depends on the size of the covered area - if it is
- * smaller than the specified <code>maxMapSize</code> then there will be only
- * one map.
+ * A layer holding one or multiple maps of the same map source and the same zoom level.
+ * The number of maps depends on the size of the covered area - if it is smaller than
+ * the specified <code>maxMapSize</code> then there will be only one map.
  * 
  * 20140128 Ah zoom level introduced as property of layer
  * 
@@ -469,6 +468,52 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		log.trace("layer=" + getName() + ", tiles=" + tiles);
 		return tiles;
 	}
+	
+	/////////////////////////////////////////////////////////////
+	@Override
+	public int getXBorderMin()
+	{
+		int xMin = Integer.MAX_VALUE;
+		for (IfMap m : maps)
+		{
+			xMin = Math.min(xMin, m.getXBorderMin());
+		}
+		return xMin;
+	}
+
+	@Override
+	public int getXBorderMax()
+	{
+		int xMax = Integer.MIN_VALUE;
+		for (IfMap m : maps)
+		{
+			xMax = Math.max(xMax, m.getXBorderMax());
+		}
+		return xMax;
+	}
+
+	@Override
+	public int getYBorderMin()
+	{
+		int yMin = Integer.MAX_VALUE;
+		for (IfMap m : maps)
+		{
+			yMin = Math.min(yMin, m.getYBorderMin());
+		}
+		return yMin;
+	}
+
+	@Override
+	public int getYBorderMax()
+	{
+		int yMax = Integer.MIN_VALUE;
+		for (IfMap m : maps)
+		{
+			yMax = Math.max(yMax, m.getYBorderMax());
+		}
+		return yMax;
+	}
+	/////////////////////////////////////////////////////////////
 
 	@Override
 	public double getMinLat()
