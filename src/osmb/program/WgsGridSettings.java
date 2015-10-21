@@ -27,7 +27,8 @@ import osmb.program.jaxb.ColorAdapter;
 
 public class WgsGridSettings implements Cloneable
 {
-	public static final Color DEFAULT_COLOR = Color.BLUE;
+	// public static final Color DEFAULT_COLOR = Color.BLUE;
+	public static final Color DEFAULT_COLOR = new Color(0.0f, 0.0f, 1.0f, 0.5f);
 	public static final WgsDensity DEFAULT_DENSITY = WgsDensity.SECOND_1;
 	public static final Font DEFAULT_FONT = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
 	public static final float WIDTH_DEFAULT = 1f;

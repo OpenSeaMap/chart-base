@@ -29,6 +29,7 @@ import osmb.program.tilestore.berkeleydb.SiBerkeleyDbTileStore;
 
 /**
  * abstract singleton class
+ * The BerkeleyDB implementation offers no multi thread access (afaik) so a singleton is used.
  * 
  * @author humbach
  * 
@@ -170,9 +171,9 @@ public abstract class ACSiTileStore
 	public abstract IfTileStoreEntry createNewEntry(int x, int y, int zoom, byte[] data, long timeLastModified, long timeExpires, String eTag);
 
 	/**
-	 * Creates a new {@link IfTileStoreEntry} that represents a missing tile in a sparse map source. This we should use twice: For empty tiles in OpenSeaMap AND
-	 * for 'empty' sea tiles in the BaseMap.
-	 * We still have to detect these...
+	 * Creates a new empty {@link IfTileStoreEntry} that represents a missing tile in a sparse map source. This we should use twice: For empty tiles in OpenSeaMap
+	 * AND for 'empty' sea tiles in the BaseMap.
+	 * We still have to find a way to detect these...
 	 * 
 	 * @param x
 	 * @param y

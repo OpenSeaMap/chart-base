@@ -16,6 +16,7 @@
  ******************************************************************************/
 package osmb.program.tilestore.berkeleydb;
 
+import java.awt.image.BufferedImage;
 import java.util.Date;
 
 import com.sleepycat.persist.model.Entity;
@@ -59,6 +60,15 @@ public class TileDbEntry implements IfTileStoreEntry
 		this.timeLastModified = timeLastModified;
 		this.timeExpires = timeExpires;
 		this.eTag = eTag;
+	}
+
+	public TileDbEntry(int x, int y, int zoom, BufferedImage image)
+	{
+		tileKey = new TileDbKey(x, y, zoom);
+		if (data == null)
+			throw new NullPointerException("Tile data must not be null!");
+		// this.data = image.getData().getDataBuffer().getData();
+		this.timeDownloaded = System.currentTimeMillis();
 	}
 
 	@Override

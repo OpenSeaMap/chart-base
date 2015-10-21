@@ -28,9 +28,6 @@ import osmb.program.map.IfMapSpace;
  * <p>
  * This is the only implementation that is currently supported by OpenSeaMap ChartBundler.
  * </p>
- * <p>
- * DO NOT TRY TO IMPLEMENT YOUR OWN. IT WILL MOST LIKELY NOT WORK!
- * </p>
  * 
  * Currently it supports a world up to zoom level 22
  * 
