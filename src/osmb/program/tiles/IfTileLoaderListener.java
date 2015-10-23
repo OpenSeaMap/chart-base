@@ -16,45 +16,17 @@
  ******************************************************************************/
 package osmb.program.tiles;
 
-/**
- * Supported file extensions of all {@link TileImageFormat} enums.
- * This has to be modified to separate the extension from the file type. There are other OSs than MS Windows.
- */
-public enum TileImageType
+//License: GPL. Copyright 2008 by Jan Peter Stotz
+
+public interface IfTileLoaderListener
 {
-	PNG("png"), JPG("jpeg"), GIF("gif"), TIF("tiff");
+	/**
+	 * Will be called if a new {@link Tile} has been loaded successfully.
+	 * Loaded can mean downloaded or loaded from file cache.
+	 * 
+	 * @param tile
+	 */
+	public void tileLoadingFinished(Tile tile, boolean success);
 
-	private final String mime;
-
-	private TileImageType(String mime)
-	{
-		this.mime = mime;
-	}
-
-	public String getFileExt()
-	{
-		return name().toLowerCase();
-	}
-
-	public String getMimeType()
-	{
-		return mime;
-	}
-
-	public static TileImageType getTileImageType(String type)
-	{
-		try
-		{
-			return TileImageType.valueOf(type.toUpperCase());
-		}
-		catch (IllegalArgumentException e)
-		{
-			for (TileImageType t : TileImageType.values())
-			{
-				if (t.getFileExt().equalsIgnoreCase(type))
-					return t;
-			}
-			throw e;
-		}
-	}
+	public MemoryTileCache getTileImageCache();
 }

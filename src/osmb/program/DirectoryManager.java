@@ -22,7 +22,7 @@ import java.io.File;
 import osmb.utilities.OSMBUtilities;
 
 /**
- * Provides a default initialization of the common directories used within OpenSeaMap ChartBundler:
+ * Provides a default initialization of the common directories used within OpenSeaMap ChartBundler and OpenSeaMap ChartDesigner:
  * <ul>
  * <li>current directory</li>
  * <li>program directory</li>
@@ -80,7 +80,7 @@ public class DirectoryManager
 	 * unused see {@link ACApp#getProgramDir()}
 	 * 
 	 * @return
-	 *		Returns the directory from which this java program is executed
+	 *         Returns the directory from which this java program is executed
 	 */
 	@SuppressWarnings("unused") // /W ACApp.getProgramDir() ...
 	private static File getProgramDir()
@@ -145,6 +145,7 @@ public class DirectoryManager
 	/**
 	 * should never be instantiated
 	 */
-	protected DirectoryManager() {
+	protected DirectoryManager()
+	{
 	}
 }

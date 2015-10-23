@@ -17,7 +17,11 @@
 package osmb.program.tilestore.berkeleydb;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Date;
+
+import javax.imageio.ImageIO;
 
 import com.sleepycat.persist.model.Entity;
 import com.sleepycat.persist.model.KeyField;
@@ -65,6 +69,20 @@ public class TileDbEntry implements IfTileStoreEntry
 	public TileDbEntry(int x, int y, int zoom, BufferedImage image)
 	{
 		tileKey = new TileDbKey(x, y, zoom);
+		ByteArrayOutputStream buf = new ByteArrayOutputStream(16000);
+		// BufferedImage image = getTileImage(zoom, x, y, loadMethod);
+		// if (image == null)
+		// return null;
+		try
+		{
+			ImageIO.write(image, "png", buf);
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		data = buf.toByteArray();
 		if (data == null)
 			throw new NullPointerException("Tile data must not be null!");
 		// this.data = image.getData().getDataBuffer().getData();

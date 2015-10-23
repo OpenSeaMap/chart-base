@@ -45,6 +45,7 @@ import com.sleepycat.persist.evolve.Renamer;
 
 import osmb.mapsources.IfMapSource;
 import osmb.program.ACSettings;
+import osmb.program.DelayedInterruptThread;
 import osmb.program.tilestore.ACSiTileStore;
 import osmb.program.tilestore.IfTileStoreEntry;
 import osmb.program.tilestore.TileStoreException;
@@ -65,6 +66,9 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 	 */
 	private static final int MAX_CONCURRENT_ENVIRONMENTS = 5;
 	private EnvironmentConfig envConfig;
+	/**
+	 * Map holding the database for each map source.
+	 */
 	private Map<String, TileDatabase> tileDbMap;
 	private FileLock tileStoreLock = null;
 	private Mutations mutations;
@@ -168,12 +172,19 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 		return new TileDbEntry(x, y, zoom, new byte[] {}, time, timeExpires, "");
 	}
 
+	/**
+	 * This retrieves the database holding all downloaded tiles for the specified map source.
+	 * 
+	 * @param mapSource
+	 * @return
+	 * @throws DatabaseException
+	 */
 	private TileDatabase getTileDatabase(IfMapSource mapSource) throws DatabaseException
 	{
 		TileDatabase db;
 		if (tileDbMap == null)
-			// Tile store has been closed already
-			return null;
+		  // Tile store has been closed already
+		  return null;
 		String storeName = mapSource.getName();
 		if (storeName == null)
 			return null;
@@ -209,8 +220,8 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 	{
 		TileDatabase db;
 		if (tileDbMap == null)
-			// Tile store has been closed already
-			return null;
+		  // Tile store has been closed already
+		  return null;
 		if (storeName == null)
 			return null;
 		synchronized (tileDbMap)
@@ -527,6 +538,13 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 		return result;
 	}
 
+	/**
+	 * To shutdown the whole app we employ one thread to perform the necessary actions.
+	 * Especially it performs a clean shutdown of the tile store databases.
+	 * 
+	 * @author humbach
+	 *
+	 */
 	private class ShutdownThread extends DelayedInterruptThread
 	{
 		private final boolean shutdown;
