@@ -95,5 +95,4 @@ public class BoundingRect
 	{
 		return String.format("BoundingRect [N=%2.4f, S==%2.4f, W=%2.4f, E=%2.4f]", north, south, west, east);
 	}
-
 }

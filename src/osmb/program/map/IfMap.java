@@ -113,22 +113,38 @@ public interface IfMap extends IfCatalogObject, IfCapabilityDeletable
 	public long getTileCount();
 
 	/**
+<<<<<<< HEAD
 	 * @return XMin in tile coordinates
+=======
+	 * @return XMin in pixel coordinates
+>>>>>>> 1aea753b5adb5b1b607d41fd074240fbf3812325
 	 */
 	public int getXMin();
 
 	/**
+<<<<<<< HEAD
 	 * @return XMax in tile coordinates
+=======
+	 * @return XMax in pixel coordinates
+>>>>>>> 1aea753b5adb5b1b607d41fd074240fbf3812325
 	 */
 	public int getXMax();
 
 	/**
+<<<<<<< HEAD
 	 * @return YMin in tile coordinates
+=======
+	 * @return YMin in pixel coordinates
+>>>>>>> 1aea753b5adb5b1b607d41fd074240fbf3812325
 	 */
 	public int getYMin();
 
 	/**
+<<<<<<< HEAD
 	 * @return YMax in tile coordinates
+=======
+	 * @return YMax in pixel coordinates
+>>>>>>> 1aea753b5adb5b1b607d41fd074240fbf3812325
 	 */
 	public int getYMax();
 }
