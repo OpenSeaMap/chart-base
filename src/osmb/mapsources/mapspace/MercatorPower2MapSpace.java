@@ -28,9 +28,6 @@ import osmb.program.map.IfMapSpace;
  * <p>
  * This is the only implementation that is currently supported by OpenSeaMap ChartBundler.
  * </p>
- * <p>
- * DO NOT TRY TO IMPLEMENT YOUR OWN. IT WILL MOST LIKELY NOT WORK!
- * </p>
  * 
  * Currently it supports a world up to zoom level 22
  * 
@@ -56,8 +53,8 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	protected MercatorPower2MapSpace(int tileSize)
 	{
 		this.tileSize = tileSize;
-		worldSize = new int[23];
-		for (int zoom = 0; zoom < worldSize.length; zoom++)
+		worldSize = new int[MAX_TECH_ZOOM + 1];
+		for (int zoom = MIN_TECH_ZOOM; zoom < worldSize.length; zoom++)
 			worldSize[zoom] = tileSize * (1 << zoom);
 	}
 
@@ -76,7 +73,7 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 * Returns the absolute number of pixels in y or x, defined as: 2<sup>zoom</sup> * <code>tileSize</code>
 	 * 
 	 * @param zoom
-	 *          [0..22] (for tileSize = 256)
+	 *          [MIN_TECH_ZOOM..MAX_TECH_ZOOM] (for tileSize = 256)
 	 * @return
 	 */
 	@Override
@@ -96,7 +93,7 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 * @param lat
 	 *          [-90...90]
 	 * @param zoom
-	 *          [0..22] (for tileSize = 256)
+	 *          [MIN_TECH_ZOOM..MAX_TECH_ZOOM] (for tileSize = 256)
 	 * @return [0..2^zoom*tileSize[
 	 * @author Jan Peter Stotz
 	 */
@@ -118,7 +115,7 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 * @param lon
 	 *          [-180..180]
 	 * @param zoom
-	 *          [0..22] (for tileSize = 256)
+	 *          [MIN_TECH_ZOOM..MAX_TECH_ZOOM] (for tileSize = 256)
 	 * @return [0..2^zoom*TILE_SIZE[
 	 * @author Jan Peter Stotz
 	 */
@@ -137,7 +134,7 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 * @param x
 	 *          [0..2^zoom * tileSize[
 	 * @param zoom
-	 *          [0..22]
+	 *          [MIN_TECH_ZOOM..MAX_TECH_ZOOM]
 	 * @return ]-180..180[
 	 * @author Jan Peter Stotz
 	 */
@@ -153,7 +150,7 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 * @param y
 	 *          [0..2^zoom * tileSize[
 	 * @param zoom
-	 *          [0..22]
+	 *          [MIN_TECH_ZOOM..MAX_TECH_ZOOM]
 	 * @return [MIN_LAT..MAX_LAT] is about [-85..85]
 	 */
 	@Override

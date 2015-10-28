@@ -18,6 +18,8 @@ package osmb.program.map;
 
 import java.awt.Point;
 
+import osmb.mapsources.mapspace.MercatorPower2MapSpace;
+
 /**
  * Preparation for supporting map resolutions other than those uses by Google/OpenstreetMap.
  * 
@@ -28,6 +30,13 @@ import java.awt.Point;
  */
 public interface IfMapSpace
 {
+	/**
+	 * These are the software technical limits because we use an int for the pixel coordinates. In zoom level 23 the coordinate would exceed the int...
+	 * If we will want to provide higher zoom levels, we have to change the data type used to 64bit int... This is a lot of work, so we do it not (now).
+	 */
+	final int MIN_TECH_ZOOM = 0;
+	final int MAX_TECH_ZOOM = 22;
+
 	public enum ProjectionCategory
 	{
 		SPHERE, ELLIPSOID, GEOID

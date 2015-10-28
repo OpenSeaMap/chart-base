@@ -31,8 +31,16 @@ import osmb.program.tilestore.ACSiTileStore;
 import osmb.program.tilestore.IfTileStoreEntry;
 import osmb.utilities.OSMBUtilities;
 
+/**
+ * The TileDonwLoader is the low-level class, which is actually getting the image data.
+ * It only consists of static methods.
+ * There is no constructor available.
+ */
 public class TileDownLoader
 {
+	private static Logger log = Logger.getLogger(TileDownLoader.class);
+	private static ACSettings settings = ACSettings.getInstance();
+
 	public static String ACCEPT = "text/html, image/png, image/jpeg, image/gif, */*;q=0.1";
 
 	static
@@ -43,17 +51,27 @@ public class TileDownLoader
 		System.setProperty("http.maxConnections", "20");
 	}
 
-	private static Logger log = Logger.getLogger(TileDownLoader.class);
-	private static ACSettings settings = ACSettings.getInstance();
-
-	public static byte[] getImage(int x, int y, int zoom, IfHttpMapSource mapSource) throws IOException, InterruptedException, UnrecoverableDownloadException
+	/**
+	 * Tries to get the data from the tile store.
+	 * If this is not successful, it loads the tile from the online map source by {@link #downloadTileAndUpdateStore}().
+	 * 
+	 * @param x
+	 * @param y
+	 * @param zoom
+	 * @param mapSource
+	 * @return
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @throws UnrecoverableDownloadException
+	 */
+	public static byte[] getTileData(int x, int y, int zoom, IfHttpMapSource mapSource) throws IOException, InterruptedException, UnrecoverableDownloadException
 	{
 		IfMapSpace mapSpace = mapSource.getMapSpace();
 		int maxTileIndex = mapSpace.getMaxPixels(zoom) / mapSpace.getTileSize();
 		if (x > maxTileIndex)
-			throw new RuntimeException("Invalid tile index x=" + x + " for zoom " + zoom);
+			throw new RuntimeException("Invalid tile index x=" + x + " for zoom " + zoom + ", MAX=" + maxTileIndex);
 		if (y > maxTileIndex)
-			throw new RuntimeException("Invalid tile index y=" + y + " for zoom " + zoom);
+			throw new RuntimeException("Invalid tile index y=" + y + " for zoom " + zoom + ", MAX=" + maxTileIndex);
 
 		ACSiTileStore ts = ACSiTileStore.getInstance();
 
@@ -64,7 +82,7 @@ public class TileDownLoader
 		IfTileStoreEntry tile = null;
 		if (s.getTileStoreEnabled())
 		{
-			// Copy the file from the persistent tilestore instead of downloading it from internet.
+			// Copy the file from the persistent tile store instead of downloading it from internet.
 			tile = ts.getTile(x, y, zoom, mapSource);
 			boolean expired = isTileExpired(tile);
 			if (tile != null)
@@ -133,19 +151,20 @@ public class TileDownLoader
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public static byte[] downloadTileAndUpdateStore(int x, int y, int zoom, IfHttpMapSource mapSource) throws UnrecoverableDownloadException, IOException,
-			InterruptedException
+	public static byte[] downloadTileAndUpdateStore(int x, int y, int zoom, IfHttpMapSource mapSource)
+	    throws UnrecoverableDownloadException, IOException, InterruptedException
 	{
 		return downloadTileAndUpdateStore(x, y, zoom, mapSource, ACSettings.getInstance().getTileStoreEnabled());
 	}
 
-	public static byte[] downloadTile(int x, int y, int zoom, IfHttpMapSource mapSource) throws UnrecoverableDownloadException, IOException, InterruptedException
-	{
-		return downloadTileAndUpdateStore(x, y, zoom, mapSource, false);
-	}
+	// public static byte[] downloadTile(int x, int y, int zoom, IfHttpMapSource mapSource) throws UnrecoverableDownloadException, IOException,
+	// InterruptedException
+	// {
+	// return downloadTileAndUpdateStore(x, y, zoom, mapSource, false);
+	// }
 
 	public static byte[] downloadTileAndUpdateStore(int x, int y, int zoom, IfHttpMapSource mapSource, boolean useTileStore)
-			throws UnrecoverableDownloadException, IOException, InterruptedException
+	    throws UnrecoverableDownloadException, IOException, InterruptedException
 	{
 		if (zoom < 0)
 			throw new UnrecoverableDownloadException("Negative zoom!");
@@ -183,8 +202,8 @@ public class TileDownLoader
 		return data;
 	}
 
-	public static byte[] updateStoredTile(IfTileStoreEntry tile, IfHttpMapSource mapSource) throws UnrecoverableDownloadException, IOException,
-			InterruptedException
+	public static byte[] updateStoredTile(IfTileStoreEntry tile, IfHttpMapSource mapSource)
+	    throws UnrecoverableDownloadException, IOException, InterruptedException
 	{
 		final int x = tile.getX();
 		final int y = tile.getY();
@@ -300,17 +319,21 @@ public class TileDownLoader
 		if (tileStoreEntry == null)
 			return true;
 		long expiredTime = tileStoreEntry.getTimeExpires();
+		log.debug("ts.expires=" + expiredTime);
 		if (expiredTime >= 0)
 		{
 			// server had set an expiration time
 			long maxExpirationTime = settings.getTileMaxExpirationTime() + tileStoreEntry.getTimeDownloaded();
 			long minExpirationTime = settings.getTileMinExpirationTime() + tileStoreEntry.getTimeDownloaded();
 			expiredTime = Math.max(minExpirationTime, Math.min(maxExpirationTime, expiredTime));
+			log.debug("ts/set.expires=" + expiredTime + ", tDl=" + tileStoreEntry.getTimeDownloaded() + ", sMax=" + maxExpirationTime + ", sMin=" + minExpirationTime
+			    + ", now=" + System.currentTimeMillis());
 		}
 		else
 		{
 			// no expiration time set by server - use the default one
 			expiredTime = tileStoreEntry.getTimeDownloaded() + ACSettings.getTileDefaultExpirationTime();
+			log.debug("def.expires=" + expiredTime);
 		}
 		return (expiredTime < System.currentTimeMillis());
 	}
@@ -430,7 +453,7 @@ public class TileDownLoader
 					log.trace("Content (" + contentType + "): " + new String(data));
 				}
 				throw new UnrecoverableDownloadException("Content type of the loaded image is unknown: " + contentType,
-						UnrecoverableDownloadException.ERROR_CODE_CONTENT_TYPE);
+				    UnrecoverableDownloadException.ERROR_CODE_CONTENT_TYPE);
 			}
 		}
 	}
@@ -448,7 +471,7 @@ public class TileDownLoader
 		if (len < 0)
 			return;
 		if (data.length != len)
-			throw new UnrecoverableDownloadException("Content length is not as declared by the server: retrived=" + data.length + " bytes  expected-content-length="
-					+ len + " bytes");
+			throw new UnrecoverableDownloadException(
+			    "Content length is not as declared by the server: retrieved=" + data.length + " bytes, expected-content-length=" + len + " bytes");
 	}
 }

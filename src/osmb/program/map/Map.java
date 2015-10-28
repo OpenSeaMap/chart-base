@@ -33,7 +33,6 @@ import osmb.exceptions.InvalidNameException;
 import osmb.mapsources.IfMapSource;
 import osmb.program.catalog.IfCapabilityDeletable;
 import osmb.program.catalog.IfCatalog;
-import osmb.program.map.IfMapSpace;
 import osmb.program.tiles.IfTileFilter;
 import osmb.program.tiles.TileImageParameters;
 import osmb.utilities.geo.EastNorthCoordinate;
@@ -106,6 +105,9 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		this.number = mapNumber;
 	}
 
+	/**
+	 * This actually get only the value for {@link #tileDimension}, which currently (2015) is fixed at 256 by 256 pixels
+	 */
 	protected void calculateRuntimeValues()
 	{
 		if (mapSource == null)
@@ -200,14 +202,14 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public int getXMax()
 	{
-		//return minTileCoordinate.y;
+		// return minTileCoordinate.y;
 		return maxTileCoordinate.x;
 	}
 
 	@Override
 	public int getYMin()
 	{
-		//return maxTileCoordinate.x;
+		// return maxTileCoordinate.x;
 		return minTileCoordinate.y;
 	}
 
@@ -318,22 +320,21 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 
 	/////////////////////////////////////////////////////////////////////////////////
 	// /W mapSource.getMaxZoom() or JMapViewer.MAX_ZOOM = 22 ???????
-	
-	
+
 	protected MercatorPixelCoordinate ulBordersToMaxZoom()
 	{
 		MercatorPixelCoordinate borderCoord = new MercatorPixelCoordinate(mapSource.getMapSpace(), minTileCoordinate.x, minTileCoordinate.y, getZoom());
 		borderCoord = borderCoord.adaptToZoomlevel(mapSource.getMaxZoom());
 		return borderCoord;
 	}
-	
+
 	protected MercatorPixelCoordinate lrBordersToMaxZoom()
 	{
 		MercatorPixelCoordinate borderCoord = new MercatorPixelCoordinate(mapSource.getMapSpace(), maxTileCoordinate.x + 1, maxTileCoordinate.y + 1, getZoom());
 		borderCoord = borderCoord.adaptToZoomlevel(mapSource.getMaxZoom());
 		return borderCoord;
 	}
-	
+
 	@Override
 	public int getXBorderMin()
 	{
@@ -343,14 +344,14 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public int getXBorderMax()
 	{
-		//return minTileCoordinate.y;
+		// return minTileCoordinate.y;
 		return lrBordersToMaxZoom().getX();
 	}
 
 	@Override
 	public int getYBorderMin()
 	{
-		//return maxTileCoordinate.x;
+		// return maxTileCoordinate.x;
 		return ulBordersToMaxZoom().getY();
 	}
 
@@ -360,7 +361,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		return lrBordersToMaxZoom().getY();
 	}
 	/////////////////////////////////////////////////////////////////////////////////
-	
+
 	@Override
 	public double getMinLat()
 	{
@@ -464,8 +465,8 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public long calculateTilesToDownload()
 	{
-//		long tiles = (maxTileCoordinate.x - minTileCoordinate.x) * (maxTileCoordinate.y - minTileCoordinate.y)
-//		    / (mapSource.getMapSpace().getTileSize() * mapSource.getMapSpace().getTileSize());
+		// long tiles = (maxTileCoordinate.x - minTileCoordinate.x) * (maxTileCoordinate.y - minTileCoordinate.y)
+		// / (mapSource.getMapSpace().getTileSize() * mapSource.getMapSpace().getTileSize());
 		long tiles = getTileCount();
 		// TODO correct tile count in case of multi-layer maps
 		// if (mapSource instanceof MultiLayerMapSource) {

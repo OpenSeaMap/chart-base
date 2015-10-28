@@ -131,6 +131,9 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 		return null;
 	}
 
+	/**
+	 * This loads the image data via {@link #getTileImage}() and converts them by {@link ImageIO.write}() into a byte array.
+	 */
 	@Override
 	public byte[] getTileData(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, InterruptedException, TileException
 	{
@@ -142,6 +145,10 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 		return buf.toByteArray();
 	}
 
+	/**
+	 * This loads the image via {@link IfMapSource.getTileImage}() for each layer in this multi layer map source.
+	 * When all layer images are loaded, they were combined via Graphics2D.drawImage().
+	 */
 	@Override
 	public BufferedImage getTileImage(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, InterruptedException, TileException
 	{

@@ -152,7 +152,7 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 		else
 		{
 			initializeHttpMapSource();
-			return TileDownLoader.getImage(x, y, zoom, this);
+			return TileDownLoader.getTileData(x, y, zoom, this);
 		}
 	}
 

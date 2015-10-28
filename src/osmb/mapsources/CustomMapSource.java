@@ -183,7 +183,7 @@ public class CustomMapSource implements IfHttpMapSource
 		{
 			try
 			{
-				return TileDownLoader.getImage(x, y, zoom, this);
+				return TileDownLoader.getTileData(x, y, zoom, this);
 			}
 			catch (Exception e)
 			{
@@ -192,7 +192,7 @@ public class CustomMapSource implements IfHttpMapSource
 		}
 		else
 		{
-			return TileDownLoader.getImage(x, y, zoom, this);
+			return TileDownLoader.getTileData(x, y, zoom, this);
 		}
 	}
 

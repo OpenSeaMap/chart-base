@@ -45,6 +45,7 @@ import com.sleepycat.persist.evolve.Renamer;
 
 import osmb.mapsources.IfMapSource;
 import osmb.program.ACSettings;
+import osmb.program.DelayedInterruptThread;
 import osmb.program.tilestore.ACSiTileStore;
 import osmb.program.tilestore.IfTileStoreEntry;
 import osmb.program.tilestore.TileStoreException;
@@ -65,6 +66,9 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 	 */
 	private static final int MAX_CONCURRENT_ENVIRONMENTS = 5;
 	private EnvironmentConfig envConfig;
+	/**
+	 * Map holding the database for each map source.
+	 */
 	private Map<String, TileDatabase> tileDbMap;
 	private FileLock tileStoreLock = null;
 	private Mutations mutations;
@@ -168,12 +172,19 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 		return new TileDbEntry(x, y, zoom, new byte[] {}, time, timeExpires, "");
 	}
 
+	/**
+	 * This retrieves the database holding all downloaded tiles for the specified map source.
+	 * 
+	 * @param mapSource
+	 * @return
+	 * @throws DatabaseException
+	 */
 	private TileDatabase getTileDatabase(IfMapSource mapSource) throws DatabaseException
 	{
 		TileDatabase db;
 		if (tileDbMap == null)
-			// Tile store has been closed already
-			return null;
+		  // Tile store has been closed already
+		  return null;
 		String storeName = mapSource.getName();
 		if (storeName == null)
 			return null;
@@ -209,8 +220,8 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 	{
 		TileDatabase db;
 		if (tileDbMap == null)
-			// Tile store has been closed already
-			return null;
+		  // Tile store has been closed already
+		  return null;
 		if (storeName == null)
 			return null;
 		synchronized (tileDbMap)
@@ -527,6 +538,13 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 		return result;
 	}
 
+	/**
+	 * To shutdown the whole app we employ one thread to perform the necessary actions.
+	 * Especially it performs a clean shutdown of the tile store databases.
+	 * 
+	 * @author humbach
+	 *
+	 */
 	private class ShutdownThread extends DelayedInterruptThread
 	{
 		private final boolean shutdown;
@@ -584,10 +602,10 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 		{
 			log.debug("Opening tile store db: \"" + databaseDirectory + "\"");
 			File storeDir = databaseDirectory;
-			DelayedInterruptThread t = (DelayedInterruptThread) Thread.currentThread();
+			// DelayedInterruptThread t = (DelayedInterruptThread) Thread.currentThread();
 			try
 			{
-				t.pauseInterrupt();
+				// t.pauseInterrupt();
 				this.mapSourceName = mapSourceName;
 				lastAccess = System.currentTimeMillis();
 
@@ -605,9 +623,9 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 			}
 			finally
 			{
-				if (t.interruptedWhilePaused())
-					close();
-				t.resumeInterrupt();
+				// if (t.interruptedWhilePaused())
+				// close();
+				// t.resumeInterrupt();
 			}
 		}
 
@@ -623,17 +641,17 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 
 		public void put(TileDbEntry tile) throws DatabaseException
 		{
-			DelayedInterruptThread t = (DelayedInterruptThread) Thread.currentThread();
+			// DelayedInterruptThread t = (DelayedInterruptThread) Thread.currentThread();
 			try
 			{
-				t.pauseInterrupt();
+				// t.pauseInterrupt();
 				tileIndex.put(tile);
 			}
 			finally
 			{
-				if (t.interruptedWhilePaused())
-					close();
-				t.resumeInterrupt();
+				// if (t.interruptedWhilePaused())
+				// close();
+				// t.resumeInterrupt();
 			}
 		}
 
@@ -655,7 +673,7 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 		public BufferedImage getCacheCoverage(int zoom, Point tileNumMin, Point tileNumMax) throws DatabaseException, InterruptedException
 		{
 			log.debug("Loading cache coverage for region " + tileNumMin + " " + tileNumMax + " of zoom level " + zoom);
-			DelayedInterruptThread t = (DelayedInterruptThread) Thread.currentThread();
+			// DelayedInterruptThread t = (DelayedInterruptThread) Thread.currentThread();
 			int width = tileNumMax.x - tileNumMin.x + 1;
 			int height = tileNumMax.y - tileNumMin.y + 1;
 			byte ff = (byte) 0xFF;
@@ -694,7 +712,8 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 						int pixely = key.y - tileNumMin.y;
 						raster.setSample(pixelx, pixely, 0, 1);
 						key = cursor.next();
-						if (t.isInterrupted())
+						// if (t.isInterrupted())
+						if (Thread.currentThread().isInterrupted())
 						{
 							log.debug("Cache coverage loading aborted");
 							throw new InterruptedException();
@@ -740,10 +759,10 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 						tileDbMap.remove(mapSourceName);
 				}
 			}
-			DelayedInterruptThread t = (DelayedInterruptThread) Thread.currentThread();
+			// DelayedInterruptThread t = (DelayedInterruptThread) Thread.currentThread();
 			try
 			{
-				t.pauseInterrupt();
+				// t.pauseInterrupt();
 				try
 				{
 					log.debug("Closing tile store db \"" + mapSourceName + "\"");
@@ -769,9 +788,9 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 			}
 			finally
 			{
-				if (t.interruptedWhilePaused())
-					close();
-				t.resumeInterrupt();
+				// if (t.interruptedWhilePaused())
+				// close();
+				// t.resumeInterrupt();
 			}
 		}
 

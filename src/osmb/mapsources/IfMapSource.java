@@ -26,13 +26,9 @@ import osmb.program.jaxb.MapSourceAdapter;
 import osmb.program.map.IfMapSpace;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
-import osmb.program.tiles.UnrecoverableDownloadException;
-
-//License: GPL. Copyright 2008 by Jan Peter Stotz
 
 /**
  * 
- * @author Jan Peter Stotz
  */
 @XmlJavaTypeAdapter(MapSourceAdapter.class)
 public interface IfMapSource
@@ -43,49 +39,54 @@ public interface IfMapSource
 	};
 
 	/**
-	 * Specifies the maximum zoom value. The number of zoom levels is [0.. {@link #getMaxZoom()}].
+	 * Specifies the maximum zoom value. The number of zoom levels supported by this map source is [{@link #getMinZoom()}.. {@link #getMaxZoom()}].
+	 * To use the zoom level it has to checked against Bundle.getMaxZoomLevel() and osmb.MAX_ZOOM. The first one is the maximum reasonable to be used in the
+	 * bundles output format and device, the latter is the maximum zoom level supported by osmbs internal data structures.
 	 * 
-	 * @return maximum zoom value that has to be smaller or equal to {@link JMapViewer#MAX_ZOOM}
+	 * @return maximum zoom value
 	 */
 	public int getMaxZoom();
 
 	/**
-	 * Specifies the minimum zoom value. This value is usually 0. Only for maps that cover a certain region up to a limited zoom level this method should return a
-	 * value different than 0.
+	 * Specifies the minimum zoom value. The number of zoom levels supported by this map source is [{@link #getMinZoom()}.. {@link #getMaxZoom()}].
+	 * To use the zoom level it has to checked against Bundle.getMinZoomLevel() and osmb.MIN_ZOOM. The first one is the minimum reasonable to be used in the
+	 * bundles output format and device, the latter is the minimum zoom level supported by osmbs internal data structures.
 	 * 
 	 * @return minimum zoom value - usually 0
 	 */
 	public int getMinZoom();
 
 	/**
-	 * A tile layer name has to be unique and has to consist only of characters valid for filenames.
+	 * A tile layer name has to be unique.
 	 * 
 	 * @return Name of the tile layer
 	 */
 	public String getName();
 
 	/**
+	 * Retrieves the tile data as a byte array.
 	 * 
 	 * @param zoom
 	 * @param x
 	 * @param y
 	 * @param loadMethod
-	 * @return
+	 * @return the tile data as a byte array
 	 * @throws IOException
+	 * @throws TileException
 	 * @throws InterruptedException
-	 * @throws UnrecoverableDownloadException
 	 */
 	public byte[] getTileData(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException;
 
 	/**
+	 * Retrieves the tile data as an image.
 	 * 
 	 * @param zoom
 	 * @param x
 	 * @param y
 	 * @param loadMethod
-	 * @return
+	 * @return the tile data as an image
 	 * @throws IOException
-	 * @throws UnrecoverableDownloadException
+	 * @throws TileException
 	 * @throws InterruptedException
 	 */
 	public BufferedImage getTileImage(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException;
@@ -93,7 +94,7 @@ public interface IfMapSource
 	/**
 	 * Specifies the tile image type. For tiles rendered by Mapnik or Osmarenderer this is usually {@link TileImageType#PNG}.
 	 * 
-	 * @return file extension of the tile image type
+	 * @return Tile image file type
 	 */
 	public TileImageType getTileImageType();
 

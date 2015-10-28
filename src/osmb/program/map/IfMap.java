@@ -86,7 +86,7 @@ public interface IfMap extends IfCatalogObject, IfCapabilityDeletable
 	public void setMaxTileCoordinate(Point MaxC);
 
 	/**
-	 * The dimension of the tiles used in this map. This depends on the mapsource. Currently (2015) we support exclusively tiles of 256 by 256 pixels.
+	 * The dimension of the tiles used in this map. This depends on the map source. Currently (2015) we support exclusively tiles of 256 by 256 pixels.
 	 * 
 	 * @return The tile dimension in pixels.
 	 */
@@ -112,11 +112,23 @@ public interface IfMap extends IfCatalogObject, IfCapabilityDeletable
 	 */
 	public long getTileCount();
 
+	/**
+	 * @return XMin in pixel coordinates
+	 */
 	public int getXMin();
 
+	/**
+	 * @return XMax in pixel coordinates
+	 */
 	public int getXMax();
 
+	/**
+	 * @return YMin in pixel coordinates
+	 */
 	public int getYMin();
 
+	/**
+	 * @return YMax in pixel coordinates
+	 */
 	public int getYMax();
 }

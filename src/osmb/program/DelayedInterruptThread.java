@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package osmb.program.tilestore.berkeleydb;
+package osmb.program;
 
 import java.util.concurrent.ThreadFactory;
 
@@ -22,7 +22,7 @@ import java.util.concurrent.ThreadFactory;
  * The Berkeley DB has some problems when someone interrupts the thread that is currently performing IO activity.
  * Therefore before executing any DB we allow to disable the {@link #interrupt()} method via {@link #pauseInterrupt()}.
  * After the "interrupt sensitive section" {@link #resumeInterrupt()} restores the regular behavior. If the thread has
- * been interrupted while interrupt was disabled {@link #resumeInterrupt()} catches up this.
+ * been interrupted while interrupting was disabled {@link #resumeInterrupt()} catches up this.
  */
 public class DelayedInterruptThread extends Thread
 {
@@ -34,16 +34,20 @@ public class DelayedInterruptThread extends Thread
 		super(name);
 	}
 
-	public DelayedInterruptThread(Runnable target)
+	public DelayedInterruptThread(Runnable job)
 	{
-		super(target);
+		super(job);
 	}
 
-	public DelayedInterruptThread(Runnable target, String name)
+	public DelayedInterruptThread(Runnable job, String name)
 	{
-		super(target, name);
+		super(job, name);
 	}
 
+	/**
+	 * This handles interrupting.
+	 * If interrupting is currently disabled, it marks the attempt for later handling. {@link #resumeInterrupt()} then does the interrupting.
+	 */
 	@Override
 	public void interrupt()
 	{
@@ -53,11 +57,18 @@ public class DelayedInterruptThread extends Thread
 			super.interrupt();
 	}
 
+	/**
+	 * This disables 'normal' interrupting.
+	 */
 	public void pauseInterrupt()
 	{
 		interruptPaused = true;
 	}
 
+	/**
+	 * This reenables 'normal' interrupting.
+	 * It further checks if somebody tried to interrupt in the time between. If so it does so now.
+	 */
 	public void resumeInterrupt()
 	{
 		interruptPaused = false;
@@ -75,12 +86,18 @@ public class DelayedInterruptThread extends Thread
 		return new DIThreadFactory();
 	}
 
+	/**
+	 * This factory produces {@link DelayedInterruptThread}s.
+	 * 
+	 * @author humbach
+	 *
+	 */
 	private static class DIThreadFactory implements ThreadFactory
 	{
 		@Override
-		public Thread newThread(Runnable r)
+		public Thread newThread(Runnable job)
 		{
-			return new DelayedInterruptThread(r);
+			return new DelayedInterruptThread(job);
 		}
 	}
 }
