@@ -58,7 +58,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 {
 	// standard data
 	public static final int CURRENT_CATALOG_VERSION = 2;
-	public static final int MIN_CATALOG_ZOOMLEVEL = 4; // /W #zoom0-3 used to disable zoomlevels 0 t0 3 in MainFrame
+	// public static final int MIN_CATALOG_ZOOMLEVEL = 4; // /W #zoom0-3 used to disable zoomlevels 0 t0 3 in MainFrame
 	protected static Logger log = Logger.getLogger(Catalog.class);
 
 	// class/static data
@@ -83,7 +83,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		else
 			return CATALOG_FILENAME_PREFIX + catalogName + ".xml";
 	}
-	
+
 	/**
 	 * Builds a (hopefully) valid filename from a given catalog name for the overview '.png'
 	 * 
@@ -378,11 +378,11 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		log.trace("catalog=" + getName() + ", tiles=" + tiles);
 		return tiles;
 	}
-	
+
 	/**
 	 * This checks for empty catalogs. A catalog is empty, if there is no map with tiles in it.
 	 * 
-	 * @return 
+	 * @return
 	 */
 	// /W #??? to IFCatalog too?
 	public boolean isEmpty()
@@ -413,7 +413,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 			return true; // at least one duplicate name found
 		return false;
 	}
-	
+
 	/////////////////////////////////////////////////////////////
 	@Override
 	public int getXBorderMin()
@@ -425,7 +425,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		}
 		return xMin;
 	}
-	
+
 	@Override
 	public int getXBorderMax()
 	{
@@ -436,7 +436,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		}
 		return xMax;
 	}
-	
+
 	@Override
 	public int getYBorderMin()
 	{
@@ -447,7 +447,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		}
 		return yMin;
 	}
-	
+
 	@Override
 	public int getYBorderMax()
 	{

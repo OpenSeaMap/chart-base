@@ -26,7 +26,7 @@ import osmb.program.tiles.IfTileFilter;
 import osmb.program.tiles.TileImageParameters;
 
 /**
- * This interface describes the necessary elements for a map.
+ * This interface describes the necessary elements for a map. Its standard implementation is {@link Map}
  * 
  * @author humbach
  */
@@ -86,7 +86,7 @@ public interface IfMap extends IfCatalogObject, IfCapabilityDeletable
 	public void setMaxTileCoordinate(Point MaxC);
 
 	/**
-	 * The dimension of the tiles used in this map. This depends on the mapsource. Currently (2015) we support exclusively tiles of 256 by 256 pixels.
+	 * The dimension of the tiles used in this map. This depends on the map source. Currently (2015) we support exclusively tiles of 256 by 256 pixels.
 	 * 
 	 * @return The tile dimension in pixels.
 	 */
@@ -112,11 +112,23 @@ public interface IfMap extends IfCatalogObject, IfCapabilityDeletable
 	 */
 	public long getTileCount();
 
+	/**
+	 * @return XMin in tile coordinates
+	 */
 	public int getXMin();
 
+	/**
+	 * @return XMax in tile coordinates
+	 */
 	public int getXMax();
 
+	/**
+	 * @return YMin in tile coordinates
+	 */
 	public int getYMin();
 
+	/**
+	 * @return YMax in tile coordinates
+	 */
 	public int getYMax();
 }

@@ -23,13 +23,20 @@ import osmb.program.map.IfMapSpace;
 /**
  * Mercator projection with a world width and height of 256 * 2<sup>zoom</sup> pixel. This is the common projection used by OpenStreetMap and Google. It
  * provides methods to translate coordinates from 'map space' into latitude and longitude (on the WGS84 ellipsoid) and vice versa. Map space is measured in
- * pixels. The origin of the map space is the top left corner. The map space origin (0,0) has latitude ~85 and longitude -180
+ * pixels. The origin of the map space is the top left corner. The map space origin (0,0) has latitude ~85 and longitude -180.
+ * this makes: xMin - west; yMin - north; xMax - east; yMax - south.
+ * While the geo coordinates are independent of zoom level the map space is NOT. Map space coordinates, pixel and tiles, are depending on the zoom level for
+ * the same geographic point.
  * 
  * <p>
  * This is the only implementation that is currently supported by OpenSeaMap ChartBundler.
  * </p>
  * 
- * Currently it supports a world up to zoom level 22
+ * Currently it supports a world up to zoom level 22 because of the use of 32bit integer for pixel coordinates.
+ * 
+ * {@link http://de.wikipedia.org/wiki/UTM-Koordinatensystem}
+ * Longitude / Länge: (traditionell +Ost, −West) https://de.wikipedia.org/wiki/Geographische_Länge
+ * Latitude / Breite: (traditionell +Nord, −Süd) https://de.wikipedia.org/wiki/Geographische_Breite
  * 
  * @see IfMapSpace
  */
@@ -43,7 +50,7 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 * Pre-computed values for the world size (height respectively width) in the different zoom levels.
 	 */
 	protected final int[] worldSize;
-	public static final IfMapSpace INSTANCE_256 = new MercatorPower2MapSpace(256);
+	public static final IfMapSpace INSTANCE_256 = new MercatorPower2MapSpace(IfMapSpace.TECH_TILESIZE);
 
 	/**
 	 * this represents the size of one tile and the number of tiles for each zoom level
@@ -53,8 +60,8 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	protected MercatorPower2MapSpace(int tileSize)
 	{
 		this.tileSize = tileSize;
-		worldSize = new int[23];
-		for (int zoom = 0; zoom < worldSize.length; zoom++)
+		worldSize = new int[MAX_TECH_ZOOM + 1];
+		for (int zoom = MIN_TECH_ZOOM; zoom < worldSize.length; zoom++)
 			worldSize[zoom] = tileSize * (1 << zoom);
 	}
 
@@ -73,7 +80,7 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 * Returns the absolute number of pixels in y or x, defined as: 2<sup>zoom</sup> * <code>tileSize</code>
 	 * 
 	 * @param zoom
-	 *          [0..22] (for tileSize = 256)
+	 *          [MIN_TECH_ZOOM..MAX_TECH_ZOOM] (0..22 for tileSize = 256)
 	 * @return
 	 */
 	@Override
@@ -93,7 +100,7 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 * @param lat
 	 *          [-90...90]
 	 * @param zoom
-	 *          [0..22] (for tileSize = 256)
+	 *          [MIN_TECH_ZOOM..MAX_TECH_ZOOM] (0..22 for tileSize = 256)
 	 * @return [0..2^zoom*tileSize[
 	 * @author Jan Peter Stotz
 	 */
@@ -115,8 +122,8 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 * @param lon
 	 *          [-180..180]
 	 * @param zoom
-	 *          [0..22] (for tileSize = 256)
-	 * @return [0..2^zoom*TILE_SIZE[
+	 *          [MIN_TECH_ZOOM..MAX_TECH_ZOOM] (0..22 for tileSize = 256)
+	 * @return [0..2^zoom * TILE_SIZE[
 	 * @author Jan Peter Stotz
 	 */
 	@Override
@@ -134,7 +141,7 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 * @param x
 	 *          [0..2^zoom * tileSize[
 	 * @param zoom
-	 *          [0..22]
+	 *          [MIN_TECH_ZOOM..MAX_TECH_ZOOM] (0..22 for tileSize = 256)
 	 * @return ]-180..180[
 	 * @author Jan Peter Stotz
 	 */
@@ -150,7 +157,7 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 * @param y
 	 *          [0..2^zoom * tileSize[
 	 * @param zoom
-	 *          [0..22]
+	 *          [MIN_TECH_ZOOM..MAX_TECH_ZOOM]
 	 * @return [MIN_LAT..MAX_LAT] is about [-85..85]
 	 */
 	@Override

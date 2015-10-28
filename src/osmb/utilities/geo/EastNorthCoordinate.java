@@ -38,6 +38,14 @@ public class EastNorthCoordinate
 		lon = Double.NaN;
 	}
 
+	/**
+	 * Creates a geographic coordinate from map space coordinates
+	 * 
+	 * @param mapSpace
+	 * @param zoom
+	 * @param pixelCoordinateX
+	 * @param pixelCoordinateY
+	 */
 	public EastNorthCoordinate(IfMapSpace mapSpace, int zoom, int pixelCoordinateX, int pixelCoordinateY)
 	{
 		this.lat = mapSpace.cYToLat(pixelCoordinateY, zoom);

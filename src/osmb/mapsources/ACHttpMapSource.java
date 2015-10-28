@@ -110,8 +110,8 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 			synchronized (this)
 			{
 				if (initialized)
-					// Another thread has already completed initialization while this one was blocked
-					return;
+				  // Another thread has already completed initialization while this one was blocked
+				  return;
 				initernalInitialize();
 				initialized = true;
 				log.debug("Map source has been initialized");
@@ -129,6 +129,9 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 	{
 	}
 
+	/**
+	 * This retrieves the tile image as a byte array either from the online source or from the tile store depending on the specified loadMethod.
+	 */
 	@Override
 	public byte[] getTileData(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException
 	{
@@ -138,10 +141,11 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 			if (entry == null)
 				return null;
 			byte[] data = entry.getData();
-			if (Thread.currentThread() instanceof IfMapSourceListener)
-			{
-				((IfMapSourceListener) Thread.currentThread()).tileDownloaded(data.length);
-			}
+			// is handled on an upper level because of MultiLayerMapSources
+			// if (Thread.currentThread() instanceof IfMapSourceListener)
+			// {
+			// ((IfMapSourceListener) Thread.currentThread()).tileDownloaded(data.length);
+			// }
 			return data;
 		}
 		else if (loadMethod == LoadMethod.SOURCE)
@@ -152,10 +156,14 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 		else
 		{
 			initializeHttpMapSource();
-			return TileDownLoader.getImage(x, y, zoom, this);
+			return TileDownLoader.getTileData(x, y, zoom, this);
 		}
 	}
 
+	/**
+	 * This retrieves the tile image as an {@link BufferedImage} either from the online source or from the tile store depending on the specified loadMethod.
+	 * It simply converts the result of {@link #getTileData}().
+	 */
 	@Override
 	public BufferedImage getTileImage(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException
 	{

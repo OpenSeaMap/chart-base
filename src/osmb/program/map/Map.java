@@ -31,15 +31,22 @@ import org.apache.log4j.Logger;
 
 import osmb.exceptions.InvalidNameException;
 import osmb.mapsources.IfMapSource;
+import osmb.mapsources.mapspace.MercatorPower2MapSpace;
 import osmb.program.catalog.IfCapabilityDeletable;
 import osmb.program.catalog.IfCatalog;
-import osmb.program.map.IfMapSpace;
 import osmb.program.tiles.IfTileFilter;
 import osmb.program.tiles.TileImageParameters;
 import osmb.utilities.geo.EastNorthCoordinate;
 import osmb.utilities.image.MercatorPixelCoordinate;
 
-// public class Map implements IfMap, IfCapabilityDeletable, IfDownloadableElement, TreeNode
+/**
+ * The map is the implementation of a rectangular (not really, since the earth is a globe) area on earths surface, which is rendered in square tiles (of 256 x
+ * 265) pixels.
+ * see {@link IfMapSpace}.
+ * For a description of the map space coordinates see {@link MercatorPower2MapSpace}.
+ * 
+ * @author humbach *
+ */
 @XmlType(propOrder =
 { "name", "mapSource", "ULC", "LRC", "minTileCoordinate", "maxTileCoordinate", "number" })
 public class Map implements IfMap, IfCapabilityDeletable, TreeNode
@@ -54,8 +61,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	protected String name;
 	/**
 	 * the osm internal number, the numbering scheme is still to be defined
-	 * 20150722 AH proposal: ZL-LON-LAT-WID-HEI, LON and LAT in tiles/8 since
-	 * this is our map alignment grid, WID, HEI in tiles.
+	 * 20150722 AH proposal: ZL-LON-LAT-WID-HEI, LON and LAT in tiles/8 since this is our map alignment grid, WID, HEI in tiles.
 	 */
 	protected String number;
 	/**
@@ -106,6 +112,9 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		this.number = mapNumber;
 	}
 
+	/**
+	 * This actually get only the value for {@link #tileDimension}, which currently (2015) is fixed at 256 by 256 pixels
+	 */
 	protected void calculateRuntimeValues()
 	{
 		if (mapSource == null)
@@ -150,6 +159,8 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 
 	@Override
 	/**
+	 * The tile coordinate value is stored in map space coordinates
+	 * 
 	 * @XmlJavaTypeAdapter(PointAdapter.class) annotation in package-info.java
 	 */
 	@XmlAttribute
@@ -158,12 +169,18 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		return this.minTileCoordinate;
 	}
 
+	/**
+	 * The tile coordinate value is stored in map space coordinates (pixel coordiantes)
+	 */
 	@Override
 	public void setMaxTileCoordinate(Point MaxC)
 	{
 		this.maxTileCoordinate = MaxC;
 	}
 
+	/**
+	 * The tile coordinate value is stored in map space coordinates (pixel coordiantes)
+	 */
 	@Override
 	public void setMinTileCoordinate(Point MinC)
 	{
@@ -191,30 +208,40 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	{
 	}
 
+	/**
+	 * XMin is west
+	 */
 	@Override
 	public int getXMin()
 	{
-		return minTileCoordinate.x;
+		return minTileCoordinate.x / IfMapSpace.TECH_TILESIZE;
 	}
 
+	/**
+	 * XMax is east
+	 */
 	@Override
 	public int getXMax()
 	{
-		//return minTileCoordinate.y;
-		return maxTileCoordinate.x;
+		return maxTileCoordinate.x / IfMapSpace.TECH_TILESIZE;
 	}
 
+	/**
+	 * YMin is north
+	 */
 	@Override
 	public int getYMin()
 	{
-		//return maxTileCoordinate.x;
-		return minTileCoordinate.y;
+		return minTileCoordinate.y / IfMapSpace.TECH_TILESIZE;
 	}
 
+	/**
+	 * YMax is south
+	 */
 	@Override
 	public int getYMax()
 	{
-		return maxTileCoordinate.y;
+		return maxTileCoordinate.y / IfMapSpace.TECH_TILESIZE;
 	}
 
 	@Override
@@ -318,22 +345,21 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 
 	/////////////////////////////////////////////////////////////////////////////////
 	// /W mapSource.getMaxZoom() or JMapViewer.MAX_ZOOM = 22 ???????
-	
-	
+
 	protected MercatorPixelCoordinate ulBordersToMaxZoom()
 	{
 		MercatorPixelCoordinate borderCoord = new MercatorPixelCoordinate(mapSource.getMapSpace(), minTileCoordinate.x, minTileCoordinate.y, getZoom());
 		borderCoord = borderCoord.adaptToZoomlevel(mapSource.getMaxZoom());
 		return borderCoord;
 	}
-	
+
 	protected MercatorPixelCoordinate lrBordersToMaxZoom()
 	{
 		MercatorPixelCoordinate borderCoord = new MercatorPixelCoordinate(mapSource.getMapSpace(), maxTileCoordinate.x + 1, maxTileCoordinate.y + 1, getZoom());
 		borderCoord = borderCoord.adaptToZoomlevel(mapSource.getMaxZoom());
 		return borderCoord;
 	}
-	
+
 	@Override
 	public int getXBorderMin()
 	{
@@ -343,14 +369,14 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public int getXBorderMax()
 	{
-		//return minTileCoordinate.y;
+		// return minTileCoordinate.y;
 		return lrBordersToMaxZoom().getX();
 	}
 
 	@Override
 	public int getYBorderMin()
 	{
-		//return maxTileCoordinate.x;
+		// return maxTileCoordinate.x;
 		return ulBordersToMaxZoom().getY();
 	}
 
@@ -360,7 +386,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		return lrBordersToMaxZoom().getY();
 	}
 	/////////////////////////////////////////////////////////////////////////////////
-	
+
 	@Override
 	public double getMinLat()
 	{
@@ -399,7 +425,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 			for (IfMap map : layer)
 			{
 				if ((map != this) && (newName.equals(map.getName())))
-					throw new InvalidNameException("There is already a map named \"" + newName + "\" in this layer.\nMap names have to unique within an layer.");
+					throw new InvalidNameException("There is already a map named \"" + newName + "\" in this layer.\nMap names have to be unique within a layer.");
 			}
 		}
 		this.name = newName;
@@ -464,8 +490,8 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public long calculateTilesToDownload()
 	{
-//		long tiles = (maxTileCoordinate.x - minTileCoordinate.x) * (maxTileCoordinate.y - minTileCoordinate.y)
-//		    / (mapSource.getMapSpace().getTileSize() * mapSource.getMapSpace().getTileSize());
+		// long tiles = (maxTileCoordinate.x - minTileCoordinate.x) * (maxTileCoordinate.y - minTileCoordinate.y)
+		// / (mapSource.getMapSpace().getTileSize() * mapSource.getMapSpace().getTileSize());
 		long tiles = getTileCount();
 		// TODO correct tile count in case of multi-layer maps
 		// if (mapSource instanceof MultiLayerMapSource) {

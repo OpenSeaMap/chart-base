@@ -75,11 +75,11 @@ public class JobDispatcher extends ThreadPoolExecutor implements ThreadFactory, 
 	}
 
 	/**
-	 * Constructor with a specified maximum of concurrent threads in this pool
+	 * Constructor with a specified maximum of concurrent threads in this pool. This maximum has to be at least the minimum or the other way round.
 	 */
 	public JobDispatcher(int nMaxConcThreads)
 	{
-		super(Math.max(nMaxConcThreads, WORKER_THREAD_INIT_COUNT), nMaxConcThreads, WORKER_THREAD_TIMEOUT, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+		super(Math.min(nMaxConcThreads, WORKER_THREAD_INIT_COUNT), nMaxConcThreads, WORKER_THREAD_TIMEOUT, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 		allowCoreThreadTimeOut(true);
 	}
 

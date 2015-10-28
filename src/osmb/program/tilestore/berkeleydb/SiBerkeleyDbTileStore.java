@@ -579,7 +579,7 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 					}
 				}
 			}
-			log.debug("All tile databases has been closed");
+			log.debug("All tile databases have been closed");
 		}
 	}
 

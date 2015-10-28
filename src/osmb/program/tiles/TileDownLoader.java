@@ -38,6 +38,9 @@ import osmb.utilities.OSMBUtilities;
  */
 public class TileDownLoader
 {
+	private static Logger log = Logger.getLogger(TileDownLoader.class);
+	private static ACSettings settings = ACSettings.getInstance();
+
 	public static String ACCEPT = "text/html, image/png, image/jpeg, image/gif, */*;q=0.1";
 
 	static
@@ -48,10 +51,20 @@ public class TileDownLoader
 		System.setProperty("http.maxConnections", "20");
 	}
 
-	private static Logger log = Logger.getLogger(TileDownLoader.class);
-	private static ACSettings settings = ACSettings.getInstance();
-
-	public static byte[] getImage(int x, int y, int zoom, IfHttpMapSource mapSource) throws IOException, InterruptedException, UnrecoverableDownloadException
+	/**
+	 * Tries to get the data from the tile store.
+	 * If this is not successful, it loads the tile from the online map source by {@link #downloadTileAndUpdateStore}().
+	 * 
+	 * @param x
+	 * @param y
+	 * @param zoom
+	 * @param mapSource
+	 * @return
+	 * @throws IOException
+	 * @throws InterruptedException
+	 * @throws UnrecoverableDownloadException
+	 */
+	public static byte[] getTileData(int x, int y, int zoom, IfHttpMapSource mapSource) throws IOException, InterruptedException, UnrecoverableDownloadException
 	{
 		IfMapSpace mapSpace = mapSource.getMapSpace();
 		int maxTileIndex = mapSpace.getMaxPixels(zoom) / mapSpace.getTileSize();
@@ -189,6 +202,17 @@ public class TileDownLoader
 		return data;
 	}
 
+	/**
+	 * This checks if the data online are modified against the data in the tile store. If so the new data are down loaded and stored in the tile store - if the
+	 * tile store is enabled in settings.
+	 * 
+	 * @param tile
+	 * @param mapSource
+	 * @return The tile data as a byte array. Only if the data have been modified according to the update setting. If the data are not modified, it returns null.
+	 * @throws UnrecoverableDownloadException
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
 	public static byte[] updateStoredTile(IfTileStoreEntry tile, IfHttpMapSource mapSource)
 	    throws UnrecoverableDownloadException, IOException, InterruptedException
 	{
@@ -201,8 +225,8 @@ public class TileDownLoader
 		{
 			case ETag:
 			{
-				boolean unchanged = hasTileETag(tile, mapSource);
-				if (unchanged)
+				boolean different = isETagDifferent(tile, mapSource);
+				if (!different)
 				{
 					if (log.isTraceEnabled())
 						log.trace("Data unchanged on server (eTag): " + mapSource + " " + tile);
@@ -237,6 +261,7 @@ public class TileDownLoader
 
 		boolean conditionalRequest = false;
 
+		// prepare to ask the server if the data have changed
 		switch (tileUpdate)
 		{
 			case IfNoneMatch:
@@ -267,38 +292,43 @@ public class TileDownLoader
 
 		if (conditionalRequest && code == HttpURLConnection.HTTP_NOT_MODIFIED)
 		{
-			// Data unchanged on server
+			// server responded: data not modified
 			if (s.getTileStoreEnabled())
 			{
+				// update expiration date in tile store
 				tile.update(conn.getExpiration());
 				ACSiTileStore.getInstance().putTile(tile, mapSource);
 			}
 			if (log.isTraceEnabled())
-				log.trace("Data unchanged on server: " + mapSource + " " + tile);
+				log.trace("Server responded: Data not modified: " + mapSource + " " + tile);
 			return null;
 		}
-		byte[] data = loadBodyDataInBuffer(conn);
-
-		if (code != HttpURLConnection.HTTP_OK)
-			throw new DownloadFailedException(conn, code);
-
-		checkContentType(conn, data);
-		checkContentLength(conn, data);
-
-		String eTag = conn.getHeaderField("ETag");
-		long timeLastModified = conn.getLastModified();
-		long timeExpires = conn.getExpiration();
-
-		OSMBUtilities.checkForInterruption();
-		TileImageType imageType = OSMBUtilities.getImageType(data);
-		if (imageType == null)
-			throw new UnrecoverableDownloadException("The returned image is of unknown format");
-		if (s.getTileStoreEnabled())
+		else
 		{
-			ACSiTileStore.getInstance().putTileData(data, x, y, zoom, mapSource, timeLastModified, timeExpires, eTag);
+			// only now load the data
+			byte[] data = loadBodyDataInBuffer(conn);
+
+			if (code != HttpURLConnection.HTTP_OK)
+				throw new DownloadFailedException(conn, code);
+
+			checkContentType(conn, data);
+			checkContentLength(conn, data);
+
+			String eTag = conn.getHeaderField("ETag");
+			long timeLastModified = conn.getLastModified();
+			long timeExpires = conn.getExpiration();
+
+			OSMBUtilities.checkForInterruption();
+			TileImageType imageType = OSMBUtilities.getImageType(data);
+			if (imageType == null)
+				throw new UnrecoverableDownloadException("The returned image is of unknown format");
+			if (s.getTileStoreEnabled())
+			{
+				ACSiTileStore.getInstance().putTileData(data, x, y, zoom, mapSource, timeLastModified, timeExpires, eTag);
+			}
+			OSMBUtilities.checkForInterruption();
+			return data;
 		}
-		OSMBUtilities.checkForInterruption();
-		return data;
 	}
 
 	public static boolean isTileExpired(IfTileStoreEntry tileStoreEntry)
@@ -306,17 +336,25 @@ public class TileDownLoader
 		if (tileStoreEntry == null)
 			return true;
 		long expiredTime = tileStoreEntry.getTimeExpires();
+		log.trace("ts.expires=" + expiredTime);
 		if (expiredTime >= 0)
 		{
 			// server had set an expiration time
 			long maxExpirationTime = settings.getTileMaxExpirationTime() + tileStoreEntry.getTimeDownloaded();
 			long minExpirationTime = settings.getTileMinExpirationTime() + tileStoreEntry.getTimeDownloaded();
 			expiredTime = Math.max(minExpirationTime, Math.min(maxExpirationTime, expiredTime));
+			log.trace("ts/set.expires=" + expiredTime + ", tDl=" + tileStoreEntry.getTimeDownloaded() + ", sMax=" + maxExpirationTime + ", sMin=" + minExpirationTime
+			    + ", now=" + System.currentTimeMillis() + ", bExp=" + (expiredTime < System.currentTimeMillis()) + ", tile(" + tileStoreEntry.getZoom() + "|"
+			    + tileStoreEntry.getX() + "|" + tileStoreEntry.getY() + ")");
+			log.trace("ts/set.expires=" + expiredTime + ", now=" + System.currentTimeMillis() + ", bExp=" + (expiredTime < System.currentTimeMillis()) + ", tile("
+			    + tileStoreEntry.getZoom() + "|" + tileStoreEntry.getX() + "|" + tileStoreEntry.getY() + ")");
 		}
 		else
 		{
 			// no expiration time set by server - use the default one
 			expiredTime = tileStoreEntry.getTimeDownloaded() + ACSettings.getTileDefaultExpirationTime();
+
+			log.debug("def.expires=" + expiredTime);
 		}
 		return (expiredTime < System.currentTimeMillis());
 	}
@@ -375,6 +413,7 @@ public class TileDownLoader
 	}
 
 	/**
+	 * Returns true if the tile online is newer than the one referenced by the tile store entry.
 	 * Performs a <code>HEAD</code> request for retrieving the <code>LastModified</code> header value.
 	 */
 	protected static boolean isTileNewer(IfTileStoreEntry tile, IfHttpMapSource mapSource) throws IOException
@@ -394,7 +433,11 @@ public class TileDownLoader
 		return (newLastModified > oldLastModified);
 	}
 
-	protected static boolean hasTileETag(IfTileStoreEntry tile, IfHttpMapSource mapSource) throws IOException
+	/**
+	 * Returns true if the tile online has an eTag different from the one referenced by the tile store entry.
+	 * Performs a <code>HEAD</code> request for retrieving the <code>ETag</code> header value.
+	 */
+	protected static boolean isETagDifferent(IfTileStoreEntry tile, IfHttpMapSource mapSource) throws IOException
 	{
 		String eTag = tile.getETag();
 		if (eTag == null || eTag.length() == 0)
@@ -408,7 +451,7 @@ public class TileDownLoader
 		String onlineETag = conn.getHeaderField("ETag");
 		if (onlineETag == null || onlineETag.length() == 0)
 			return true;
-		return (onlineETag.equals(eTag));
+		return (!onlineETag.equals(eTag));
 	}
 
 	protected static void prepareConnection(HttpURLConnection conn) throws ProtocolException
