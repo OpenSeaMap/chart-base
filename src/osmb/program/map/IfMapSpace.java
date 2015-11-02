@@ -48,7 +48,8 @@ public interface IfMapSpace
 	public int getMaxPixels(int zoom);
 
 	/**
-	 * @return size (height and width) of each tile in pixel. A tile is a square
+	 * @return size (height and width) of each tile in pixel. A tile is a square in pixels.
+	 *         Currently we support only tiles with 256 x 256 pixels see {@link #TECH_TILESIZE}.
 	 */
 	public int getTileSize();
 
@@ -58,7 +59,7 @@ public interface IfMapSpace
 	 * @param lon
 	 *          in degrees
 	 * @param zoom
-	 * @return
+	 * @return The pixel coordinate for the specified zoom level
 	 */
 	public int cLonToX(double lon, int zoom);
 
@@ -68,7 +69,7 @@ public interface IfMapSpace
 	 * @param lat
 	 *          in degrees
 	 * @param zoom
-	 * @return
+	 * @return The pixel coordinate for the specified zoom level
 	 */
 	public int cLatToY(double lat, int zoom);
 
@@ -76,6 +77,7 @@ public interface IfMapSpace
 	 * Converts the horizontal pixel coordinate from map space to longitude.
 	 * 
 	 * @param x
+	 *          The pixel coordinate at the specified zoom level
 	 * @param zoom
 	 * @return longitude in degrees
 	 */
@@ -85,6 +87,7 @@ public interface IfMapSpace
 	 * Converts the vertical pixel coordinate from map space to latitude.
 	 * 
 	 * @param y
+	 *          The pixel coordinate at the specified zoom level
 	 * @param zoom
 	 * @return latitude
 	 */

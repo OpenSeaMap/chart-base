@@ -155,7 +155,6 @@ public class TileLoader
 						log.debug("tile " + mTile + " loaded from store");
 					}
 				}
-				return bLoadOK;
 			}
 			catch (Exception e)
 			{
