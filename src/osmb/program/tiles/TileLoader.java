@@ -145,7 +145,7 @@ public class TileLoader
 
 					tileStoreEntry = ACSiTileStore.getInstance().getTile(mTileX, mTileY, mZoom, mMapSource);
 
-					if (TileDownLoader.isTileExpired(tileStoreEntry))
+					if (ACSiTileStore.getInstance().isTileExpired(tileStoreEntry))
 					{
 						log.debug("expired tile " + mTile + " in store -> use old and load from online");
 					}

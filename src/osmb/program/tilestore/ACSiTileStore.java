@@ -181,4 +181,32 @@ public abstract class ACSiTileStore
 	 * @return
 	 */
 	public abstract IfTileStoreEntry createNewEmptyEntry(int x, int y, int zoom);
+
+	public boolean isTileExpired(IfTileStoreEntry tileStoreEntry)
+	{
+		ACSettings settings = ACSettings.getInstance();
+		if (tileStoreEntry == null)
+			return true;
+		long expiredTime = tileStoreEntry.getTimeExpires();
+		log.trace("ts.expires=" + expiredTime);
+		if (expiredTime >= 0)
+		{
+			// server had set an expiration time
+			long maxExpirationTime = settings.getTileMaxExpirationTime() + tileStoreEntry.getTimeDownloaded();
+			long minExpirationTime = settings.getTileMinExpirationTime() + tileStoreEntry.getTimeDownloaded();
+			expiredTime = Math.max(minExpirationTime, Math.min(maxExpirationTime, expiredTime));
+			log.trace("ts/set.expires=" + expiredTime + ", tDl=" + tileStoreEntry.getTimeDownloaded() + ", sMax=" + maxExpirationTime + ", sMin=" + minExpirationTime
+			    + ", now=" + System.currentTimeMillis() + ", bExp=" + (expiredTime < System.currentTimeMillis()) + ", tile(" + tileStoreEntry.getZoom() + "|"
+			    + tileStoreEntry.getX() + "|" + tileStoreEntry.getY() + ")");
+			log.trace("ts/set.expires=" + expiredTime + ", now=" + System.currentTimeMillis() + ", bExp=" + (expiredTime < System.currentTimeMillis()) + ", tile("
+			    + tileStoreEntry.getZoom() + "|" + tileStoreEntry.getX() + "|" + tileStoreEntry.getY() + ")");
+		}
+		else
+		{
+			// no expiration time set by server - use the default one
+			expiredTime = tileStoreEntry.getTimeDownloaded() + ACSettings.getTileDefaultExpirationTime();
+			log.debug("def.expires=" + expiredTime);
+		}
+		return (expiredTime < System.currentTimeMillis());
+	}
 }

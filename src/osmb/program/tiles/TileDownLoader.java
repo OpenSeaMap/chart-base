@@ -32,7 +32,15 @@ import osmb.program.tilestore.IfTileStoreEntry;
 import osmb.utilities.OSMBUtilities;
 
 /**
- * The TileDonwLoader is the low-level class, which is actually getting the image data.
+ * The TileDonwLoader is the low-level class, which is actually downloading the image data. This is the one which is establishing the online connection and
+ * using it to download the tile data.
+ * It does perform the check if the tile online is actually different from the one
+ * 
+ * - getTileData()
+ * - downloadTileAndUpdateStore()
+ * - updateStoredTile()
+ * 
+ * 
  * It only consists of static methods.
  * There is no constructor available.
  */
@@ -331,6 +339,10 @@ public class TileDownLoader
 		}
 	}
 
+	/**
+	 * @deprecated This is moved into the {@link ACSiTileStore}
+	 */
+	@Deprecated
 	public static boolean isTileExpired(IfTileStoreEntry tileStoreEntry)
 	{
 		if (tileStoreEntry == null)

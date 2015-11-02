@@ -187,7 +187,5 @@ public class TileDbEntry implements IfTileStoreEntry
 		{
 			return "[x=" + x + ", y=" + y + ", zoom=" + zoom + "]";
 		}
-
 	}
-
 }

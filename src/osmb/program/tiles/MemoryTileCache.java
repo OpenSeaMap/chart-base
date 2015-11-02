@@ -43,7 +43,6 @@ import osmb.program.tiles.Tile.TileState;
  */
 public class MemoryTileCache implements NotificationListener
 {
-
 	protected final Logger log;
 
 	/**
@@ -109,6 +108,9 @@ public class MemoryTileCache implements NotificationListener
 		}
 	}
 
+	/**
+	 * This adds a tile to the cache and removes any old entries for this tile from it.
+	 */
 	public void addTile(Tile tile)
 	{
 		CacheEntry entry = createCacheEntry(tile);
@@ -279,7 +281,7 @@ public class MemoryTileCache implements NotificationListener
 		}
 
 		/**
-		 * Removes the specified elemntent form the list.
+		 * Removes the specified element from the list.
 		 * 
 		 * @param element
 		 *          to be removed
@@ -325,6 +327,5 @@ public class MemoryTileCache implements NotificationListener
 		{
 			return firstElement;
 		}
-
 	}
 }

@@ -21,12 +21,10 @@ package osmb.program.tiles;
 public interface IfTileLoaderListener
 {
 	/**
-	 * Will be called if a new {@link Tile} has been loaded successfully.
-	 * Loaded can mean downloaded or loaded from file cache.
+	 * Will be called when a new {@link Tile} has been loaded successfully.
+	 * Loaded can mean down loaded from online map source or loaded from tile store.
 	 * 
 	 * @param tile
 	 */
 	public void tileLoadingFinished(Tile tile, boolean success);
-
-	public MemoryTileCache getTileImageCache();
 }
