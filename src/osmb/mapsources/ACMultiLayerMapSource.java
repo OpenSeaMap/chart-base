@@ -31,9 +31,11 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.log4j.Logger;
 
+import osmb.program.ACSettings;
 import osmb.program.map.IfMapSpace;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
+import osmb.program.tilestore.ACSiTileStore;
 
 public abstract class ACMultiLayerMapSource implements IfInitializableMapSource, Iterable<IfMapSource>
 {
@@ -137,11 +139,16 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 	@Override
 	public byte[] getTileData(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, InterruptedException, TileException
 	{
+		log.debug("");
 		ByteArrayOutputStream buf = new ByteArrayOutputStream(16000);
 		BufferedImage image = getTileImage(zoom, x, y, loadMethod);
 		if (image == null)
+		{
+			log.debug("tile not found:(" + zoom + "|" + x + "|" + y + ")");
 			return null;
+		}
 		ImageIO.write(image, tileType.getFileExt(), buf);
+		log.debug("tile written:(" + zoom + "|" + x + "|" + y + ")");
 		return buf.toByteArray();
 	}
 
@@ -152,6 +159,7 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 	@Override
 	public BufferedImage getTileImage(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, InterruptedException, TileException
 	{
+		log.debug("");
 		BufferedImage image = null;
 		Graphics2D g2 = null;
 		try
@@ -164,7 +172,7 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 				BufferedImage layerImage = layerMapSource.getTileImage(zoom, x, y, loadMethod);
 				if (layerImage != null)
 				{
-					log.trace("Multi layer loaded: " + layerMapSource + " " + x + " " + y + " " + zoom + "; Layer=" + i);
+					log.debug("Multi layer loaded: '" + layerMapSource + "' (" + zoom + "|" + x + "|" + y + ") into Layer=" + i);
 					layerImages.add(layerImage);
 					int size = layerImage.getWidth();
 					if (size > maxSize)
@@ -173,7 +181,7 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 					}
 				}
 				else
-					log.debug("Multi layer empty: " + layerMapSource + " " + x + " " + y + " " + zoom + "; Layer=" + i);
+					log.debug("Multi layer empty: " + layerMapSource + "' (" + zoom + "|" + x + "|" + y + ") into Layer=" + i);
 			}
 
 			// optimize for when only one layer exist
@@ -193,8 +201,16 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 					BufferedImage layerImage = layerImages.get(i);
 					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, getLayerAlpha(i)));
 					g2.drawImage(layerImage, 0, 0, maxSize, maxSize, null);
-					log.trace("Multi layer added: Alpha=" + getLayerAlpha(i) + "; Layer=" + i);
+					log.debug("Multi layer added: Alpha=" + getLayerAlpha(i) + "; Layer=" + i);
 				}
+
+				ByteArrayOutputStream buf = new ByteArrayOutputStream(32000);
+				ImageIO.write(image, tileType.getFileExt(), buf);
+				log.trace("tile written:(" + zoom + "|" + x + "|" + y + ")");
+				long timeLastModified = System.currentTimeMillis();
+				long timeExpires = timeLastModified + ACSettings.getTileDefaultExpirationTime();
+				log.debug("put composed tile:(" + zoom + "|" + x + "|" + y + ") into tile store");
+				ACSiTileStore.getInstance().putTileData(buf.toByteArray(), x, y, zoom, this, timeLastModified, timeExpires, "-");
 				return image;
 			}
 			else

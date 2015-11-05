@@ -68,12 +68,12 @@ public class Tile
 	protected int mTileX;
 	protected int mTileY;
 	protected int mZoom;
-	protected BufferedImage mImage;
+	protected BufferedImage mImage = LOADING_IMAGE;
 	protected String mKey;
 	protected TileState mTileState = TileState.TS_NEW;
 
 	/**
-	 * Creates a tile with an empty image.
+	 * Creates a tile with a 'loading' image.
 	 * 
 	 * @param mapSource
 	 * @param xtile
@@ -87,7 +87,6 @@ public class Tile
 		this.mTileX = xtile;
 		this.mTileY = ytile;
 		this.mZoom = zoom;
-		this.mImage = LOADING_IMAGE;
 		this.mKey = getTileKey(mapSource, xtile, ytile, zoom);
 	}
 

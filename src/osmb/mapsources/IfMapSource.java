@@ -33,9 +33,12 @@ import osmb.program.tiles.TileImageType;
 @XmlJavaTypeAdapter(MapSourceAdapter.class)
 public interface IfMapSource
 {
+	/**
+	 * This specifies where to look for a tile.
+	 */
 	public enum LoadMethod
 	{
-		DEFAULT, CACHE, SOURCE
+		DEFAULT, CACHE, SOURCE, STORE, ALL
 	};
 
 	/**
@@ -65,6 +68,11 @@ public interface IfMapSource
 
 	/**
 	 * Retrieves the tile data as a byte array.
+	 * The loadMethod specifies where to look for the tile.
+	 * - STORE: looks if the tile is available in the tile store.
+	 * - SOURCE:
+	 * - CACHE:
+	 * - DEFAULT:
 	 * 
 	 * @param zoom
 	 * @param x
@@ -79,6 +87,11 @@ public interface IfMapSource
 
 	/**
 	 * Retrieves the tile data as an image.
+	 * The loadMethod specifies where to look for the tile.
+	 * - STORE: looks if the tile is available in the tile store.
+	 * - SOURCE:
+	 * - CACHE:
+	 * - DEFAULT:
 	 * 
 	 * @param zoom
 	 * @param x

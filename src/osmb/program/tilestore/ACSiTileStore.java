@@ -205,7 +205,7 @@ public abstract class ACSiTileStore
 		{
 			// no expiration time set by server - use the default one
 			expiredTime = tileStoreEntry.getTimeDownloaded() + ACSettings.getTileDefaultExpirationTime();
-			log.debug("def.expires=" + expiredTime);
+			log.trace("def.expires=" + expiredTime);
 		}
 		return (expiredTime < System.currentTimeMillis());
 	}

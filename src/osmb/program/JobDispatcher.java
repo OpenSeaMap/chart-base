@@ -62,7 +62,7 @@ public class JobDispatcher extends ThreadPoolExecutor implements ThreadFactory, 
 	 */
 	public void cancelOutstandingJobs()
 	{
-		getQueue().clear();
+		shutdownNow();
 	}
 
 	/**

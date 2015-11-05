@@ -135,23 +135,21 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 	@Override
 	public byte[] getTileData(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException
 	{
-		if (loadMethod == LoadMethod.CACHE)
+		// if (loadMethod == LoadMethod.CACHE)
+		if (loadMethod == LoadMethod.STORE)
 		{
 			IfTileStoreEntry entry = ACSiTileStore.getInstance().getTile(x, y, zoom, this);
 			if (entry == null)
 				return null;
 			byte[] data = entry.getData();
-			// is handled on an upper level because of MultiLayerMapSources
-			// if (Thread.currentThread() instanceof IfMapSourceListener)
-			// {
-			// ((IfMapSourceListener) Thread.currentThread()).tileDownloaded(data.length);
-			// }
 			return data;
 		}
 		else if (loadMethod == LoadMethod.SOURCE)
 		{
 			initializeHttpMapSource();
 			return TileDownLoader.downloadTileAndUpdateStore(x, y, zoom, this);
+			// ACSiTileStore.getInstance().putTileData(data, x, y, zoom, this, timeLastModified, timeExpires, eTag);
+
 		}
 		else
 		{

@@ -46,11 +46,10 @@ public class MemoryTileCache implements NotificationListener
 	protected final Logger log;
 
 	/**
-	 * Default cache size
+	 * Default cache size in tiles. May be modified by constructor {@link #MemoryTileCache(int cacheSize)}.
 	 */
-	protected int cacheSize = 200;
-
-	protected Hashtable<String, CacheEntry> hashtable;
+	protected int mCacheSize = 200;
+	protected Hashtable<String, CacheEntry> mHT;
 
 	/**
 	 * List of all tiles in their last recently used order
@@ -60,10 +59,36 @@ public class MemoryTileCache implements NotificationListener
 	public MemoryTileCache()
 	{
 		log = Logger.getLogger(this.getClass());
-		hashtable = new Hashtable<String, CacheEntry>(cacheSize);
+		mCacheSize = 500;
+		mHT = new Hashtable<String, CacheEntry>(mCacheSize);
 		lruTiles = new CacheLinkedListElement();
 
-		cacheSize = 500;
+		MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
+		NotificationBroadcaster emitter = (NotificationBroadcaster) mbean;
+		emitter.addNotificationListener(this, null, null);
+		// Set-up each memory pool to notify if the free memory falls below 10%
+		for (MemoryPoolMXBean memPool : ManagementFactory.getMemoryPoolMXBeans())
+		{
+			if (memPool.isUsageThresholdSupported())
+			{
+				MemoryUsage memUsage = memPool.getUsage();
+				memPool.setUsageThreshold((long) (memUsage.getMax() * 0.95));
+			}
+		}
+	}
+
+	/**
+	 * This initializes a memory tile cache with a specified size (in tiles, not in MiB).
+	 * 
+	 * @param cacheSize
+	 */
+	public MemoryTileCache(int cacheSize)
+	{
+		log = Logger.getLogger(this.getClass());
+		mCacheSize = cacheSize;
+		mHT = new Hashtable<String, CacheEntry>(mCacheSize);
+		lruTiles = new CacheLinkedListElement();
+
 		MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
 		NotificationBroadcaster emitter = (NotificationBroadcaster) mbean;
 		emitter.addNotificationListener(this, null, null);
@@ -114,15 +139,15 @@ public class MemoryTileCache implements NotificationListener
 	public void addTile(Tile tile)
 	{
 		CacheEntry entry = createCacheEntry(tile);
-		hashtable.put(tile.getKey(), entry);
+		mHT.put(tile.getKey(), entry);
 		lruTiles.addFirst(entry);
-		if (hashtable.size() > cacheSize)
+		if (mHT.size() > mCacheSize)
 			removeOldEntries();
 	}
 
 	public Tile getTile(IfMapSource source, int x, int y, int z)
 	{
-		CacheEntry entry = hashtable.get(Tile.getTileKey(source, x, y, z));
+		CacheEntry entry = mHT.get(Tile.getTileKey(source, x, y, z));
 		if (entry == null)
 			return null;
 		// We don't care about placeholder tiles and hourglass image tiles, the
@@ -141,7 +166,7 @@ public class MemoryTileCache implements NotificationListener
 		{
 			try
 			{
-				while (lruTiles.getElementCount() > cacheSize)
+				while (lruTiles.getElementCount() > mCacheSize)
 				{
 					removeEntry(lruTiles.getLastElement());
 				}
@@ -155,7 +180,7 @@ public class MemoryTileCache implements NotificationListener
 
 	protected void removeEntry(CacheEntry entry)
 	{
-		hashtable.remove(entry.tile.getKey());
+		mHT.remove(entry.tile.getKey());
 		lruTiles.removeEntry(entry);
 	}
 
@@ -171,19 +196,19 @@ public class MemoryTileCache implements NotificationListener
 	{
 		synchronized (lruTiles)
 		{
-			hashtable.clear();
+			mHT.clear();
 			lruTiles.clear();
 		}
 	}
 
 	public int getTileCount()
 	{
-		return hashtable.size();
+		return mHT.size();
 	}
 
 	public int getCacheSize()
 	{
-		return cacheSize;
+		return mCacheSize;
 	}
 
 	/**
@@ -194,8 +219,8 @@ public class MemoryTileCache implements NotificationListener
 	 */
 	public void setCacheSize(int cacheSize)
 	{
-		this.cacheSize = cacheSize;
-		if (hashtable.size() > cacheSize)
+		this.mCacheSize = cacheSize;
+		if (mHT.size() > cacheSize)
 			removeOldEntries();
 	}
 
@@ -228,7 +253,6 @@ public class MemoryTileCache implements NotificationListener
 		{
 			return prev;
 		}
-
 	}
 
 	/**

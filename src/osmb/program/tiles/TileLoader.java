@@ -97,7 +97,8 @@ public class TileLoader
 		public void run()
 		{
 			boolean bLoadOK = false;
-			// We don't use the memory cache currently (2015).
+			// We don't use the memory cache here currently (2015).
+			// The check if the tile is available in the memory cache should be done before starting a loader job.
 			// MemoryTileCache cache = listener.getTileImageCache();
 			// if (cache != null)
 			// {
@@ -113,10 +114,11 @@ public class TileLoader
 			// else
 			mTile = new Tile(mMapSource, mTileX, mTileY, mZoom);
 			log.trace(mTile);
-			log.debug("tile " + mTile + " run()");
+			log.debug("load " + mTile + " started");
 			if (!(bLoadOK = loadTileFromStore()))
 				bLoadOK = loadAndUpdateTile();
 			listener.tileLoadingFinished(mTile, bLoadOK);
+			log.debug("load " + mTile + " finished");
 		}
 
 		/**
@@ -132,7 +134,7 @@ public class TileLoader
 			boolean bLoadOK = false;
 			try
 			{
-				BufferedImage image = mMapSource.getTileImage(mZoom, mTileX, mTileY, LoadMethod.CACHE);
+				BufferedImage image = mMapSource.getTileImage(mZoom, mTileX, mTileY, LoadMethod.STORE);
 				if (image == null)
 				{
 					image = OSMBUtilities.createEmptyTileImage(mMapSource);
@@ -141,6 +143,7 @@ public class TileLoader
 				else
 				{
 					mTile.setImage(image);
+					mTile.setTileState(Tile.TileState.TS_LOADED);
 					// listener.tileLoadingFinished(mTile, true);
 
 					tileStoreEntry = ACSiTileStore.getInstance().getTile(mTileX, mTileY, mZoom, mMapSource);
@@ -183,20 +186,23 @@ public class TileLoader
 			catch (ConnectException e)
 			{
 				log.warn("Downloading of " + mTile + " failed: " + e.getMessage());
+				mTile.setErrorImage();
 			}
 			catch (DownloadFailedException e)
 			{
 				log.warn("Downloading of " + mTile + " failed: " + e.getMessage());
+				mTile.setErrorImage();
 			}
 			catch (IOException e)
 			{
 				log.debug("Downloading of " + mTile + " failed: " + e.getMessage());
+				mTile.setErrorImage();
 			}
 			catch (Exception e)
 			{
 				log.debug("Downloading of " + mTile + " failed", e);
+				mTile.setErrorImage();
 			}
-			mTile.setErrorImage();
 			listener.tileLoadingFinished(mTile, bLoadOK);
 			return bLoadOK;
 		}
