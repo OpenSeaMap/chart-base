@@ -64,6 +64,7 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 
 	protected void initializeValues()
 	{
+		log.trace("START");
 		IfMapSource refMapSource = mapSources[0];
 		mapSpace = refMapSource.getMapSpace();
 		maxZoom = 18;
@@ -80,6 +81,7 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 	@Override
 	public void initialize()
 	{
+		log.trace("START");
 		IfMapSource refMapSource = mapSources[0];
 		mapSpace = refMapSource.getMapSpace();
 		maxZoom = 18;
@@ -139,7 +141,7 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 	@Override
 	public byte[] getTileData(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, InterruptedException, TileException
 	{
-		log.debug("");
+		log.trace("START");
 		ByteArrayOutputStream buf = new ByteArrayOutputStream(16000);
 		BufferedImage image = getTileImage(zoom, x, y, loadMethod);
 		if (image == null)
@@ -159,7 +161,7 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 	@Override
 	public BufferedImage getTileImage(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, InterruptedException, TileException
 	{
-		log.debug("");
+		log.trace("START");
 		BufferedImage image = null;
 		Graphics2D g2 = null;
 		try
@@ -260,6 +262,7 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 	@Override
 	public void setLoaderInfo(MapSourceLoaderInfo loaderInfo)
 	{
+		log.trace("START");
 		if (this.loaderInfo != null)
 			throw new RuntimeException("LoaderInfo already set");
 		this.loaderInfo = loaderInfo;

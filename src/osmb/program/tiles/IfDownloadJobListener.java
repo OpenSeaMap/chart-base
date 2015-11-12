@@ -16,23 +16,18 @@
  ******************************************************************************/
 package osmb.program.tiles;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-
-import osmb.mapsources.IfMapSource;
-
 /**
- * A TileProvider provides image tiles, i.e. 256x256 (IfMapSpace.TECH_TILESIZE) pixel squares, from a specified map source.
- * The map source is usually an online source and the already downloaded tiles are hold in a local tile store.
- * Implementations of specialized tile providers are found in ChartBundler.BundleCreators.
  * 
  * @author humbach
+ *
  */
-public interface IfTileProvider
+public interface IfDownloadJobListener
 {
-	public byte[] getTileData(int x, int y) throws IOException;
+	public int getMaxDownloadRetries();
 
-	public BufferedImage getTileImage(int x, int y) throws IOException;
+	public void jobStarted();
 
-	public IfMapSource getMapSource();
+	public void jobFinishedSuccessfully(int bytesDownloaded);
+
+	public void jobFinishedWithError(boolean retry);
 }

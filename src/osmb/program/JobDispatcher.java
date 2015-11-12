@@ -111,4 +111,49 @@ public class JobDispatcher extends ThreadPoolExecutor implements ThreadFactory, 
 	{
 		log.error("Job rejected: " + job + " by " + executor);
 	}
+
+	/**
+	 * @see java.util.concurrent.ThreadPoolExecutor#afterExecute(java.lang.Runnable, java.lang.Throwable)
+	 */
+	@Override
+	protected void afterExecute(Runnable r, Throwable t)
+	{
+		super.afterExecute(r, t);
+		log.debug("t=" + t + " r=" + r + " finished");
+	}
+
+	/**
+	 * @see java.util.concurrent.ThreadPoolExecutor#beforeExecute(java.lang.Thread, java.lang.Runnable)
+	 */
+	@Override
+	protected void beforeExecute(Thread t, Runnable r)
+	{
+		log.debug("START t=" + t + " r=" + r);
+		super.beforeExecute(t, r);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.util.concurrent.ThreadPoolExecutor#purge()
+	 */
+	@Override
+	public void purge()
+	{
+		// TODO Auto-generated method stub
+		super.purge();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.util.concurrent.ThreadPoolExecutor#remove(java.lang.Runnable)
+	 */
+	@Override
+	public boolean remove(Runnable task)
+	{
+		// TODO Auto-generated method stub
+		return super.remove(task);
+	}
+
 }
