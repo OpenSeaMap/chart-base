@@ -39,7 +39,9 @@ public class EastNorthCoordinate
 	}
 
 	/**
-	 * Creates a geographic coordinate from map space coordinates
+	 * Creates a geographic coordinate from map space coordinates.<br>
+	 * 
+	 * It maps the pixel coordinates to geographic coordinate of the upper left corner. 
 	 * 
 	 * @param mapSpace
 	 * @param zoom
@@ -64,7 +66,15 @@ public class EastNorthCoordinate
 		this.lon = c.x;
 	}
 
-	public Point toTileCoordinate(IfMapSpace mapSpace, int zoom)
+	/**
+	 * This tries to convert a geographic coordinate to pixel coordinates.<br>
+	 * 
+	 * Be careful!!! It is not sure that you receive exactly the pixel coordinates from {@link #EastNorthCoordinate(IfMapSpace, int, int, int)}.
+	 * @param mapSpace
+	 * @param zoom
+	 * @return
+	 */
+	public Point toPixelCoordinate(IfMapSpace mapSpace, int zoom)
 	{
 		int x = mapSpace.cLonToX(lon, zoom);
 		int y = mapSpace.cLatToY(lat, zoom);
@@ -77,6 +87,12 @@ public class EastNorthCoordinate
 		return OSMBUtilities.prettyPrintLatLon(lat, true) + " " + OSMBUtilities.prettyPrintLatLon(lon, false);
 	}
 
+	/**
+	 * This creates a string from the geographic coordinate.<br>
+	 * 
+	 * @return
+	 *          the created string: "latitude, longitude" with formated coordinates.
+	 */
 	public String toCatalog()
 	{
 		// return "" + lat + ", " + lon; // /W
