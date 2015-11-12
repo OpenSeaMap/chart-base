@@ -204,27 +204,15 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 
 			log.trace("Adding new map(s) after alignment: \"" + mapNameBase + "\" " + mapSource + " zoom=" + zoom 
 			    + " min=" + minPixelCoordinate.x + "/"+ minPixelCoordinate.y + " max=" + maxPixelCoordinate.x + "/" + maxPixelCoordinate.y);
-
-//////start 
-			// boolean returnCheckMap(mD, overlapTiles?, checkSmallerEdgeFirst)    
+   
 			// is the new map enclosed in an already existing map -> nothing to do at all
 			if (checkMapIsSubset(mD))
 				return;
 			// check if the new map is a superset of already existing maps -> delete old maps
 			checkMapSuperset(mD);
-			// check smaller edge first to manage extensions
-			if (maxPixelCoordinate.x - minPixelCoordinate.x >= maxPixelCoordinate.y - minPixelCoordinate.y)
-			{
-				mD = checkMapHorExt(mD);
-				mD = checkMapVertExt(mD);
-			}
-			else
-			{
-				mD = checkMapVertExt(mD);
-				mD = checkMapHorExt(mD);
-			}
-//////stop CheckMap(mD, overlapTiles?)
-			
+			// is the new map an extension of an already existing map
+			mD = checkMapIsExtension(mD);
+
 			// does the map fit the allowed size or has it be cut into several maps
 			int mapWidth = maxPixelCoordinate.x - minPixelCoordinate.x + 1;
 			int mapHeight = maxPixelCoordinate.y - minPixelCoordinate.y + 1;
@@ -358,151 +346,17 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	}
 
 	/**
-	 * This tries to extend an existing map in east-west direction or to reduce the new map.<br>
-	 * 
-	 * If the heights of the maps are fitting it tries to extend in either east or west direction.
-	 * If the height of the new map is smaller it tries to trim the new map.
-	 * 
-	 * @param mD
-	 *          a {@link MapDescription} of the new map
-	 * @return
-	 *          the possibly changed {@link MapDescription} of the new map
-	 */
-	protected MapDescription checkMapHorExt(MapDescription mD)
-	{
-		/**
-		 * TODO rename map.getMinTileCoordinate(), map.getMaxTileCoordinate()
-		 */
-		for (int mapNr = 0; mapNr < getMapCount(); ++mapNr)
-		{
-			IfMap map = getMap(mapNr);
-			if ((map.getMinTileCoordinate().y <= mD.minPixelC.y) && (map.getMaxTileCoordinate().y >= mD.maxPixelC.y))
-			{
-				if ((map.getMinTileCoordinate().y == mD.minPixelC.y) && (map.getMaxTileCoordinate().y == mD.maxPixelC.y))
-				{
-					// the heights of the maps are fitting
-					if ((map.getMinTileCoordinate().x >= mD.minPixelC.x) && (map.getMinTileCoordinate().x <= mD.maxPixelC.x + 1)
-					    && (map.getMaxTileCoordinate().x > mD.maxPixelC.x))
-					{
-						// extend map in west direction
-						mD.maxPixelC.x = map.getMaxTileCoordinate().x;
-						map.delete();
-						--mapNr;
-					}
-					else if ((map.getMaxTileCoordinate().x <= mD.maxPixelC.x) && (map.getMaxTileCoordinate().x + 1 >= mD.minPixelC.x)
-					    && (map.getMinTileCoordinate().x < mD.minPixelC.x))
-					{
-						// extend map in east direction
-						mD.minPixelC.x = map.getMinTileCoordinate().x;
-						map.delete();
-						--mapNr;
-					}
-					// else either (new maps both east and west borders are outside old map -> same tiles in different maps)
-					//      or (new maps both east and west borders are inside old map -> checkMapIsSubset(mD))
-				}
-				else // the height of the new map is smaller
-				{
-					if ((map.getMinTileCoordinate().x > mD.minPixelC.x) && (map.getMinTileCoordinate().x < mD.maxPixelC.x + 1)
-					    && (map.getMaxTileCoordinate().x >= mD.maxPixelC.x))
-					{
-						// trim new map at east edge
-						mD.maxPixelC.x = map.getMinTileCoordinate().x - 1; // #??? + tileSize * overlapTiles;
-					}
-					else if ((map.getMaxTileCoordinate().x < mD.maxPixelC.x) && (map.getMaxTileCoordinate().x + 1 > mD.minPixelC.x)
-					    && (map.getMinTileCoordinate().x <= mD.minPixelC.x))
-					{
-						// trim new map at west edge
-						mD.minPixelC.x = map.getMaxTileCoordinate().x + 1;
-					}
-					// else either (new maps both east and west borders are outside old map -> same tiles in different maps)
-					//      or (new maps both east and west borders are inside old map -> checkMapIsSubset(mD))
-				}
-			}
-			// else north or south edge of new map are outside -> same tiles in different maps
-		}
-		return mD;
-	}
-	
-
-	/**
-	 * This tries to extend an existing map in north-south direction or to reduce the new map.<br>
-	 * 
-	 * If the widths of the maps are fitting it tries to extend in either north or south direction.
-	 * If the width of the new map is smaller it tries to trim the new map.
-	 * 
-	 * @param mD
-	 *          a {@link MapDescription} of the new map
-	 * @return
-	 *          the possibly changed {@link MapDescription} of the new map
-	 */
-	protected MapDescription checkMapVertExt(MapDescription mD)
-	{
-		/**
-		 * TODO rename map.getMinTileCoordinate(), map.getMaxTileCoordinate()
-		 */
-		for (int mapNr = 0; mapNr < getMapCount(); ++mapNr)
-		{
-			IfMap map = getMap(mapNr);
-			if ((map.getMinTileCoordinate().x <= mD.minPixelC.x) && (map.getMaxTileCoordinate().x >= mD.maxPixelC.x))
-			{
-				if ((map.getMinTileCoordinate().x == mD.minPixelC.x) && (map.getMaxTileCoordinate().x == mD.maxPixelC.x))
-				{
-					// the widths of the maps are fitting
-					if ((map.getMinTileCoordinate().y >= mD.minPixelC.y) && (map.getMinTileCoordinate().y <= mD.maxPixelC.y + 1)
-					    && (map.getMaxTileCoordinate().y > mD.maxPixelC.y))
-					{
-						// extend map in north direction
-						mD.maxPixelC.y = map.getMaxTileCoordinate().y;
-						map.delete();
-						--mapNr;
-					}
-					else if ((map.getMaxTileCoordinate().y <= mD.maxPixelC.y) && (map.getMaxTileCoordinate().y + 1 >= mD.minPixelC.y)
-					    && (map.getMinTileCoordinate().y < mD.minPixelC.y))
-					{
-						// extend map in south direction
-						mD.minPixelC.y = map.getMinTileCoordinate().y;
-						map.delete();
-						--mapNr;
-					}
-					// else either (new maps both north and south border are outside old map -> same tiles in different maps)
-					//      or (new maps both north and south borders are inside old map -> checkMapIsSubset(mD))
-				}
-				else // the width of the new map is smaller
-				{
-					if ((map.getMinTileCoordinate().y > mD.minPixelC.y) && (map.getMinTileCoordinate().y < mD.maxPixelC.y + 1)
-					    && (map.getMaxTileCoordinate().y >= mD.maxPixelC.y))
-					{
-						// trim new map at south edge
-						mD.maxPixelC.y = map.getMinTileCoordinate().y - 1; // #??? + tileSize * overlapTilesv;
-					}
-					else if ((map.getMaxTileCoordinate().y < mD.maxPixelC.y) && (map.getMaxTileCoordinate().y + 1 > mD.minPixelC.y)
-					    && (map.getMinTileCoordinate().y <= mD.minPixelC.y))
-					{
-						// trim new map at north edge
-						mD.minPixelC.y = map.getMaxTileCoordinate().y + 1;
-					}
-					// else either (new maps both north and south border are outside old map -> same tiles in different maps)
-					//      or (new maps both north and south borders are inside old map -> checkMapIsSubset(mD))
-				}
-			}
-			// else east or west edge of new map are outside -> same tiles in different maps
-		}
-		return mD;
-	}
-	
-	/**
 	 * checks if the new map is an extension of an already existing map. If it
 	 * is, the existing map will be changed to new coordinates which include the
 	 * new map. 20140511 case new map lies between two already existing maps is
 	 * not covered yet. The new map will be extending both
 	 * 
-	 * @param MinC
-	 *          minimum coordinate (upper left corner, NW-C)
-	 * @param MaxC
-	 *          maximum coordinate (lower right corner, SE-C)
-	 * @return true if the new map is an extension to an existing map
+	 * @param mD
+	 *          a {@link MapDescription} of the new map
+	 * @return
+	 *          the possibly changed {@link MapDescription} of the new map
 	 */
-	public MapDescription CheckMapIsExtension(MapDescription mD)
+	public MapDescription checkMapIsExtension(MapDescription mD)
 	{
 		/**
 		 * TODO rename map.getMinTileCoordinate(), map.getMaxTileCoordinate()
