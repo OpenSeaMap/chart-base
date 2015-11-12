@@ -129,8 +129,8 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	public void addMapsAutocut(String mapNameBase, IfMapSource mapSource, Point minPixelCoordinate, Point maxPixelCoordinate, int zoom,
 	    TileImageParameters parameters, int maxMapSize, int overlapTiles) throws InvalidNameException
 	{
-		log.trace("Adding new map(s): \"" + mapNameBase + "\" " + mapSource + " zoom=" + zoom + " min=" + minPixelCoordinate.x + "/" + minPixelCoordinate.y + " max="
-		    + maxPixelCoordinate.x + "/" + maxPixelCoordinate.y);
+		log.trace("Adding new map(s): \"" + mapNameBase + "\" " + mapSource + " zoom=" + zoom + " min=" + minPixelCoordinate.x + "/" + minPixelCoordinate.y
+		    + " max=" + maxPixelCoordinate.x + "/" + maxPixelCoordinate.y);
 
 		MapDescription mD = new MapDescription();
 
@@ -202,9 +202,9 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			maxMapDimension.width -= maxMapSize % tileDimension.width;
 			maxMapDimension.height -= maxMapSize % tileDimension.height;
 
-			log.trace("Adding new map(s) after alignment: \"" + mapNameBase + "\" " + mapSource + " zoom=" + zoom 
-			    + " min=" + minPixelCoordinate.x + "/"+ minPixelCoordinate.y + " max=" + maxPixelCoordinate.x + "/" + maxPixelCoordinate.y);
-   
+			log.trace("Adding new map(s) after alignment: \"" + mapNameBase + "\" " + mapSource + " zoom=" + zoom + " min=" + minPixelCoordinate.x + "/"
+			    + minPixelCoordinate.y + " max=" + maxPixelCoordinate.x + "/" + maxPixelCoordinate.y);
+
 			// is the new map enclosed in an already existing map -> nothing to do at all
 			if (checkMapIsSubset(mD))
 				return;
@@ -225,7 +225,10 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 				maps.add(s);
 
 			}
-			// else
+			else
+			{
+				log.warn("map not added due to size");
+			}
 			// {
 			// Dimension nextMapStep = new Dimension(maxMapDimension.width -
 			// (tileDimension.width * overlapTiles), maxMapDimension.height
@@ -285,7 +288,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	 * 
 	 * @param mD
 	 *          a {@link MapDescription} of the new map
-	 *          
+	 * 
 	 * @return true if mD is a subset of an existing map
 	 */
 	protected boolean checkMapIsSubset(MapDescription mD)
@@ -302,21 +305,19 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			{
 				if ((map.getMaxTileCoordinate().x >= mD.maxPixelC.x) && (map.getMaxTileCoordinate().y >= mD.maxPixelC.y))
 				{
-					log.trace("match found (new is smaller): " + " min=" + mD.minPixelC.x + "/" + mD.minPixelC.y +
-					    " max=" + mD.maxPixelC.x + "/" + mD.maxPixelC.y);
+					log.trace("match found (new is smaller): " + " min=" + mD.minPixelC.x + "/" + mD.minPixelC.y + " max=" + mD.maxPixelC.x + "/" + mD.maxPixelC.y);
 					mD.minPixelC.x = map.getMinTileCoordinate().x;
 					mD.minPixelC.y = map.getMinTileCoordinate().y;
 					mD.maxPixelC.x = map.getMaxTileCoordinate().x;
 					mD.maxPixelC.y = map.getMaxTileCoordinate().y;
-					log.trace("match found (old superset): " + " min=" + mD.minPixelC.x + "/" + mD.minPixelC.y +
-					    " max=" + mD.maxPixelC.x + "/" + mD.maxPixelC.y);
+					log.trace("match found (old superset): " + " min=" + mD.minPixelC.x + "/" + mD.minPixelC.y + " max=" + mD.maxPixelC.x + "/" + mD.maxPixelC.y);
 					return true;
 				}
 			}
 		}
 		return false;
 	}
-	
+
 	/**
 	 * This deletes one (or more) existing map(s) if the new map is a superset of this map(s)
 	 * 
@@ -354,7 +355,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	 * @param mD
 	 *          a {@link MapDescription} of the new map
 	 * @return
-	 *          the possibly changed {@link MapDescription} of the new map
+	 *         the possibly changed {@link MapDescription} of the new map
 	 */
 	public MapDescription checkMapIsExtension(MapDescription mD)
 	{
@@ -381,8 +382,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 					--mapNr;
 				}
 			}
-			else 
-			if ((map.getMinTileCoordinate().x == mD.minPixelC.x) && (map.getMaxTileCoordinate().x == mD.maxPixelC.x))
+			else if ((map.getMinTileCoordinate().x == mD.minPixelC.x) && (map.getMaxTileCoordinate().x == mD.maxPixelC.x))
 			{
 				if ((map.getMinTileCoordinate().y >= mD.minPixelC.y) && (map.getMinTileCoordinate().y <= mD.maxPixelC.y + 1)
 				    && (map.getMaxTileCoordinate().y > mD.maxPixelC.y))
@@ -479,7 +479,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		log.trace("layer=" + getName() + ", tiles=" + tiles);
 		return tiles;
 	}
-	
+
 	/////////////////////////////////////////////////////////////
 	@Override
 	public int getXBorderMin()

@@ -53,6 +53,9 @@ public class JobDispatcher extends ThreadPoolExecutor implements ThreadFactory, 
 		return null;
 	}
 
+	/**
+	 * This holds the number for the next Thread
+	 */
 	private int WORKER_THREAD_ID = 1;
 	// private final BlockingQueue<Runnable> jobQueue;
 	// private final ThreadPoolExecutor executor;
@@ -62,7 +65,10 @@ public class JobDispatcher extends ThreadPoolExecutor implements ThreadFactory, 
 	 */
 	public void cancelOutstandingJobs()
 	{
-		shutdownNow();
+		log.debug("waiting jobs=" + getQueue().size());
+		getQueue().clear();
+		purge();
+		log.debug("remaining jobs=" + getQueue().size());
 	}
 
 	/**
@@ -103,7 +109,7 @@ public class JobDispatcher extends ThreadPoolExecutor implements ThreadFactory, 
 			id = WORKER_THREAD_ID++;
 		}
 		log.trace("New worker thread created with id=" + id);
-		return new DelayedInterruptThread(job, "Thread " + id);
+		return new DelayedInterruptThread(job, "Thread-" + id);
 	}
 
 	@Override
@@ -132,9 +138,7 @@ public class JobDispatcher extends ThreadPoolExecutor implements ThreadFactory, 
 		super.beforeExecute(t, r);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
+	/**
 	 * @see java.util.concurrent.ThreadPoolExecutor#purge()
 	 */
 	@Override
@@ -144,9 +148,7 @@ public class JobDispatcher extends ThreadPoolExecutor implements ThreadFactory, 
 		super.purge();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
+	/**
 	 * @see java.util.concurrent.ThreadPoolExecutor#remove(java.lang.Runnable)
 	 */
 	@Override

@@ -201,7 +201,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@XmlAttribute
 	public String getLRC()
 	{
-		return new EastNorthCoordinate(mapSource.getMapSpace(), getZoom(), maxTileCoordinate.x, maxTileCoordinate.y).toCatalog();// /W min->max
+		return new EastNorthCoordinate(mapSource.getMapSpace(), getZoom(), maxTileCoordinate.x + 1, maxTileCoordinate.y + 1).toCatalog();// /W min->max
 	}
 
 	public void setLRC(String strLRC)
