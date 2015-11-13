@@ -54,7 +54,7 @@ public interface IfMap extends IfCatalogObject, IfCapabilityDeletable
 	 * 
 	 * This number is generated during construction of the map, so there is no setter available.
 	 * 
-	 * @return The (internal) number of the map in the format 'Zoom-Lon-Lat-Width-Height' in map units.
+	 * @return The (internal) number of the map in the format 'Zoom-Lat-Lon-Height-Width' in map units.
 	 */
 	public String getNumber();
 
@@ -68,22 +68,52 @@ public interface IfMap extends IfCatalogObject, IfCapabilityDeletable
 	public void setLayer(IfLayer layer);
 
 	/**
-	 * The lower left (south-west) edge of the map.
+	 * The tile coordinates of the upper left (north-west) tile of the map.
 	 * 
-	 * @return The lower left (south-west) edge of the map.
+	 * @return tile coordinates
 	 */
 	public Point getMinTileCoordinate();
 
+	/**
+	 * Sets the tile coordinates of the upper left (north-west) tile of the map.
+	 */
 	public void setMinTileCoordinate(Point MinC);
 
 	/**
-	 * The upper right (north-east) edge of the map.
+	 * The tile coordinates of the bottom right (south-east) tile of the map.
 	 * 
-	 * @return The upper right (north-east) edge of the map.
+	 * @return tile coordinates
 	 */
 	public Point getMaxTileCoordinate();
 
+	/**
+	 * Sets the tile coordinates of the bottom right (south-east) tile of the map.
+	 */
 	public void setMaxTileCoordinate(Point MaxC);
+	
+	/**
+	 * The pixel coordinates of the upper left (north-west) pixel of the map.
+	 * 
+	 * @return pixel coordinates
+	 */
+	public Point getMinPixelCoordinate();
+
+	/**
+	* Sets the pixel coordinates of the upper left (north-west) pixel of the map.
+	*/
+	public void setMinPixelCoordinate(Point MinC);
+
+	/**
+	 * The pixel coordinates of the bottom right (south-east) pixel of the map.
+	 * 
+	 * @return pixel coordinates
+	 */
+	public Point getMaxPixelCoordinate();
+
+	/**
+	* Sets the pixel coordinates of the bottom right (south-east) pixel of the map.
+	*/
+	public void setMaxPixelCoordinate(Point MaxC);
 
 	/**
 	 * The dimension of the tiles used in this map. This depends on the map source. Currently (2015) we support exclusively tiles of 256 by 256 pixels.

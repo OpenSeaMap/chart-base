@@ -49,6 +49,6 @@ public interface IfLayer extends IfCatalogObject, Iterable<IfMap>, IfCapabilityD
 			EastNorthCoordinate maxCoordinate, int zoom, TileImageParameters parameters, int maxMapSize)
 					throws InvalidNameException;
 
-	void addMapsAutocut(String mapNameBase, IfMapSource mapSource, Point minTileCoordinate, Point maxTileCoordinate,
+	void addMapsAutocut(String mapNameBase, IfMapSource mapSource, Point minPixelCoordinate, Point maxPixelCoordinate,
 			int zoom, TileImageParameters parameters, int maxMapSize, int overlapTiles) throws InvalidNameException;
 }
