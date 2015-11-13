@@ -34,7 +34,6 @@ import javax.xml.bind.annotation.XmlElements;
 import org.apache.log4j.Logger;
 
 import osmb.exceptions.InvalidNameException;
-import osmb.mapsources.IfFileBasedMapSource;
 import osmb.mapsources.IfMapSource;
 import osmb.program.catalog.Catalog;
 import osmb.program.catalog.IfCapabilityDeletable;
@@ -465,22 +464,20 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	}
 
 	/**
-	 * This skips offline mapsources
+	 * 
 	 */
 	@Override
-	public long calculateTilesToDownload()
+	public long calculateTilesToLoad()
 	{
 		long tiles = 0;
 		for (IfMap map : maps)
 		{
-			if (!(map.getMapSource() instanceof IfFileBasedMapSource))
-				tiles += map.calculateTilesToDownload();
+			tiles += map.calculateTilesToLoad();
 		}
 		log.trace("layer=" + getName() + ", tiles=" + tiles);
 		return tiles;
 	}
 
-	/////////////////////////////////////////////////////////////
 	@Override
 	public int getXBorderMin()
 	{

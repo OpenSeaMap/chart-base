@@ -364,19 +364,31 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	}
 
 	/**
-	 * 
+	 * This calculates the number of tiles to load. It does not care if they are already available in the tile store or have to be down loaded.
 	 */
 	@Override
-	public long calculateTilesToDownload()
+	public long calculateTilesToLoad()
 	{
 		long tiles = 0;
 
 		for (IfLayer layer : layers)
 		{
-			tiles += layer.calculateTilesToDownload();
+			tiles += layer.calculateTilesToLoad();
 		}
 		log.trace("catalog=" + getName() + ", tiles=" + tiles);
 		return tiles;
+	}
+
+	@Override
+	public long calcMapsToCompose()
+	{
+		long nMaps = 0;
+		for (IfLayer layer : layers)
+		{
+			nMaps += layer.getMapCount();
+		}
+		log.trace("catalog=" + getName() + ", maps=" + nMaps);
+		return nMaps;
 	}
 
 	/**

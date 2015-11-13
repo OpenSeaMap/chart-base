@@ -30,6 +30,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.apache.log4j.Logger;
 
 import osmb.exceptions.InvalidNameException;
+import osmb.mapsources.ACMultiLayerMapSource;
 import osmb.mapsources.IfMapSource;
 import osmb.mapsources.mapspace.MercatorPower2MapSpace;
 import osmb.program.catalog.IfCapabilityDeletable;
@@ -488,18 +489,15 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	 * This simply calculates all tiles included in the map. It currently (2015-08) does not take in account that tiles are shared by several maps.
 	 */
 	@Override
-	public long calculateTilesToDownload()
+	public long calculateTilesToLoad()
 	{
-		// long tiles = (maxTileCoordinate.x - minTileCoordinate.x) * (maxTileCoordinate.y - minTileCoordinate.y)
-		// / (mapSource.getMapSpace().getTileSize() * mapSource.getMapSpace().getTileSize());
 		long tiles = getTileCount();
-		// TODO correct tile count in case of multi-layer maps
-		// if (mapSource instanceof MultiLayerMapSource) {
-		// // We have a map with two layers and for each layer we have to
-		// // download the tiles - therefore double the tileCount
-		// tileCount *= 2;
-		// }
-		log.trace("map=" + getName() + ", tiles=" + tiles);
+		if (mapSource instanceof ACMultiLayerMapSource)
+		{
+			// We have a map with most probably two layers and for each layer we have to download the tiles - therefore double the tileCount
+			tiles *= 2;
+		}
+		log.trace("map='" + getName() + "', tiles=" + tiles);
 		return tiles;
 	}
 

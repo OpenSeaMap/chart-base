@@ -61,4 +61,6 @@ public interface IfCatalog extends IfCatalogObject, Iterable<IfLayer>
 	void save() throws JAXBException;
 
 	File getFile();
+
+	long calcMapsToCompose();
 }

@@ -169,7 +169,7 @@ public class MapPolygon extends Map implements IfMap
 	}
 
 	@Override
-	public long calculateTilesToDownload()
+	public long calculateTilesToLoad()
 	{
 		if (calculatedTileCount < 0)
 			internalCalculateTilesToDownload();
