@@ -48,8 +48,8 @@ public class MapPolygon extends Map implements IfMap
 	{
 	}
 
-	public static MapPolygon createTrackEnclosure(Layer layer, String name, IfMapSource mapSource, int zoom, EastNorthCoordinate[] trackPoints,
-			int pixelDistance, TileImageParameters parameters)
+	public static MapPolygon createTrackEnclosure(Layer layer, String name, IfMapSource mapSource, int zoom, EastNorthCoordinate[] trackPoints, int pixelDistance,
+	    TileImageParameters parameters)
 	{
 		IfMapSpace mapSpace = mapSource.getMapSpace();
 		Area area = new Area();
@@ -163,8 +163,8 @@ public class MapPolygon extends Map implements IfMap
 		int miny = MyMath.roundDownToNearest(bounds.y, mapSourceTileSize);
 		int maxx = MyMath.roundUpToNearest(bounds.x + bounds.width, mapSourceTileSize) - 1;
 		int maxy = MyMath.roundUpToNearest(bounds.y + bounds.height, mapSourceTileSize) - 1;
-		minTileCoordinate = new Point(minx, miny);
-		maxTileCoordinate = new Point(maxx, maxy);
+		minPixelCoordinate = new Point(minx, miny);
+		maxPixelCoordinate = new Point(maxx, maxy);
 		internalCalculateTilesToDownload();
 	}
 
@@ -180,10 +180,10 @@ public class MapPolygon extends Map implements IfMap
 	{
 		int tileSize = mapSource.getMapSpace().getTileSize();
 		double tileSizeD = tileSize;
-		int xMin = minTileCoordinate.x;
-		int xMax = maxTileCoordinate.x;
-		int yMin = minTileCoordinate.y;
-		int yMax = maxTileCoordinate.y;
+		int xMin = minPixelCoordinate.x;
+		int xMax = maxPixelCoordinate.x;
+		int yMin = minPixelCoordinate.y;
+		int yMax = maxPixelCoordinate.y;
 
 		int count = 0;
 		for (int x = xMin; x <= xMax; x += tileSize)
@@ -202,9 +202,9 @@ public class MapPolygon extends Map implements IfMap
 	{
 		IfMapSpace mapSpace = mapSource.getMapSpace();
 		@SuppressWarnings("unused") // /W #unused
-		EastNorthCoordinate tl = new EastNorthCoordinate(mapSpace, getZoom(), minTileCoordinate.x, minTileCoordinate.y);
+		EastNorthCoordinate tl = new EastNorthCoordinate(mapSpace, getZoom(), minPixelCoordinate.x, minPixelCoordinate.y);
 		@SuppressWarnings("unused") // /W #unused
-		EastNorthCoordinate br = new EastNorthCoordinate(mapSpace, getZoom(), maxTileCoordinate.x, maxTileCoordinate.y);
+		EastNorthCoordinate br = new EastNorthCoordinate(mapSpace, getZoom(), maxPixelCoordinate.x, maxPixelCoordinate.y);
 
 		StringWriter sw = new StringWriter(1024);
 		// sw.write("<html>");
@@ -212,10 +212,10 @@ public class MapPolygon extends Map implements IfMap
 		// sw.write(String.format(OSMCBStrs.RStr("lp_bundle_info_map_source_short"), mapSource.getName()));
 		// sw.write(String.format(OSMCBStrs.RStr("lp_bundle_info_map_zoom_lv"), zoom));
 		// sw.write(String.format(OSMCBStrs.RStr("lp_bundle_info_polygon_map_point"), polygon.npoints));
-		// sw.write(String.format(OSMCBStrs.RStr("lp_bundle_info_map_area_start"), tl, minTileCoordinate.x, minTileCoordinate.y));
-		// sw.write(String.format(OSMCBStrs.RStr("lp_bundle_info_map_area_end"), br, maxTileCoordinate.x, maxTileCoordinate.y));
-		// sw.write(String.format(OSMCBStrs.RStr("lp_bundle_info_map_size"), (maxTileCoordinate.x - minTileCoordinate.x + 1), (maxTileCoordinate.y
-		// - minTileCoordinate.y + 1)));
+		// sw.write(String.format(OSMCBStrs.RStr("lp_bundle_info_map_area_start"), tl, minPixelCoordinate.x, minPixelCoordinate.y));
+		// sw.write(String.format(OSMCBStrs.RStr("lp_bundle_info_map_area_end"), br, maxPixelCoordinate.x, maxPixelCoordinate.y));
+		// sw.write(String.format(OSMCBStrs.RStr("lp_bundle_info_map_size"), (maxPixelCoordinate.x - minPixelCoordinate.x + 1), (maxPixelCoordinate.y
+		// - minPixelCoordinate.y + 1)));
 		// if (parameters != null)
 		// {
 		// sw.write(String.format(OSMCBStrs.RStr("lp_bundle_info_tile_size"), parameters.getWidth(), parameters.getHeight()));

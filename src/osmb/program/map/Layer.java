@@ -178,10 +178,10 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 
 			// align right/bottom with map grid
 			nXOff = nXGridSize + tileSize * overlapTiles - maxPixelCoordinate.x % (nXGridSize) - 1; // /W - 1 instead of + 1
-			// maxTileCoordinate.x += (nXOff > (nXGridSize / 4) ? nXOff : nXOff + nXGridSize / 2);
+			// maxPixelCoordinate.x += (nXOff > (nXGridSize / 4) ? nXOff : nXOff + nXGridSize / 2);
 			maxPixelCoordinate.x += nXOff;
 			nYOff = nYGridSize + tileSize * overlapTiles - maxPixelCoordinate.y % (nYGridSize) - 1; // /W - 1 instead of + 1
-			// maxTileCoordinate.y += (nYOff > (nYGridSize / 4) ? nYOff : nYOff + nYGridSize / 2);
+			// maxPixelCoordinate.y += (nYOff > (nYGridSize / 4) ? nYOff : nYOff + nYGridSize / 2);
 			maxPixelCoordinate.y += nYOff;
 
 			log.trace("addMapsAutocut(): nXOff=" + nXOff + ", xtc.x=" + maxPixelCoordinate.x + ", nYOff=" + nYOff + ", xtc.y=" + maxPixelCoordinate.y);
@@ -233,16 +233,16 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			// (tileDimension.width * overlapTiles), maxMapDimension.height
 			// - (tileDimension.height * overlapTiles));
 			//
-			// for (int mapX = minTileCoordinate.x; mapX < maxTileCoordinate.x;
+			// for (int mapX = minPixelCoordinate.x; mapX < maxPixelCoordinate.x;
 			// mapX += nextMapStep.width)
 			// {
-			// for (int mapY = minTileCoordinate.y; mapY < maxTileCoordinate.y;
+			// for (int mapY = minPixelCoordinate.y; mapY < maxPixelCoordinate.y;
 			// mapY += nextMapStep.height)
 			// {
 			// int maxX = Math.min(mapX + maxMapDimension.width,
-			// maxTileCoordinate.x);
+			// maxPixelCoordinate.x);
 			// int maxY = Math.min(mapY + maxMapDimension.height,
-			// maxTileCoordinate.y);
+			// maxPixelCoordinate.y);
 			// Point min = new Point(mapX, mapY);
 			// Point max = new Point(maxX - 1, maxY - 1);
 			// // check if this map is not a sub/superset of another already
@@ -292,24 +292,23 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	 */
 	protected boolean checkMapIsSubset(MapDescription mD)
 	{
-		/**
-		 * TODO rename map.getMinTileCoordinate(), map.getMaxTileCoordinate()
-		 */
 		for (int mapNr = 0; mapNr < getMapCount(); ++mapNr)
 		{
 			IfMap map = getMap(mapNr);
 			log.trace("checking against map: \"" + map.getName() + "\" " + map.getMapSource().getName() + " zoom=" + map.getZoom() + " min="
-			    + map.getMinTileCoordinate().x + "/" + map.getMinTileCoordinate().y + " max=" + map.getMaxTileCoordinate().x + "/" + map.getMaxTileCoordinate().y);
-			if ((map.getMinTileCoordinate().x <= mD.minPixelC.x) && (map.getMinTileCoordinate().y <= mD.minPixelC.y))
+			    + map.getMinPixelCoordinate().x + "/" + map.getMinPixelCoordinate().y + " max=" + map.getMaxPixelCoordinate().x + "/" + map.getMaxPixelCoordinate().y);
+			if ((map.getMinPixelCoordinate().x <= mD.minPixelC.x) && (map.getMinPixelCoordinate().y <= mD.minPixelC.y))
 			{
-				if ((map.getMaxTileCoordinate().x >= mD.maxPixelC.x) && (map.getMaxTileCoordinate().y >= mD.maxPixelC.y))
+				if ((map.getMaxPixelCoordinate().x >= mD.maxPixelC.x) && (map.getMaxPixelCoordinate().y >= mD.maxPixelC.y))
 				{
-					log.trace("match found (new is smaller): " + " min=" + mD.minPixelC.x + "/" + mD.minPixelC.y + " max=" + mD.maxPixelC.x + "/" + mD.maxPixelC.y);
-					mD.minPixelC.x = map.getMinTileCoordinate().x;
-					mD.minPixelC.y = map.getMinTileCoordinate().y;
-					mD.maxPixelC.x = map.getMaxTileCoordinate().x;
-					mD.maxPixelC.y = map.getMaxTileCoordinate().y;
-					log.trace("match found (old superset): " + " min=" + mD.minPixelC.x + "/" + mD.minPixelC.y + " max=" + mD.maxPixelC.x + "/" + mD.maxPixelC.y);
+					log.trace("match found (new is smaller): " + " min=" + mD.minPixelC.x + "/" + mD.minPixelC.y +
+					    " max=" + mD.maxPixelC.x + "/" + mD.maxPixelC.y);
+					mD.minPixelC.x = map.getMinPixelCoordinate().x;
+					mD.minPixelC.y = map.getMinPixelCoordinate().y;
+					mD.maxPixelC.x = map.getMaxPixelCoordinate().x;
+					mD.maxPixelC.y = map.getMaxPixelCoordinate().y;
+					log.trace("match found (old superset): " + " min=" + mD.minPixelC.x + "/" + mD.minPixelC.y +
+					    " max=" + mD.maxPixelC.x + "/" + mD.maxPixelC.y);
 					return true;
 				}
 			}
@@ -325,17 +324,14 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	 */
 	protected void checkMapSuperset(MapDescription mD)
 	{
-		/**
-		 * TODO rename map.getMinTileCoordinate(), map.getMaxTileCoordinate()
-		 */
 		for (int mapNr = 0; mapNr < getMapCount(); ++mapNr)
 		{
 			IfMap map = getMap(mapNr);
 			log.trace("checking against map: \"" + map.getName() + "\" " + map.getMapSource().getName() + " zoom=" + map.getZoom() + " min="
-			    + map.getMinTileCoordinate().x + "/" + map.getMinTileCoordinate().y + " max=" + map.getMaxTileCoordinate().x + "/" + map.getMaxTileCoordinate().y);
-			if ((map.getMinTileCoordinate().x >= mD.minPixelC.x) && (map.getMinTileCoordinate().y >= mD.minPixelC.y))
+			    + map.getMinPixelCoordinate().x + "/" + map.getMinPixelCoordinate().y + " max=" + map.getMaxPixelCoordinate().x + "/" + map.getMaxPixelCoordinate().y);
+			if ((map.getMinPixelCoordinate().x >= mD.minPixelC.x) && (map.getMinPixelCoordinate().y >= mD.minPixelC.y))
 			{
-				if ((map.getMaxTileCoordinate().x <= mD.maxPixelC.x) && (map.getMaxTileCoordinate().y <= mD.maxPixelC.y))
+				if ((map.getMaxPixelCoordinate().x <= mD.maxPixelC.x) && (map.getMaxPixelCoordinate().y <= mD.maxPixelC.y))
 				{
 					map.delete();
 					--mapNr;
@@ -358,42 +354,40 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	 */
 	public MapDescription checkMapIsExtension(MapDescription mD)
 	{
-		/**
-		 * TODO rename map.getMinTileCoordinate(), map.getMaxTileCoordinate()
-		 */
 		for (int mapNr = 0; mapNr < getMapCount(); ++mapNr)
 		{
 			IfMap map = getMap(mapNr);
-			if ((map.getMinTileCoordinate().y == mD.minPixelC.y) && (map.getMaxTileCoordinate().y == mD.maxPixelC.y))
+			if ((map.getMinPixelCoordinate().y == mD.minPixelC.y) && (map.getMaxPixelCoordinate().y == mD.maxPixelC.y))
 			{
-				if ((map.getMinTileCoordinate().x >= mD.minPixelC.x) && (map.getMinTileCoordinate().x <= mD.maxPixelC.x + 1)
-				    && (map.getMaxTileCoordinate().x > mD.maxPixelC.x))
+				if ((map.getMinPixelCoordinate().x >= mD.minPixelC.x) && (map.getMinPixelCoordinate().x <= mD.maxPixelC.x + 1)
+				    && (map.getMaxPixelCoordinate().x > mD.maxPixelC.x))
 				{
-					mD.maxPixelC.x = map.getMaxTileCoordinate().x;
+					mD.maxPixelC.x = map.getMaxPixelCoordinate().x;
 					map.delete();
 					--mapNr;
 				}
-				else if ((map.getMaxTileCoordinate().x <= mD.maxPixelC.x) && (map.getMaxTileCoordinate().x + 1 >= mD.minPixelC.x)
-				    && (map.getMinTileCoordinate().x < mD.minPixelC.x))
+				else if ((map.getMaxPixelCoordinate().x <= mD.maxPixelC.x) && (map.getMaxPixelCoordinate().x + 1 >= mD.minPixelC.x)
+				    && (map.getMinPixelCoordinate().x < mD.minPixelC.x))
 				{
-					mD.minPixelC.x = map.getMinTileCoordinate().x;
+					mD.minPixelC.x = map.getMinPixelCoordinate().x;
 					map.delete();
 					--mapNr;
 				}
 			}
-			else if ((map.getMinTileCoordinate().x == mD.minPixelC.x) && (map.getMaxTileCoordinate().x == mD.maxPixelC.x))
+			else 
+			if ((map.getMinPixelCoordinate().x == mD.minPixelC.x) && (map.getMaxPixelCoordinate().x == mD.maxPixelC.x))
 			{
-				if ((map.getMinTileCoordinate().y >= mD.minPixelC.y) && (map.getMinTileCoordinate().y <= mD.maxPixelC.y + 1)
-				    && (map.getMaxTileCoordinate().y > mD.maxPixelC.y))
+				if ((map.getMinPixelCoordinate().y >= mD.minPixelC.y) && (map.getMinPixelCoordinate().y <= mD.maxPixelC.y + 1)
+				    && (map.getMaxPixelCoordinate().y > mD.maxPixelC.y))
 				{
-					mD.maxPixelC.y = map.getMaxTileCoordinate().y;
+					mD.maxPixelC.y = map.getMaxPixelCoordinate().y;
 					map.delete();
 					--mapNr;
 				}
-				else if ((map.getMaxTileCoordinate().y <= mD.maxPixelC.y) && (map.getMaxTileCoordinate().y + 1 >= mD.minPixelC.y)
-				    && (map.getMinTileCoordinate().y < mD.minPixelC.y))
+				else if ((map.getMaxPixelCoordinate().y <= mD.maxPixelC.y) && (map.getMaxPixelCoordinate().y + 1 >= mD.minPixelC.y)
+				    && (map.getMinPixelCoordinate().y < mD.minPixelC.y))
 				{
-					mD.minPixelC.y = map.getMinTileCoordinate().y;
+					mD.minPixelC.y = map.getMinPixelCoordinate().y;
 					map.delete();
 					--mapNr;
 				}

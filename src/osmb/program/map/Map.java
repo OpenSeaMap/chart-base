@@ -46,7 +46,7 @@ import osmb.utilities.image.MercatorPixelCoordinate;
  * see {@link IfMapSpace}.
  * For a description of the map space coordinates see {@link MercatorPower2MapSpace}.
  * 
- * @author humbach *
+ * @author humbach
  */
 @XmlType(propOrder =
 { "name", "mapSource", "ULC", "LRC", "minTileCoordinate", "maxTileCoordinate", "number" })
@@ -62,7 +62,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	protected String name;
 	/**
 	 * the osm internal number, the numbering scheme is still to be defined
-	 * 20150722 AH proposal: ZL-LON-LAT-WID-HEI, LON and LAT in tiles/8 since this is our map alignment grid, WID, HEI in tiles.
+	 * 20150722 AH proposal: ZL-LAT-LON-HEI-WID, LAT and LON in tiles/8 since this is our map alignment grid, HEI, WID in tiles.
 	 */
 	protected String number;
 	/**
@@ -77,8 +77,8 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	 * the INT national name - if there is one; for a lot of maps this is empty
 	 */
 	protected String natName = null;
-	protected Point maxTileCoordinate = null;
-	protected Point minTileCoordinate = null;
+	protected Point maxPixelCoordinate = null;
+	protected Point minPixelCoordinate = null;
 	@XmlAttribute
 	protected IfMapSource mapSource = null;
 	// protected int zoom;
@@ -95,20 +95,20 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		name = map.name;
 	}
 
-	protected Map(Layer layer, String name, IfMapSource mapSource, int zoom, Point minTileCoordinate, Point maxTileCoordinate, TileImageParameters parameters)
+	protected Map(Layer layer, String name, IfMapSource mapSource, int zoom, Point minPixelCoordinate, Point maxPixelCoordinate, TileImageParameters parameters)
 	{
 		this.layer = layer;
-		this.maxTileCoordinate = maxTileCoordinate;
-		this.minTileCoordinate = minTileCoordinate;
+		this.maxPixelCoordinate = maxPixelCoordinate;
+		this.minPixelCoordinate = minPixelCoordinate;
 		this.name = name;
 		this.mapSource = mapSource;
 		// this.zoom = zoom;
 		this.parameters = parameters;
 		calculateRuntimeValues();
 		// 20150722 AH fixed numbers in here
-		String mapNumber = zoom + "-" + minTileCoordinate.y / (tileDimension.height * 8) + "-" + minTileCoordinate.x / (tileDimension.width * 8) + "-"
-		    + ((maxTileCoordinate.y - minTileCoordinate.y + 1) / tileDimension.height) + "-"
-		    + ((maxTileCoordinate.x - minTileCoordinate.x + 1) / tileDimension.width);
+		String mapNumber = zoom + "-" + minPixelCoordinate.y / (tileDimension.height * 8) + "-" + minPixelCoordinate.x / (tileDimension.width * 8) + "-"
+		    + ((maxPixelCoordinate.y - minPixelCoordinate.y + 1) / tileDimension.height) + "-"
+		    + ((maxPixelCoordinate.x - minPixelCoordinate.x + 1) / tileDimension.width);
 		log.trace("new map: '" + mapNumber + "'");
 		this.number = mapNumber;
 	}
@@ -148,61 +148,96 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		return this.mapSource;
 	}
 
-	@Override
 	/**
 	 * @XmlJavaTypeAdapter(PointAdapter.class) annotation in package-info.java
 	 */
+	@Override
 	@XmlAttribute
 	public Point getMaxTileCoordinate()
 	{
-		return this.maxTileCoordinate;
+		int x = maxPixelCoordinate.x / tileDimension.width;
+		int y = maxPixelCoordinate.y / tileDimension.height;
+		return new Point(x, y);
 	}
 
-	@Override
 	/**
-	 * The tile coordinate value is stored in map space coordinates
-	 * 
 	 * @XmlJavaTypeAdapter(PointAdapter.class) annotation in package-info.java
 	 */
+	@Override
 	@XmlAttribute
 	public Point getMinTileCoordinate()
 	{
-		return this.minTileCoordinate;
+		int x = minPixelCoordinate.x / tileDimension.width;
+		int y = minPixelCoordinate.y / tileDimension.height;
+		return new Point(x, y);
 	}
 
-	/**
-	 * The tile coordinate value is stored in map space coordinates (pixel coordiantes)
-	 */
 	@Override
 	public void setMaxTileCoordinate(Point MaxC)
 	{
-		this.maxTileCoordinate = MaxC;
+		Point pMax = new Point((MaxC.x + 1) * IfMapSpace.TECH_TILESIZE - 1, (MaxC.y + 1) * IfMapSpace.TECH_TILESIZE - 1);
+		maxPixelCoordinate = pMax;
 	}
 
-	/**
-	 * The tile coordinate value is stored in map space coordinates (pixel coordiantes)
-	 */
 	@Override
 	public void setMinTileCoordinate(Point MinC)
 	{
-		this.minTileCoordinate = MinC;
+		Point pMin = new Point(MinC.x * IfMapSpace.TECH_TILESIZE, MinC.y * IfMapSpace.TECH_TILESIZE);
+		minPixelCoordinate = pMin;
 	}
 
+	@Override
+	@XmlTransient
+	public Point getMaxPixelCoordinate()
+	{
+		return maxPixelCoordinate;
+	}
+
+	@Override
+	@XmlTransient
+	public Point getMinPixelCoordinate()
+	{
+		return minPixelCoordinate;
+	}
+
+	@Override
+	public void setMaxPixelCoordinate(Point MaxC)
+	{
+		maxPixelCoordinate = MaxC;
+	}
+
+	@Override
+	public void setMinPixelCoordinate(Point MinC)
+	{
+		minPixelCoordinate = MinC;
+	}
+
+	/**
+	 * This creates a string containing latitude and longitude of the upper left (north east) corner of the map.<br>
+	 * 
+	 * @return string with double border coordinates
+	 */
 	@XmlAttribute
 	public String getULC()
 	{
-		return new EastNorthCoordinate(mapSource.getMapSpace(), getZoom(), minTileCoordinate.x, minTileCoordinate.y).toCatalog();// /W max->min
+		return new EastNorthCoordinate(mapSource.getMapSpace(), getZoom(), minPixelCoordinate.x, minPixelCoordinate.y).toCatalog();
 	}
 
 	public void setULC(String strULC)
 	{
-		;
 	}
 
+	/**
+	 * This creates a string containing latitude and longitude of the lower right (south-west) corner of the map.<br>
+	 * 
+	 * For example: the lower right corner of earth in Mercator projection is lat=-85.05112878, lon=180.00000000
+	 * 
+	 * @return string with double border coordinates
+	 */
 	@XmlAttribute
 	public String getLRC()
 	{
-		return new EastNorthCoordinate(mapSource.getMapSpace(), getZoom(), maxTileCoordinate.x + 1, maxTileCoordinate.y + 1).toCatalog();// /W min->max
+		return new EastNorthCoordinate(mapSource.getMapSpace(), getZoom(), maxPixelCoordinate.x + 1, maxPixelCoordinate.y + 1).toCatalog();
 	}
 
 	public void setLRC(String strLRC)
@@ -215,7 +250,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public int getXMin()
 	{
-		return minTileCoordinate.x / IfMapSpace.TECH_TILESIZE;
+		return minPixelCoordinate.x / IfMapSpace.TECH_TILESIZE;
 	}
 
 	/**
@@ -224,7 +259,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public int getXMax()
 	{
-		return maxTileCoordinate.x / IfMapSpace.TECH_TILESIZE;
+		return maxPixelCoordinate.x / IfMapSpace.TECH_TILESIZE;
 	}
 
 	/**
@@ -233,7 +268,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public int getYMin()
 	{
-		return minTileCoordinate.y / IfMapSpace.TECH_TILESIZE;
+		return minPixelCoordinate.y / IfMapSpace.TECH_TILESIZE;
 	}
 
 	/**
@@ -242,7 +277,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public int getYMax()
 	{
-		return maxTileCoordinate.y / IfMapSpace.TECH_TILESIZE;
+		return maxPixelCoordinate.y / IfMapSpace.TECH_TILESIZE;
 	}
 
 	@Override
@@ -293,17 +328,17 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public String getInfoText()
 	{
-		return "Map\n name=" + name + "\n mapSource=" + mapSource + "\n zoom=" + getZoom() + "\n maxTileCoordinate=" + maxTileCoordinate.x + "/"
-		    + maxTileCoordinate.y + "\n minTileCoordinate=" + minTileCoordinate.x + "/" + minTileCoordinate.y + "\n parameters=" + parameters;
+		return "Map\n name=" + name + "\n mapSource=" + mapSource + "\n zoom=" + getZoom() + "\n maxPixelCoordinate=" + maxPixelCoordinate.x + "/"
+		    + maxPixelCoordinate.y + "\n minPixelCoordinate=" + minPixelCoordinate.x + "/" + minPixelCoordinate.y + "\n parameters=" + parameters;
 	}
 
 	public String getToolTip()
 	{
 		IfMapSpace mapSpace = mapSource.getMapSpace();
 		@SuppressWarnings("unused") // /W #unused
-		EastNorthCoordinate tl = new EastNorthCoordinate(mapSpace, getZoom(), minTileCoordinate.x, minTileCoordinate.y);
+		EastNorthCoordinate tl = new EastNorthCoordinate(mapSpace, getZoom(), minPixelCoordinate.x, minPixelCoordinate.y);
 		@SuppressWarnings("unused") // /W #unused
-		EastNorthCoordinate br = new EastNorthCoordinate(mapSpace, getZoom(), maxTileCoordinate.x, maxTileCoordinate.y);
+		EastNorthCoordinate br = new EastNorthCoordinate(mapSpace, getZoom(), maxPixelCoordinate.x, maxPixelCoordinate.y);
 
 		StringWriter sw = new StringWriter(1024);
 		// sw.write("<html>");
@@ -314,12 +349,12 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		// sw.write(OSMCBStrs.getLocalizedString("lp_bundle_info_map_zoom_lv",
 		// zoom));
 		// sw.write(OSMCBStrs.getLocalizedString("lp_bundle_info_map_area_start",
-		// tl.toString(), minTileCoordinate.x, minTileCoordinate.y));
+		// tl.toString(), minPixelCoordinate.x, minPixelCoordinate.y));
 		// sw.write(OSMCBStrs.getLocalizedString("lp_bundle_info_map_area_end",
-		// br.toString(), maxTileCoordinate.x, maxTileCoordinate.y));
+		// br.toString(), maxPixelCoordinate.x, maxPixelCoordinate.y));
 		// sw.write(OSMCBStrs.getLocalizedString("lp_bundle_info_map_size",
-		// (maxTileCoordinate.x - minTileCoordinate.x + 1), (maxTileCoordinate.y
-		// - minTileCoordinate.y + 1)));
+		// (maxPixelCoordinate.x - minPixelCoordinate.x + 1), (maxPixelCoordinate.y
+		// - minPixelCoordinate.y + 1)));
 		// if (parameters != null)
 		// {
 		// sw.write(String.format(OSMCBStrs.RStr("lp_bundle_info_tile_size"),
@@ -349,14 +384,14 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 
 	protected MercatorPixelCoordinate ulBordersToMaxZoom()
 	{
-		MercatorPixelCoordinate borderCoord = new MercatorPixelCoordinate(mapSource.getMapSpace(), minTileCoordinate.x, minTileCoordinate.y, getZoom());
+		MercatorPixelCoordinate borderCoord = new MercatorPixelCoordinate(mapSource.getMapSpace(), minPixelCoordinate.x, minPixelCoordinate.y, getZoom());
 		borderCoord = borderCoord.adaptToZoomlevel(mapSource.getMaxZoom());
 		return borderCoord;
 	}
 
 	protected MercatorPixelCoordinate lrBordersToMaxZoom()
 	{
-		MercatorPixelCoordinate borderCoord = new MercatorPixelCoordinate(mapSource.getMapSpace(), maxTileCoordinate.x + 1, maxTileCoordinate.y + 1, getZoom());
+		MercatorPixelCoordinate borderCoord = new MercatorPixelCoordinate(mapSource.getMapSpace(), maxPixelCoordinate.x + 1, maxPixelCoordinate.y + 1, getZoom());
 		borderCoord = borderCoord.adaptToZoomlevel(mapSource.getMaxZoom());
 		return borderCoord;
 	}
@@ -370,14 +405,14 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public int getXBorderMax()
 	{
-		// return minTileCoordinate.y;
+		// return minPixelCoordinate.y;
 		return lrBordersToMaxZoom().getX();
 	}
 
 	@Override
 	public int getYBorderMin()
 	{
-		// return maxTileCoordinate.x;
+		// return maxPixelCoordinate.x;
 		return ulBordersToMaxZoom().getY();
 	}
 
@@ -391,25 +426,25 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public double getMinLat()
 	{
-		return mapSource.getMapSpace().cYToLat(maxTileCoordinate.y, getZoom());
+		return mapSource.getMapSpace().cYToLat(maxPixelCoordinate.y, getZoom());
 	}
 
 	@Override
 	public double getMaxLat()
 	{
-		return mapSource.getMapSpace().cYToLat(minTileCoordinate.y, getZoom());
+		return mapSource.getMapSpace().cYToLat(minPixelCoordinate.y, getZoom());
 	}
 
 	@Override
 	public double getMinLon()
 	{
-		return mapSource.getMapSpace().cXToLon(minTileCoordinate.x, getZoom());
+		return mapSource.getMapSpace().cXToLon(minPixelCoordinate.x, getZoom());
 	}
 
 	@Override
 	public double getMaxLon()
 	{
-		return mapSource.getMapSpace().cXToLon(maxTileCoordinate.x, getZoom());
+		return mapSource.getMapSpace().cXToLon(maxPixelCoordinate.x, getZoom());
 	}
 
 	@Override
@@ -480,7 +515,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public long getTileCount()
 	{
-		long tiles = (maxTileCoordinate.x - minTileCoordinate.x + 1) * (maxTileCoordinate.y - minTileCoordinate.y + 1) // /W + 1, + 1
+		long tiles = (maxPixelCoordinate.x - minPixelCoordinate.x + 1) * (maxPixelCoordinate.y - minPixelCoordinate.y + 1) // /W + 1, + 1
 		    / (mapSource.getMapSpace().getTileSize() * mapSource.getMapSpace().getTileSize());
 		return tiles;
 	}
@@ -508,8 +543,8 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		boolean[] checks =
 		{ name == null, // 0
 		    layer == null, // 1
-		    maxTileCoordinate == null, // 2
-		    minTileCoordinate == null, // 3
+		    maxPixelCoordinate == null, // 2
+		    minPixelCoordinate == null, // 3
 		    mapSource == null, // 4
 		    getZoom() < 0 // 5
 		};
@@ -523,17 +558,17 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		// Automatically correct bad ordered min/max coordinates
 		try
 		{
-			if (minTileCoordinate.x > maxTileCoordinate.x)
+			if (minPixelCoordinate.x > maxPixelCoordinate.x)
 			{
-				int tmp = maxTileCoordinate.x;
-				maxTileCoordinate.x = minTileCoordinate.x;
-				minTileCoordinate.x = tmp;
+				int tmp = maxPixelCoordinate.x;
+				maxPixelCoordinate.x = minPixelCoordinate.x;
+				minPixelCoordinate.x = tmp;
 			}
-			if (minTileCoordinate.y > maxTileCoordinate.y)
+			if (minPixelCoordinate.y > maxPixelCoordinate.y)
 			{
-				int tmp = maxTileCoordinate.y;
-				maxTileCoordinate.y = minTileCoordinate.y;
-				minTileCoordinate.y = tmp;
+				int tmp = maxPixelCoordinate.y;
+				maxPixelCoordinate.y = minPixelCoordinate.y;
+				minPixelCoordinate.y = tmp;
 			}
 		}
 		catch (Exception e)
@@ -550,8 +585,8 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 			Map map = this.getClass().newInstance();
 			map.layer = (Layer) newLayer;
 			map.mapSource = mapSource;
-			map.maxTileCoordinate = (Point) maxTileCoordinate.clone();
-			map.minTileCoordinate = (Point) minTileCoordinate.clone();
+			map.maxPixelCoordinate = (Point) maxPixelCoordinate.clone();
+			map.minPixelCoordinate = (Point) minPixelCoordinate.clone();
 			map.name = name;
 			if (parameters != null)
 				map.parameters = (TileImageParameters) parameters.clone();
