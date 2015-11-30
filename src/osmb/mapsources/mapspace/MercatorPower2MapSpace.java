@@ -42,7 +42,13 @@ import osmb.program.map.IfMapSpace;
  */
 public class MercatorPower2MapSpace implements IfMapSpace
 {
+	/**
+	 * The northernmost border of map space (85.05112877980659).
+	 */
 	public static final double MAX_LAT = 85.05112877980659;
+	/**
+	 * The southernmost border of map space (-85.05112877980659).
+	 */
 	public static final double MIN_LAT = -85.05112877980659;
 	protected final int tileSize;
 

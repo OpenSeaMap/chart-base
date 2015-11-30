@@ -250,7 +250,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	// protected int Num = layers.size();
 
 	/**
-	 * Will only be called by {@link #newInstance()}
+	 * Will only be called by {@link #newInstance(String)}
 	 */
 	private Catalog()
 	{
@@ -394,9 +394,9 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	/**
 	 * This checks for empty catalogs. A catalog is empty, if there is no map with tiles in it.
 	 * 
-	 * @return
+	 * @return true if catalog is empty
 	 */
-	// /W #??? to IFCatalog too?
+	// /W #??? to IfCatalog too?
 	public boolean isEmpty()
 	{
 		for (IfLayer layer : layers)
@@ -426,7 +426,6 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		return false;
 	}
 
-	/////////////////////////////////////////////////////////////
 	@Override
 	public int getXBorderMin()
 	{
@@ -470,7 +469,6 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		}
 		return yMax;
 	}
-	/////////////////////////////////////////////////////////////
 
 	@Override
 	public double getMinLat()
