@@ -18,12 +18,15 @@ package osmb.program.map;
 
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.io.StringWriter;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.TreeSet;
 
 import javax.swing.tree.TreeNode;
 import javax.xml.bind.Unmarshaller;
@@ -204,19 +207,19 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			log.trace("Adding new map(s) after alignment: \"" + mapNameBase + "\" " + mapSource + " zoom=" + zoom + " min=" + minPixelCoordinate.x + "/"
 			    + minPixelCoordinate.y + " max=" + maxPixelCoordinate.x + "/" + maxPixelCoordinate.y);
 
-			// is the new map enclosed in an already existing map -> nothing to do at all
-			if (checkMapIsSubset(mD))
-				return;
-			// check if the new map is a superset of already existing maps -> delete old maps
-			checkMapSuperset(mD);
-			// is the new map an extension of an already existing map -> delete the old maps and modify the new to include the old ones
-			mD = checkMapIsExtension(mD);
-
-			// does the map fit the allowed size or has it to be cut into several maps
-			int mapWidth = mD.maxPixelC.x - mD.minPixelC.x + 1;
-			int mapHeight = mD.maxPixelC.y - mD.minPixelC.y + 1;
+			// does the map fit the allowed size or has it be cut into several maps
+			int mapWidth = maxPixelCoordinate.x - minPixelCoordinate.x + 1;
+			int mapHeight = maxPixelCoordinate.y - minPixelCoordinate.y + 1;
 			if ((mapWidth <= maxMapDimension.width) && (mapHeight <= maxMapDimension.height))
 			{
+				// is the new map enclosed in an already existing map -> nothing to do at all
+				if (checkMapIsSubset(mD))
+					return;
+				// check if the new map is a superset of already existing maps -> delete old maps
+				checkMapSuperset(mD);
+				// is the new map an extension of an already existing map
+				mD = checkMapIsExtension(mD);
+
 				// String mapName = String.format(mapNameFormat, new Object[]
 				// {mapNameBase, mapCounter++});
 				String mapName = MakeValidMapName(mD.name, "0000");
@@ -226,6 +229,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			else
 			{
 				log.warn("map not added due to size");
+				// /W #??? setHasUnsavedChanges(false) return false;
 			}
 			// {
 			// Dimension nextMapStep = new Dimension(maxMapDimension.width -
@@ -279,12 +283,14 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		int c = 1;
 		for (int mapNr = 0; mapNr < getMapCount(); ++mapNr)
 		{
+			// log.error("newMapName=" + newMapName + "; mapName=" + getMap(mapNr).getName()); // double mapNums
+			// log.error("MapCount=" + getMapCount() + "; mapNr=" + mapNr); // double mapNums
 			if (newMapName.compareTo(getMap(mapNr).getName()) == 0)
 			{
 				newMapName = String.format("%s-%04d", mapName, c++);
-				log.error("newMapName=" + newMapName + "; c=" + c); // #??? double mapNums
-				mapNr = -1;
-				continue;
+				log.error("newMapName=" + newMapName + "; c=" + c); // double mapNums
+				mapNr = -1; // double mapNums -> - 1 instead of 0, otherwise: first doing ++mapNr ...
+				// continue; ???
 			}
 		}
 		return newMapName;
@@ -350,9 +356,17 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	}
 
 	/**
+	 * <<<<<<< HEAD
 	 * checks if the new map is an extension of an already existing map. If it is, the existing map will be deletd and the new coordinates will be modified to
 	 * include the new map.
 	 * 20151125 It should check if the new map size is allowed before deleting the old maps.
+	 * =======
+	 * checks if the new map is an extension of an already existing map. If it
+	 * is, the new map will be changed to new coordinates which include the
+	 * existing map. The existing map will be deleted.
+	 * 20140511 case new map lies between two already existing maps is
+	 * not covered yet. The new map will be extending both
+	 * >>>>>>> branch 'master' of https://github.com/humbach/ChartBase.git
 	 * 
 	 * @param mD
 	 *          a {@link MapDescription} of the new map
@@ -400,6 +414,59 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			}
 		}
 		return mD;
+	}
+
+	/**
+	 * This cuts overlapping tiles in the east and the south.
+	 * <br>
+	 * depends on map unit = 8 tiles ???
+	 */
+	public void cutOverlap()
+	{
+		for (IfMap map : maps)
+		{
+			// cutOverlap(East)
+			int overlappingTiles = (map.getXMax() + 1) % 8; // mapUnit: 8 tiles
+			if (overlappingTiles != 0)
+				map.setMaxTileCoordinate(new Point(map.getMaxTileCoordinate().x - overlappingTiles, map.getMaxTileCoordinate().y));
+			// cutOverlap(South)
+			overlappingTiles = (map.getYMax() + 1) % 8; // mapUnit: 8 tiles
+			if (overlappingTiles != 0)
+				map.setMaxTileCoordinate(new Point(map.getMaxTileCoordinate().x, map.getMaxTileCoordinate().y - overlappingTiles));
+		}
+	}
+
+	/**
+	 * This sorts the maps in this layer.<br>
+	 * 
+	 * The order depends on the chosen comparator:
+	 * <ul>
+	 * <li>{@link Map#YXMinYXMaxASC}
+	 * <li>{@link Map#NameNumberASC}
+	 * </ul>
+	 * 
+	 * @param CompMap
+	 *          Comparator
+	 */
+	public void sortMaps(Comparator<Map> CompMap)
+	{
+		if (isInvalid()) // double names?
+		{
+			log.error("Layer " + getName() + " is invalid");
+			// return;
+			Toolkit.getDefaultToolkit().beep();
+		}
+
+		TreeSet<Map> mapsLat = new TreeSet<Map>(CompMap);
+		for (IfMap map : maps)
+		{
+			mapsLat.add((Map) map);
+		}
+		maps.clear();
+		for (Map m : mapsLat)
+		{
+			maps.addLast(m);
+		}
 	}
 
 	@Override
@@ -474,7 +541,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		{
 			tiles += map.calculateTilesToLoad();
 		}
-		log.trace("layer=" + getName() + ", tiles=" + tiles);
+		log.debug("layer=" + getName() + ", tiles=" + tiles); // trace
 		return tiles;
 	}
 
@@ -521,7 +588,6 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		}
 		return yMax;
 	}
-	/////////////////////////////////////////////////////////////
 
 	@Override
 	public double getMinLat()
@@ -674,7 +740,6 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 
 	@Override
 	@XmlAttribute
-	// /W
 	public int getZoomLvl()
 	{
 		return nZoomLvl;

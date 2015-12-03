@@ -19,11 +19,20 @@ package osmb.utilities.image;
 import osmb.program.map.IfMapSpace;
 import osmb.utilities.geo.EastNorthCoordinate;
 
-//import osmcd.gui.mapview.JMapViewer;
-
 /**
- * Coordinate point in Mercator projection regarding a world with height and width 2<sup>30</sup> pixels (2<sup>22</sup> tiles with size 256 pixels). This is
- * the maximum size a <code>int</code> can hold.
+ * ( <code>int</code> X |  <code>int</code> Y ) coordinates representing points on a globe.<br>
+ * Mercator coordinates depend on the zoom level! <p>
+ * 
+ * <b>Border coordinate</b>: each pixel has four borders with different <code>int</code> coordinates<br>
+ * <b>Corner coordinate</b>: a corner is an ( <code>int</code> | <code>int</code> ) coordinate fixed by the crossing borders.<br>
+ * The upper left corner (ULC) of a pixel matches the pixel coordinate.<br>
+ * The upper left corner (ULC) of a tile matches the tile coordinate.<br>
+ * 
+ * <b>Pixel coordinate</b>: an ( <code>int</code> | <code>int</code> ) coordinate, convertible values for the <code>int</code> 
+ * are {0..(2<sup>zoom + {@link osmb.program.map.IfMapSpace#TECH_TILESIZE 8}</sup> - 1)}<p>
+ * 
+ * Coordinate point in Mercator projection regarding a world with height and width up to 2<sup>30</sup> pixels (2<sup>22</sup> tiles with size 256 pixels). This is
+ * the maximum size a <code>int</code> can hold.<br>
  */
 public class MercatorPixelCoordinate
 {
@@ -77,6 +86,7 @@ public class MercatorPixelCoordinate
 		return new EastNorthCoordinate(lat, lon);
 	}
 
+	// xxx
 	public MercatorPixelCoordinate adaptToZoomlevel(int aZoomlevel)
 	{
 		int zoomDiff = this.zoom - aZoomlevel;

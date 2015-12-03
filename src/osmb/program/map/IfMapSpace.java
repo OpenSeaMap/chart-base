@@ -24,18 +24,22 @@ import osmb.mapsources.mapspace.MercatorPower2MapSpace;
  * Preparation for supporting map resolutions other than those uses by Google/OpenstreetMap.
  * 
  * {@link MercatorPower2MapSpace} is the only implementation that is currently supported by OpenSeaMap ChartBundler.
- * <p>
- * DO NOT TRY TO IMPLEMENT YOUR OWN. IT WILL NOT WORK!
- * </p>
  */
 public interface IfMapSpace
 {
 	/**
 	 * These are the software technical limits because we use an int for the pixel coordinates. In zoom level 23 the coordinate would exceed the int...
-	 * If we will want to provide higher zoom levels, we have to change the data type used to 64bit int... This is a lot of work, so we do it not (now).
+	 * If we will want to provide higher zoom levels, we have to change the data type used to 64bit int... This is a lot of work, so we do it not (now).<p>
+	 * see {@link #TECH_TILESIZE} and {@link #MAX_TECH_ZOOM}
 	 */
 	final int MIN_TECH_ZOOM = 0;
+	/**
+	 * <code>MAX_TECH_ZOOM = 22</code>
+	 */
 	final int MAX_TECH_ZOOM = 22;
+	/**
+	 * <code>TECH_TILESIZE = 256</code> = 2<sup>8</sup>
+	 */
 	final int TECH_TILESIZE = 256;
 
 	public enum ProjectionCategory
@@ -48,8 +52,9 @@ public interface IfMapSpace
 	public int getMaxPixels(int zoom);
 
 	/**
-	 * @return size (height and width) of each tile in pixel. A tile is a square in pixels.
-	 *         Currently we support only tiles with 256 x 256 pixels see {@link #TECH_TILESIZE}.
+	 * @return size (height and width) of each tile in pixel. A tile is a square in pixels.<br>
+	 *         Currently we support only tiles with 256 x 256 pixels.<br>
+	 *         see {@link #MIN_TECH_ZOOM TECH_TILESIZE}.
 	 */
 	public int getTileSize();
 
@@ -116,7 +121,7 @@ public interface IfMapSpace
 	 *          y-coordinate specifying the latitude
 	 * @param xDist
 	 *          distance in pixels on the x-axis
-	 * @return angular distance angular distance: distance / earth radius (e.g. 6367.5km or 3956.6miles)
+	 * @return angular distance: distance / earth radius (e.g. 6367.5km or 3956.6miles)
 	 */
 	public double horizontalDistance(int zoom, int y, int xDist);
 

@@ -82,9 +82,8 @@ public interface IfMap extends IfCatalogObject, IfCapabilityDeletable
 
 	/**
 	 * The tile coordinate of the bottom right (south-east) tile of the map.
-	 * *
 	 * 
-	 * @return tile coordinate
+	 * @return Tile coordinate (S-E).
 	 */
 	public Point getMaxTileCoordinate();
 
@@ -96,7 +95,7 @@ public interface IfMap extends IfCatalogObject, IfCapabilityDeletable
 	/**
 	 * The pixel coordinates of the upper left (north-west) pixel of the map.
 	 * 
-	 * @return pixel coordinates
+	 * @return Pixel coordinate (N-W).
 	 */
 	public Point getMinPixelCoordinate();
 
@@ -108,7 +107,7 @@ public interface IfMap extends IfCatalogObject, IfCapabilityDeletable
 	/**
 	 * The pixel coordinates of the bottom right (south-east) pixel of the map.
 	 * 
-	 * @return pixel coordinates
+	 * @return Pixel coordinate (S-E).
 	 */
 	public Point getMaxPixelCoordinate();
 

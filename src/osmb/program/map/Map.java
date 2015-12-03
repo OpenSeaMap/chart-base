@@ -19,6 +19,7 @@ package osmb.program.map;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.io.StringWriter;
+import java.util.Comparator;
 import java.util.Enumeration;
 
 import javax.swing.tree.TreeNode;
@@ -54,6 +55,79 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 {
 	// class/static data
 	protected static Logger log = Logger.getLogger(Map.class);
+	
+	/**
+	 * This comparator sorts the maps according to<ul>
+	 * <li> first: their YMin tile coordinates (ascending)
+	 * <li> second: their XMin tile coordinates (ascending)
+	 * <li> third: their yMax tile coordinates (ascending)
+	 * <li> last: their XMax tile coordinates (ascending) (sub-, supersets or 'identity')
+	 */
+	public static final Comparator<Map> YXMinYXMaxASC = new Comparator<Map>()
+	{
+		@Override
+		public int compare(Map m1, Map m2)
+		{
+			int nRes = 0;
+			if (m1.getYMin() < m2.getYMin())
+				nRes = -1;
+			else if (m1.getYMin() > m2.getYMin())
+				nRes = 1;
+			else // m1.getYMin() == m2.getYMin()
+			{
+				if (m1.getXMin() < m2.getXMin())
+					nRes = -1;
+				else if (m1.getXMin() > m2.getXMin())
+					nRes = 1;
+				else // m1.getXMin() == m2.getXMin()
+				{
+					if (m1.getYMax() < m2.getYMax())
+						nRes = -1;
+					else if (m1.getYMax() > m2.getYMax())
+						nRes = 1;
+					else // m1.getYMax() == m2.getYMax()
+					{
+						if (m1.getXMax() < m2.getXMax()) // m1 is subset of m2
+							nRes = -1;
+						else if (m1.getXMax() > m2.getXMax()) // m1 is superset of m2
+							nRes = 1;
+						else // m1.getXMax() == m2.getXMax() // identical areas -> deletion of one map!
+							nRes = 0;
+					}
+				}
+			}
+			return nRes;
+		}
+	};
+	
+	/**
+	 * This comparator sorts the maps according to<ul>
+	 * <li> first: their {@link name names} (ascending)
+	 * <li> second: their {@link #number numbers} (ascending).
+	 */
+	public static final Comparator<Map> NameNumberASC = new Comparator<Map>()
+	{
+		@Override
+		public int compare(Map m1, Map m2)
+		{
+			int nRes = 0;
+			if (m1.getName().compareTo(m2.getName()) < 0)
+				nRes = -1;
+			else if (m1.getName().compareTo(m2.getName()) > 0)
+				nRes = 1;
+			else // m1.getName() == m2.getName()
+			{
+				if (m1.getNumber().compareTo(m2.getNumber()) < 0)
+					nRes = -1;
+				else if (m1.getNumber().compareTo(m2.getNumber()) > 0)
+					nRes = 1;
+				else // m1.getNumber() == m2.getNumber() // names and numbers identical -> deletion of one map!
+					nRes = 0;
+			}
+			return nRes;
+		}
+	};
+
 
 	// instance data
 	/**
@@ -241,6 +315,8 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 
 	/**
 	 * XMin is west
+	 * 
+	 * @return int tile coordinate
 	 */
 	@Override
 	public int getXMin()
@@ -250,6 +326,8 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 
 	/**
 	 * XMax is east
+	 * 
+	 * @return int tile coordinate
 	 */
 	@Override
 	public int getXMax()
@@ -259,6 +337,8 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 
 	/**
 	 * YMin is north
+	 * 
+	 * @return int tile coordinate
 	 */
 	@Override
 	public int getYMin()
@@ -268,6 +348,8 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 
 	/**
 	 * YMax is south
+	 * 
+	 * @return int tile coordinate
 	 */
 	@Override
 	public int getYMax()
@@ -396,49 +478,53 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		return tileDimension;
 	}
 
-	/////////////////////////////////////////////////////////////////////////////////
-	// /W mapSource.getMaxZoom() or JMapViewer.MAX_ZOOM = 22 ???????
-
-	protected MercatorPixelCoordinate ulBordersToMaxZoom()
+	/**
+	 * This calculates of the upper left (north-west) corner of the map in {@link  osmb.program.map.IfMapSpace#MAX_TECH_ZOOM zoom 22}.
+	 * 
+	 * @return Corner coordinate (N-W) in zoom 22<br> see {@link MercatorPixelCoordinate}
+	 */
+	protected MercatorPixelCoordinate ulCornerToMaxZoom()
 	{
 		MercatorPixelCoordinate borderCoord = new MercatorPixelCoordinate(mapSource.getMapSpace(), minPixelCoordinate.x, minPixelCoordinate.y, getZoom());
-		borderCoord = borderCoord.adaptToZoomlevel(mapSource.getMaxZoom());
+		borderCoord = borderCoord.adaptToZoomlevel(IfMapSpace.MAX_TECH_ZOOM);
 		return borderCoord;
 	}
 
-	protected MercatorPixelCoordinate lrBordersToMaxZoom()
+	/**
+	 * This calculates of the lower right (south-east) corner of the map in {@link  osmb.program.map.IfMapSpace#MAX_TECH_ZOOM zoom 22}.
+	 * 
+	 * @return Corner coordinate (S-E) in zoom 22<br> see {@link MercatorPixelCoordinate}
+	 */
+	protected MercatorPixelCoordinate lrCornerToMaxZoom()
 	{
 		MercatorPixelCoordinate borderCoord = new MercatorPixelCoordinate(mapSource.getMapSpace(), maxPixelCoordinate.x + 1, maxPixelCoordinate.y + 1, getZoom());
-		borderCoord = borderCoord.adaptToZoomlevel(mapSource.getMaxZoom());
+		borderCoord = borderCoord.adaptToZoomlevel(IfMapSpace.MAX_TECH_ZOOM);
 		return borderCoord;
 	}
 
 	@Override
 	public int getXBorderMin()
 	{
-		return ulBordersToMaxZoom().getX();
+		return ulCornerToMaxZoom().getX();
 	}
 
 	@Override
 	public int getXBorderMax()
 	{
-		// return minPixelCoordinate.y;
-		return lrBordersToMaxZoom().getX();
+		return lrCornerToMaxZoom().getX();
 	}
 
 	@Override
 	public int getYBorderMin()
 	{
-		// return maxPixelCoordinate.x;
-		return ulBordersToMaxZoom().getY();
+		return ulCornerToMaxZoom().getY();
 	}
 
 	@Override
 	public int getYBorderMax()
 	{
-		return lrBordersToMaxZoom().getY();
+		return lrCornerToMaxZoom().getY();
 	}
-	/////////////////////////////////////////////////////////////////////////////////
 
 	@Override
 	public double getMinLat()
