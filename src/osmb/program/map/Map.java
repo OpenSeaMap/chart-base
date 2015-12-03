@@ -105,12 +105,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		// this.zoom = zoom;
 		this.parameters = parameters;
 		calculateRuntimeValues();
-		// 20150722 AH fixed numbers in here
-		String mapNumber = zoom + "-" + minPixelCoordinate.y / (tileDimension.height * 8) + "-" + minPixelCoordinate.x / (tileDimension.width * 8) + "-"
-		    + ((maxPixelCoordinate.y - minPixelCoordinate.y + 1) / tileDimension.height) + "-"
-		    + ((maxPixelCoordinate.x - minPixelCoordinate.x + 1) / tileDimension.width);
-		log.trace("new map: '" + mapNumber + "'");
-		this.number = mapNumber;
+		setMapNumber(zoom, minPixelCoordinate.y, maxPixelCoordinate.y, minPixelCoordinate.x, maxPixelCoordinate.x);
 	}
 
 	/**
@@ -297,6 +292,28 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	public void setNumber(String strNum)
 	{
 		number = strNum;
+	}
+
+	/**
+	 * This allows to (re-)adjust the map number to the current area of the map.
+	 * 
+	 * @param nZoom
+	 * @param nMinY
+	 *          Pixel coordinate
+	 * @param nMaxY
+	 *          Pixel coordinate
+	 * @param nMinX
+	 *          Pixel coordinate
+	 * @param nMaxX
+	 *          Pixel coordinate
+	 */
+	public void setMapNumber(int nZoom, int nMinY, int nMaxY, int nMinX, int nMaxX)
+	{
+		// 20150722 AH fixed numbers in here
+		String mapNumber = nZoom + "-" + nMinY / (IfMapSpace.TECH_TILESIZE * 8) + "-" + nMinX / (IfMapSpace.TECH_TILESIZE * 8) + "-"
+		    + ((nMaxY - nMinY + 1) / IfMapSpace.TECH_TILESIZE) + "-" + ((nMaxX - nMinX + 1) / IfMapSpace.TECH_TILESIZE);
+		log.trace("new map: '" + mapNumber + "'");
+		this.number = mapNumber;
 	}
 
 	@Override

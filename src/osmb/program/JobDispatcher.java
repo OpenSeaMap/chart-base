@@ -125,7 +125,17 @@ public class JobDispatcher extends ThreadPoolExecutor implements ThreadFactory, 
 	protected void afterExecute(Runnable r, Throwable t)
 	{
 		super.afterExecute(r, t);
-		log.debug("t=" + t + " r=" + r + " finished");
+		if (t == null)
+			log.debug("t=" + t + " r=" + r + " finished");
+		else
+			try
+			{
+				throw t;
+			}
+			catch (Throwable e)
+			{
+				e.printStackTrace();
+			}
 	}
 
 	/**

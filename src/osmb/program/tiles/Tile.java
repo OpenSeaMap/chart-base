@@ -34,8 +34,7 @@ import osmb.utilities.OSMBUtilities;
 
 /**
  * Holds one map tile. Additionally the code for loading the tile image and painting it is also included in this class.
- * 
- * @author Jan Peter Stotz
+ * This contains code originally from Jan Peter Stotz.
  */
 public class Tile
 {

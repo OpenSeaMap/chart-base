@@ -209,12 +209,12 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 				return;
 			// check if the new map is a superset of already existing maps -> delete old maps
 			checkMapSuperset(mD);
-			// is the new map an extension of an already existing map
+			// is the new map an extension of an already existing map -> delete the old maps and modify the new to include the old ones
 			mD = checkMapIsExtension(mD);
 
-			// does the map fit the allowed size or has it be cut into several maps
-			int mapWidth = maxPixelCoordinate.x - minPixelCoordinate.x + 1;
-			int mapHeight = maxPixelCoordinate.y - minPixelCoordinate.y + 1;
+			// does the map fit the allowed size or has it to be cut into several maps
+			int mapWidth = mD.maxPixelC.x - mD.minPixelC.x + 1;
+			int mapHeight = mD.maxPixelC.y - mD.minPixelC.y + 1;
 			if ((mapWidth <= maxMapDimension.width) && (mapHeight <= maxMapDimension.height))
 			{
 				// String mapName = String.format(mapNameFormat, new Object[]
@@ -222,7 +222,6 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 				String mapName = MakeValidMapName(mD.name, "0000");
 				Map s = new Map(this, mapName, mD.mapSource, mD.nZoomLvl, mD.minPixelC, mD.maxPixelC, parameters);
 				maps.add(s);
-
 			}
 			else
 			{
@@ -265,6 +264,15 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		}
 	}
 
+	/**
+	 * This checks if there is already a map with the specified number and if so tests the next number until an unused number is found.
+	 * 
+	 * @param mapName
+	 *          The name part of the map name
+	 * @param mapNum
+	 *          The number part of the map name
+	 * @return An unused map name with an unused number part
+	 */
 	public String MakeValidMapName(String mapName, String mapNum)
 	{
 		String newMapName = mapName + "-" + mapNum;
@@ -275,7 +283,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			{
 				newMapName = String.format("%s-%04d", mapName, c++);
 				log.error("newMapName=" + newMapName + "; c=" + c); // #??? double mapNums
-				mapNr = 0;
+				mapNr = -1;
 				continue;
 			}
 		}
@@ -283,10 +291,10 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	}
 
 	/**
-	 * This checks if the new map is totally covered by an already existing map
+	 * This checks if the new map is completely covered by an already existing map.
 	 * 
 	 * @param mD
-	 *          a {@link MapDescription} of the new map
+	 *          A {@link MapDescription} of the new map
 	 * 
 	 * @return true if mD is a subset of an existing map
 	 */
@@ -295,20 +303,19 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		for (int mapNr = 0; mapNr < getMapCount(); ++mapNr)
 		{
 			IfMap map = getMap(mapNr);
-			log.trace("checking against map: \"" + map.getName() + "\" " + map.getMapSource().getName() + " zoom=" + map.getZoom() + " min="
-			    + map.getMinPixelCoordinate().x + "/" + map.getMinPixelCoordinate().y + " max=" + map.getMaxPixelCoordinate().x + "/" + map.getMaxPixelCoordinate().y);
+			log.trace(
+			    "checking against map: \"" + map.getName() + "\" " + map.getMapSource().getName() + " zoom=" + map.getZoom() + " min=" + map.getMinPixelCoordinate().x
+			        + "/" + map.getMinPixelCoordinate().y + " max=" + map.getMaxPixelCoordinate().x + "/" + map.getMaxPixelCoordinate().y);
 			if ((map.getMinPixelCoordinate().x <= mD.minPixelC.x) && (map.getMinPixelCoordinate().y <= mD.minPixelC.y))
 			{
 				if ((map.getMaxPixelCoordinate().x >= mD.maxPixelC.x) && (map.getMaxPixelCoordinate().y >= mD.maxPixelC.y))
 				{
-					log.trace("match found (new is smaller): " + " min=" + mD.minPixelC.x + "/" + mD.minPixelC.y +
-					    " max=" + mD.maxPixelC.x + "/" + mD.maxPixelC.y);
+					log.trace("match found (new is smaller): " + " min=" + mD.minPixelC.x + "/" + mD.minPixelC.y + " max=" + mD.maxPixelC.x + "/" + mD.maxPixelC.y);
 					mD.minPixelC.x = map.getMinPixelCoordinate().x;
 					mD.minPixelC.y = map.getMinPixelCoordinate().y;
 					mD.maxPixelC.x = map.getMaxPixelCoordinate().x;
 					mD.maxPixelC.y = map.getMaxPixelCoordinate().y;
-					log.trace("match found (old superset): " + " min=" + mD.minPixelC.x + "/" + mD.minPixelC.y +
-					    " max=" + mD.maxPixelC.x + "/" + mD.maxPixelC.y);
+					log.trace("match found (old superset): " + " min=" + mD.minPixelC.x + "/" + mD.minPixelC.y + " max=" + mD.maxPixelC.x + "/" + mD.maxPixelC.y);
 					return true;
 				}
 			}
@@ -327,8 +334,9 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		for (int mapNr = 0; mapNr < getMapCount(); ++mapNr)
 		{
 			IfMap map = getMap(mapNr);
-			log.trace("checking against map: \"" + map.getName() + "\" " + map.getMapSource().getName() + " zoom=" + map.getZoom() + " min="
-			    + map.getMinPixelCoordinate().x + "/" + map.getMinPixelCoordinate().y + " max=" + map.getMaxPixelCoordinate().x + "/" + map.getMaxPixelCoordinate().y);
+			log.trace(
+			    "checking against map: \"" + map.getName() + "\" " + map.getMapSource().getName() + " zoom=" + map.getZoom() + " min=" + map.getMinPixelCoordinate().x
+			        + "/" + map.getMinPixelCoordinate().y + " max=" + map.getMaxPixelCoordinate().x + "/" + map.getMaxPixelCoordinate().y);
 			if ((map.getMinPixelCoordinate().x >= mD.minPixelC.x) && (map.getMinPixelCoordinate().y >= mD.minPixelC.y))
 			{
 				if ((map.getMaxPixelCoordinate().x <= mD.maxPixelC.x) && (map.getMaxPixelCoordinate().y <= mD.maxPixelC.y))
@@ -342,10 +350,9 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	}
 
 	/**
-	 * checks if the new map is an extension of an already existing map. If it
-	 * is, the existing map will be changed to new coordinates which include the
-	 * new map. 20140511 case new map lies between two already existing maps is
-	 * not covered yet. The new map will be extending both
+	 * checks if the new map is an extension of an already existing map. If it is, the existing map will be deletd and the new coordinates will be modified to
+	 * include the new map.
+	 * 20151125 It should check if the new map size is allowed before deleting the old maps.
 	 * 
 	 * @param mD
 	 *          a {@link MapDescription} of the new map
@@ -374,8 +381,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 					--mapNr;
 				}
 			}
-			else 
-			if ((map.getMinPixelCoordinate().x == mD.minPixelC.x) && (map.getMaxPixelCoordinate().x == mD.maxPixelC.x))
+			else if ((map.getMinPixelCoordinate().x == mD.minPixelC.x) && (map.getMaxPixelCoordinate().x == mD.maxPixelC.x))
 			{
 				if ((map.getMinPixelCoordinate().y >= mD.minPixelC.y) && (map.getMinPixelCoordinate().y <= mD.maxPixelC.y + 1)
 				    && (map.getMaxPixelCoordinate().y > mD.maxPixelC.y))
