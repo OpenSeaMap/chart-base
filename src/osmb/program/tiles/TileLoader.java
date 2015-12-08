@@ -30,7 +30,6 @@ import osmb.program.JobDispatcher;
 import osmb.program.tiles.Tile.TileState;
 import osmb.program.tilestore.ACSiTileStore;
 import osmb.program.tilestore.IfTileStoreEntry;
-import osmb.utilities.OSMBUtilities;
 
 /**
  * A {@link Runnable} providing implementation that loads tiles from some online map source via HTTP and saves all loaded files in a directory located in the
@@ -127,7 +126,7 @@ public class TileLoader
 		 * If the tile in the store is expired, it tries to download an updated tile from the online map source.
 		 * sometime the result seems strange
 		 * 
-		 * @return
+		 * @return TRUE if the tile found in the store is not expired. In all other cases it returns FALSE.
 		 */
 		private boolean loadTileFromStore()
 		{
@@ -137,20 +136,21 @@ public class TileLoader
 				BufferedImage image = mMapSource.getTileImage(mZoom, mTileX, mTileY, LoadMethod.STORE);
 				if (image == null)
 				{
-					image = OSMBUtilities.createEmptyTileImage(mMapSource);
-					log.debug("tile " + mTile + " not in store -> use empty and load from online");
+					log.warn("tile " + mTile + " not in store -> use empty and load from online");
+					mTile.setErrorImage();
 				}
 				else
 				{
-					mTile.setImage(image);
 					mTile.setTileState(Tile.TileState.TS_LOADED);
+					mTile.setImage(image);
 					// listener.tileLoadingFinished(mTile, true);
 
 					tileStoreEntry = ACSiTileStore.getInstance().getTile(mTileX, mTileY, mZoom, mMapSource);
 
 					if (ACSiTileStore.getInstance().isTileExpired(tileStoreEntry))
 					{
-						log.debug("expired tile " + mTile + " in store -> use old and load from online");
+						mTile.setTileState(Tile.TileState.TS_EXPIRED);
+						log.warn("expired tile " + mTile + " in store -> use old and load from online");
 					}
 					else
 					{
@@ -195,12 +195,12 @@ public class TileLoader
 			}
 			catch (IOException e)
 			{
-				log.debug("Downloading of " + mTile + " failed: " + e.getMessage());
+				log.warn("Downloading of " + mTile + " failed: " + e.getMessage());
 				mTile.setErrorImage();
 			}
 			catch (Exception e)
 			{
-				log.debug("Downloading of " + mTile + " failed", e);
+				log.warn("Downloading of " + mTile + " failed", e);
 				mTile.setErrorImage();
 			}
 			listener.tileLoadingFinished(mTile, bLoadOK);

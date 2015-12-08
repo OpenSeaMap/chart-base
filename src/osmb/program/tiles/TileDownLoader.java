@@ -92,12 +92,12 @@ public class TileDownLoader
 		{
 			// Copy the file from the persistent tile store instead of downloading it from internet.
 			tile = ts.getTile(x, y, zoom, mapSource);
-			boolean expired = isTileExpired(tile);
+			boolean expired = ts.isTileExpired(tile);
 			if (tile != null)
 			{
 				if (expired)
 				{
-					log.trace("Expired: " + mapSource.getName() + " " + tile);
+					log.warn("Expired: " + mapSource.getName() + " " + tile);
 				}
 				else
 				{
@@ -257,6 +257,10 @@ public class TileDownLoader
 			{
 				break;
 			}
+			case IfModifiedSince:
+			case IfNoneMatch:
+			default:
+				break;
 		}
 		HttpURLConnection conn = mapSource.getTileUrlConnection(zoom, x, y);
 		if (conn == null)
@@ -290,6 +294,11 @@ public class TileDownLoader
 				}
 				break;
 			}
+			case ETag:
+			case LastModified:
+			case None:
+			default:
+				break;
 		}
 
 		conn.connect();
@@ -347,27 +356,7 @@ public class TileDownLoader
 	{
 		if (tileStoreEntry == null)
 			return true;
-		long expiredTime = tileStoreEntry.getTimeExpires();
-		log.trace("ts.expires=" + expiredTime);
-		if (expiredTime >= 0)
-		{
-			// server had set an expiration time
-			long maxExpirationTime = settings.getTileMaxExpirationTime() + tileStoreEntry.getTimeDownloaded();
-			long minExpirationTime = settings.getTileMinExpirationTime() + tileStoreEntry.getTimeDownloaded();
-			expiredTime = Math.max(minExpirationTime, Math.min(maxExpirationTime, expiredTime));
-			log.trace("ts/set.expires=" + expiredTime + ", tDl=" + tileStoreEntry.getTimeDownloaded() + ", sMax=" + maxExpirationTime + ", sMin=" + minExpirationTime
-			    + ", now=" + System.currentTimeMillis() + ", bExp=" + (expiredTime < System.currentTimeMillis()) + ", tile(" + tileStoreEntry.getZoom() + "|"
-			    + tileStoreEntry.getX() + "|" + tileStoreEntry.getY() + ")");
-			log.trace("ts/set.expires=" + expiredTime + ", now=" + System.currentTimeMillis() + ", bExp=" + (expiredTime < System.currentTimeMillis()) + ", tile("
-			    + tileStoreEntry.getZoom() + "|" + tileStoreEntry.getX() + "|" + tileStoreEntry.getY() + ")");
-		}
-		else
-		{
-			// no expiration time set by server - use the default one
-			expiredTime = tileStoreEntry.getTimeDownloaded() + ACSettings.getTileDefaultExpirationTime();
-			log.debug("def.expires=" + expiredTime);
-		}
-		return (expiredTime < System.currentTimeMillis());
+		return ACSiTileStore.getInstance().isTileExpired(tileStoreEntry);
 	}
 
 	/**
@@ -386,7 +375,7 @@ public class TileDownLoader
 		{
 			if (Thread.currentThread() instanceof IfMapSourceListener)
 			{
-				// // We only throttle bundle downloads, not downloads for the preview iMap
+				// // We only throttle bundle downloads, not downloads for the preview map
 				// long bandwidthLimit = ACSettings.getInstance().getBandwidthLimit();
 				// if (bandwidthLimit > 0)
 				// {
@@ -405,7 +394,7 @@ public class TileDownLoader
 			}
 			catch (Exception ee)
 			{
-				log.debug("Error retrieving error stream content: " + e);
+				log.error("Error retrieving error stream content: " + e);
 			}
 			finally
 			{

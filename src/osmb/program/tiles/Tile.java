@@ -58,9 +58,13 @@ public class Tile
 		}
 	}
 
+	/**
+	 * 
+	 * @author humbach
+	 */
 	public enum TileState
 	{
-		TS_NEW, TS_LOADING, TS_LOADED, TS_ERROR
+		TS_NEW, TS_LOADING, TS_LOADED, TS_ERROR, TS_EXPIRED
 	};
 
 	protected IfMapSource mMapSource;
@@ -99,6 +103,7 @@ public class Tile
 	 * Tries to get tiles of a lower or higher zoom level (one or two level difference) from cache and use it as a
 	 * placeholder until the tile has been loaded.
 	 */
+	// This does not belong into here. It has to be moved upward in the hierarchy. The Tile should not know anything about the TileStore/Cache
 	public void loadPlaceholderFromCache(MemoryTileCache cache)
 	{
 		int tileSize = mMapSource.getMapSpace().getTileSize();
