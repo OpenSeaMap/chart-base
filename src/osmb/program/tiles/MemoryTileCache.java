@@ -49,7 +49,7 @@ public class MemoryTileCache implements NotificationListener
 	/**
 	 * Default cache size in tiles. May be modified by constructor {@link #MemoryTileCache(int cacheSize)}.
 	 */
-	protected int mCacheSize = 200;
+	protected int mCacheSize = 2000;
 	protected Hashtable<String, CacheEntry> mHT;
 
 	/**
@@ -60,7 +60,7 @@ public class MemoryTileCache implements NotificationListener
 	public MemoryTileCache()
 	{
 		log = Logger.getLogger(this.getClass());
-		mCacheSize = 500;
+		mCacheSize = 5000;
 		mHT = new Hashtable<String, CacheEntry>(mCacheSize);
 		lruTiles = new CacheLinkedListElement();
 

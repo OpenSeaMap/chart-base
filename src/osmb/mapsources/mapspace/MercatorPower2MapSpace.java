@@ -18,7 +18,10 @@ package osmb.mapsources.mapspace;
 
 import java.awt.Point;
 
+import org.apache.log4j.Logger;
+
 import osmb.program.map.IfMapSpace;
+import osmb.program.map.Map;
 
 /**
  * Mercator projection with a world width and height of 256 * 2<sup>zoom</sup> pixel. This is the common projection used by OpenStreetMap and Google. It
@@ -42,6 +45,7 @@ import osmb.program.map.IfMapSpace;
  */
 public class MercatorPower2MapSpace implements IfMapSpace
 {
+	protected final Logger log = Logger.getLogger(Map.class);
 	/**
 	 * The northernmost border of map space (85.05112877980659).
 	 */
@@ -104,15 +108,19 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 * Transforms latitude to pixelspace
 	 * 
 	 * @param lat
-	 *          [-90...90]
+	 *          [-85...85] - is south
 	 * @param zoom
 	 *          [MIN_TECH_ZOOM..MAX_TECH_ZOOM] (0..22 for tileSize = 256)
-	 * @return [0..2^zoom*tileSize[
-	 * @author Jan Peter Stotz
+	 * @return [0..2^zoom*tileSize -1]
+	 * @author humbach based on code from Jan Peter Stotz
 	 */
 	@Override
 	public int cLatToY(double lat, int zoom)
 	{
+		if ((lat < MIN_LAT) || (lat > MAX_LAT))
+			log.error("latitude out of range=" + lat);
+		if ((zoom < IfMapSpace.MIN_TECH_ZOOM) || (zoom > IfMapSpace.MAX_TECH_ZOOM))
+			log.error("zoom out of range=" + zoom);
 		lat = Math.max(MIN_LAT, Math.min(MAX_LAT, lat));
 		double sinLat = Math.sin(Math.toRadians(lat));
 		double log = Math.log((1.0 + sinLat) / (1.0 - sinLat));
@@ -126,23 +134,28 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	 * Transform longitude to pixelspace
 	 * 
 	 * @param lon
-	 *          [-180..180]
+	 *          [-180..180] - is west
 	 * @param zoom
 	 *          [MIN_TECH_ZOOM..MAX_TECH_ZOOM] (0..22 for tileSize = 256)
-	 * @return [0..2^zoom * TILE_SIZE[
-	 * @author Jan Peter Stotz
+	 * @return [0..2^zoom * TILE_SIZE -1]
+	 * @author humbach based on code from Jan Peter Stotz
 	 */
 	@Override
 	public int cLonToX(double lon, int zoom)
 	{
+		if ((lon < -180) || (lon >= 180))
+			log.error("longitude out of range=" + lon);
+		if ((zoom < IfMapSpace.MIN_TECH_ZOOM) || (zoom >= IfMapSpace.MAX_TECH_ZOOM))
+			log.error("zoom out of range=" + zoom);
+		lon = Math.max(-180, Math.min(180, lon));
 		int mp = getMaxPixels(zoom);
 		int x = (int) ((mp * (lon + 180l)) / 360l);
-		x = Math.min(x, mp - 1);
+		x = Math.max(0, Math.min(x, mp - 1));
 		return x;
 	}
 
 	/**
-	 * Transforms pixel coordinate X to longitude
+	 * Transforms pixel coordinate X to longitude of the left pixel border
 	 * 
 	 * @param x
 	 *          [0..2^zoom * tileSize[
@@ -154,11 +167,13 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	@Override
 	public double cXToLon(int x, int zoom)
 	{
+		if ((zoom < IfMapSpace.MIN_TECH_ZOOM) || (zoom > IfMapSpace.MAX_TECH_ZOOM))
+			log.error("zoom out of range=" + zoom);
 		return ((360d * x) / getMaxPixels(zoom)) - 180.0;
 	}
 
 	/**
-	 * Transforms pixel coordinate Y to latitude
+	 * Transforms pixel coordinate Y to latitude of upper pixel border
 	 * 
 	 * @param y
 	 *          [0..2^zoom * tileSize[
@@ -169,6 +184,8 @@ public class MercatorPower2MapSpace implements IfMapSpace
 	@Override
 	public double cYToLat(int y, int zoom)
 	{
+		if ((zoom < IfMapSpace.MIN_TECH_ZOOM) || (zoom > IfMapSpace.MAX_TECH_ZOOM))
+			log.error("zoom out of range=" + zoom);
 		y += falseNorthing(zoom);
 		double latitude = (Math.PI / 2) - (2 * Math.atan(Math.exp(-1.0 * y / radius(zoom))));
 		return -1 * Math.toDegrees(latitude);
