@@ -38,8 +38,9 @@ import osmb.program.tiles.Tile.TileState;
  * {@link TileImageCache} implementation that stores all {@link Tile} objects in memory up to a certain limit ( {@link #getCacheSize()}). If the limit is
  * exceeded the least recently used {@link Tile} objects will be deleted.
  * 
- * @author Jan Peter Stotz
- * @author r_x
+ * its based upon code from Jan Peter Stotz
+ * 
+ * @author humbach
  */
 public class MemoryTileCache implements NotificationListener
 {

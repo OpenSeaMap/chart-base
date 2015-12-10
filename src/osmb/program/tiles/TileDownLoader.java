@@ -369,10 +369,11 @@ public class TileDownLoader
 	 */
 	protected static byte[] loadBodyDataInBuffer(HttpURLConnection conn) throws IOException
 	{
-		InputStream input = conn.getInputStream();
+		InputStream input = null;
 		byte[] data = null;
 		try
 		{
+			input = conn.getInputStream();
 			if (Thread.currentThread() instanceof IfMapSourceListener)
 			{
 				// // We only throttle bundle downloads, not downloads for the preview map
