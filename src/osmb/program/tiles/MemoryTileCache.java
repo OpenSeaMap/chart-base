@@ -76,6 +76,7 @@ public class MemoryTileCache implements NotificationListener
 				memPool.setUsageThreshold((long) (memUsage.getMax() * 0.95));
 			}
 		}
+		log.debug("mtc[" + mHT.size() + ", " + mCacheSize + "] created");
 	}
 
 	/**
@@ -102,6 +103,7 @@ public class MemoryTileCache implements NotificationListener
 				memPool.setUsageThreshold((long) (memUsage.getMax() * 0.95));
 			}
 		}
+		log.debug("mtc[" + mHT.size() + ", " + mCacheSize + "] created");
 	}
 
 	/**
@@ -132,6 +134,7 @@ public class MemoryTileCache implements NotificationListener
 				log.error("", e);
 			}
 		}
+		log.debug("mtc[" + mHT.size() + "] modified");
 	}
 
 	/**
@@ -144,6 +147,7 @@ public class MemoryTileCache implements NotificationListener
 		lruTiles.addFirst(entry);
 		if (mHT.size() > mCacheSize)
 			removeOldEntries();
+		log.debug("mtc[" + mHT.size() + "] modified");
 	}
 
 	public Tile getTile(IfMapSource source, int x, int y, int z)
@@ -183,6 +187,7 @@ public class MemoryTileCache implements NotificationListener
 	{
 		mHT.remove(entry.tile.getKey());
 		lruTiles.removeEntry(entry);
+		log.debug("mtc[" + mHT.size() + "] modified");
 	}
 
 	protected CacheEntry createCacheEntry(Tile tile)
