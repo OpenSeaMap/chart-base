@@ -37,9 +37,9 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.log4j.Logger;
 
-import osmb.mapsources.mapspace.MapSpaceFactory;
+//W #mapSpace import osmb.mapsources.mapspace.MapSpaceFactory;
 import osmb.program.jaxb.ColorAdapter;
-import osmb.program.map.IfMapSpace;
+//W #mapSpace import osmb.program.map.IfMapSpace;
 import osmb.program.tiles.SQLiteLoader;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
@@ -93,7 +93,7 @@ public class CustomLocalTileSQliteMapSource implements IfFileBasedMapSource
 	 */
 	private Connection conn = null;
 
-	private final IfMapSpace mapSpace = MapSpaceFactory.getInstance(256, true);
+	// private final IfMapSpace mapSpace = MapSpaceFactory.getInstance(256, true); // W #mapSpace =
 
 	public CustomLocalTileSQliteMapSource()
 	{
@@ -327,11 +327,12 @@ public class CustomLocalTileSQliteMapSource implements IfFileBasedMapSource
 		return name;
 	}
 
-	@Override
-	public IfMapSpace getMapSpace()
-	{
-		return mapSpace;
-	}
+// W #mapSpace
+//	@Override
+//	public IfMapSpace getMapSpace()
+//	{
+//		return mapSpace;
+//	}
 
 	@Override
 	public Color getBackgroundColor()

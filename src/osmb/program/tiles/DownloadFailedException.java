@@ -21,6 +21,8 @@ import java.net.HttpURLConnection;
 
 public class DownloadFailedException extends IOException
 {
+	private static final long serialVersionUID = 1L;
+	
 	private final int httpResponseCode;
 	private HttpURLConnection connection;
 

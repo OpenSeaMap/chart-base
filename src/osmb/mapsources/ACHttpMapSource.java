@@ -27,8 +27,8 @@ import javax.imageio.ImageIO;
 
 import org.apache.log4j.Logger;
 
-import osmb.mapsources.mapspace.MercatorPower2MapSpace;
-import osmb.program.map.IfMapSpace;
+//import osmb.mapsources.mapspace.MercatorPower2MapSpace; // W #mapSpace
+//import osmb.program.map.IfMapSpace; // W #mapSpace
 import osmb.program.tiles.TileDownLoader;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
@@ -49,7 +49,7 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 	protected int maxZoom;
 	protected TileImageType tileType;
 	protected IfHttpMapSource.TileUpdate tileUpdate;
-	protected IfMapSpace mapSpace = MercatorPower2MapSpace.INSTANCE_256;
+//	protected IfMapSpace mapSpace = MercatorPower2MapSpace.INSTANCE_256; // W #mapSpace =
 	protected MapSourceLoaderInfo loaderInfo = null;
 
 	public ACHttpMapSource(String name, int minZoom, int maxZoom, TileImageType tileType)
@@ -217,11 +217,12 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 		return true;
 	}
 
-	@Override
-	public IfMapSpace getMapSpace()
-	{
-		return mapSpace;
-	}
+// #mapSpace
+//	@Override
+//	public IfMapSpace getMapSpace()
+//	{
+//		return mapSpace;
+//	}
 
 	@Override
 	public Color getBackgroundColor()

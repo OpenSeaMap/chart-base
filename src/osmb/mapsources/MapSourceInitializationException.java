@@ -16,20 +16,26 @@
  ******************************************************************************/
 package osmb.mapsources;
 
-public class MapSourceInitializationException extends Exception {
+public class MapSourceInitializationException extends Exception
+{
+	private static final long serialVersionUID = 1L;
 
-	public MapSourceInitializationException() {
+	public MapSourceInitializationException()
+	{
 	}
 
-	public MapSourceInitializationException(String message) {
+	public MapSourceInitializationException(String message)
+	{
 		super(message);
 	}
 
-	public MapSourceInitializationException(Throwable cause) {
+	public MapSourceInitializationException(Throwable cause)
+	{
 		super(cause);
 	}
 
-	public MapSourceInitializationException(String message, Throwable cause) {
+	public MapSourceInitializationException(String message, Throwable cause)
+	{
 		super(message, cause);
 	}
 

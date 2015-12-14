@@ -33,7 +33,7 @@ import osmb.utilities.OSMBStrs;
 
 public class DefaultMapSourcesManager extends ACMapSourcesManager
 {
-	@SuppressWarnings("unused") // /W #unused
+	@SuppressWarnings("unused") // W #unused
 	private Logger log = Logger.getLogger(DefaultMapSourcesManager.class);
 
 	/**
@@ -46,7 +46,8 @@ public class DefaultMapSourcesManager extends ACMapSourcesManager
 	 */
 	private HashMap<String, IfMapSource> allAvailableMapSources = new HashMap<String, IfMapSource>(50);
 
-	public DefaultMapSourcesManager() {
+	public DefaultMapSourcesManager()
+	{
 		// Check for user specific configuration of mapsources directory
 	}
 
@@ -237,7 +238,7 @@ public class DefaultMapSourcesManager extends ACMapSourcesManager
 	@Override
 	public IfMapSource getDefaultMapSource()
 	{
-		IfMapSource ms = getSourceByName("AH OpenSeaMap - Mapnik"); // /W #???  ("MapQuest");// DEFAULT;// /W #??? change! (ms == null) 20150713
+		IfMapSource ms = getSourceByName("AH OpenSeaMap - Mapnik"); // W #??? DEFAULT;
 		if (ms != null)
 			return ms;
 		// Fallback: return first

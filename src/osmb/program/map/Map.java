@@ -33,13 +33,16 @@ import org.apache.log4j.Logger;
 import osmb.exceptions.InvalidNameException;
 import osmb.mapsources.ACMultiLayerMapSource;
 import osmb.mapsources.IfMapSource;
-import osmb.mapsources.mapspace.MercatorPower2MapSpace;
+import osmb.mapsources.MP2Corner;
+import osmb.mapsources.MP2MapSpace;
+// W #mapSpace import osmb.mapsources.mapspace.MercatorPower2MapSpace;
 import osmb.program.catalog.IfCapabilityDeletable;
 import osmb.program.catalog.IfCatalog;
 import osmb.program.tiles.IfTileFilter;
 import osmb.program.tiles.TileImageParameters;
-import osmb.utilities.geo.EastNorthCoordinate;
-import osmb.utilities.image.MercatorPixelCoordinate;
+//W #mapSpace import osmb.utilities.geo.EastNorthCoordinate;
+import osmb.utilities.geo.GeoCoordinate;
+//W #mapSpaceimport osmb.utilities.image.MercatorPixelCoordinate;
 
 /**
  * The map is the implementation of a rectangular (not really, since the earth is a globe) area on earths surface, which is rendered in square tiles (of 256 x
@@ -191,7 +194,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 			throw new RuntimeException("The map source of map '" + name + "' is unknown to OSMCB");
 		if (parameters == null)
 		{
-			int tileSize = mapSource.getMapSpace().getTileSize();
+			int tileSize = MP2MapSpace.getTileSize(); // W #mapSpace mapSource.getMapSpace().getTileSize();
 			tileDimension = new Dimension(tileSize, tileSize);
 		}
 		else
@@ -244,14 +247,14 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public void setMaxTileCoordinate(Point MaxC)
 	{
-		Point pMax = new Point((MaxC.x + 1) * IfMapSpace.TECH_TILESIZE - 1, (MaxC.y + 1) * IfMapSpace.TECH_TILESIZE - 1);
+		Point pMax = new Point((MaxC.x + 1) * MP2MapSpace.TECH_TILESIZE - 1, (MaxC.y + 1) * MP2MapSpace.TECH_TILESIZE - 1);//W #mapSpace ((MaxC.x + 1) * IfMapSpace.TECH_TILESIZE - 1, (MaxC.y + 1) * IfMapSpace.TECH_TILESIZE - 1);
 		maxPixelCoordinate = pMax;
 	}
 
 	@Override
 	public void setMinTileCoordinate(Point MinC)
 	{
-		Point pMin = new Point(MinC.x * IfMapSpace.TECH_TILESIZE, MinC.y * IfMapSpace.TECH_TILESIZE);
+		Point pMin = new Point(MinC.x * MP2MapSpace.TECH_TILESIZE, MinC.y * MP2MapSpace.TECH_TILESIZE);//W #mapSpace (MinC.x * IfMapSpace.TECH_TILESIZE, MinC.y * IfMapSpace.TECH_TILESIZE);
 		minPixelCoordinate = pMin;
 	}
 
@@ -281,6 +284,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		minPixelCoordinate = MinC;
 	}
 
+	// W #mapSpace MP2Corner.toGeoCoordinate()
 	/**
 	 * This creates a string containing latitude and longitude of the upper left (north east) corner of the map.<br>
 	 * 
@@ -289,7 +293,8 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@XmlAttribute
 	public String getULC()
 	{
-		return new EastNorthCoordinate(mapSource.getMapSpace(), getZoom(), minPixelCoordinate.x, minPixelCoordinate.y).toCatalog();
+//		return new EastNorthCoordinate(mapSource.getMapSpace(), getZoom(), minPixelCoordinate.x, minPixelCoordinate.y).toCatalog();
+		return new MP2Corner(minPixelCoordinate.x, minPixelCoordinate.y, getZoom()).toGeoCoordinate().toCatalog();
 	}
 
 	public void setULC(String strULC)
@@ -306,7 +311,9 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@XmlAttribute
 	public String getLRC()
 	{
-		return new EastNorthCoordinate(mapSource.getMapSpace(), getZoom(), maxPixelCoordinate.x + 1, maxPixelCoordinate.y + 1).toCatalog();
+	// W #mapSpace MP2Corner.toGeoCoordinate()
+//		return new EastNorthCoordinate(mapSource.getMapSpace(), getZoom(), maxPixelCoordinate.x + 1, maxPixelCoordinate.y + 1).toCatalog();
+		return new MP2Corner(maxPixelCoordinate.x + 1, maxPixelCoordinate.y + 1, getZoom()).toGeoCoordinate().toCatalog();
 	}
 
 	public void setLRC(String strLRC)
@@ -321,7 +328,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public int getXMin()
 	{
-		return minPixelCoordinate.x / IfMapSpace.TECH_TILESIZE;
+		return minPixelCoordinate.x / MP2MapSpace.TECH_TILESIZE; // W #mapSpace IfMapSpace.TECH_TILESIZE;
 	}
 
 	/**
@@ -332,7 +339,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public int getXMax()
 	{
-		return maxPixelCoordinate.x / IfMapSpace.TECH_TILESIZE;
+		return maxPixelCoordinate.x / MP2MapSpace.TECH_TILESIZE; // W #mapSpace IfMapSpace.TECH_TILESIZE;
 	}
 
 	/**
@@ -343,7 +350,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public int getYMin()
 	{
-		return minPixelCoordinate.y / IfMapSpace.TECH_TILESIZE;
+		return minPixelCoordinate.y / MP2MapSpace.TECH_TILESIZE; // W #mapSpace IfMapSpace.TECH_TILESIZE;
 	}
 
 	/**
@@ -354,7 +361,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public int getYMax()
 	{
-		return maxPixelCoordinate.y / IfMapSpace.TECH_TILESIZE;
+		return maxPixelCoordinate.y / MP2MapSpace.TECH_TILESIZE; // W #mapSpace IfMapSpace.TECH_TILESIZE;
 	}
 
 	@Override
@@ -389,11 +396,11 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	 * @param nMaxX
 	 *          Pixel coordinate
 	 */
-	public void setMapNumber(int nZoom, int nMinY, int nMaxY, int nMinX, int nMaxX)
+	public void setMapNumber(int nZoom, int nMinY, int nMaxY, int nMinX, int nMaxX) // W #mapSpace IfMapSpace.TECH_TILESIZE;
 	{
 		// 20150722 AH fixed numbers in here
-		String mapNumber = nZoom + "-" + nMinY / (IfMapSpace.TECH_TILESIZE * 8) + "-" + nMinX / (IfMapSpace.TECH_TILESIZE * 8) + "-"
-		    + ((nMaxY - nMinY + 1) / IfMapSpace.TECH_TILESIZE) + "-" + ((nMaxX - nMinX + 1) / IfMapSpace.TECH_TILESIZE);
+		String mapNumber = nZoom + "-" + nMinY / (MP2MapSpace.TECH_TILESIZE * 8) + "-" + nMinX / (MP2MapSpace.TECH_TILESIZE * 8) + "-"
+		    + ((nMaxY - nMinY + 1) / MP2MapSpace.TECH_TILESIZE) + "-" + ((nMaxX - nMinX + 1) / MP2MapSpace.TECH_TILESIZE);
 		log.trace("new map: '" + mapNumber + "'");
 		this.number = mapNumber;
 	}
@@ -433,11 +440,12 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 
 	public String getToolTip()
 	{
-		IfMapSpace mapSpace = mapSource.getMapSpace();
+		// W #mapSpace IfMapSpace mapSpace = mapSource.getMapSpace();//W  #mapSpace 	MP2Corner GeoCoordinate
 		@SuppressWarnings("unused") // /W #unused
-		EastNorthCoordinate tl = new EastNorthCoordinate(mapSpace, getZoom(), minPixelCoordinate.x, minPixelCoordinate.y);
+//		EastNorthCoordinate tl = new EastNorthCoordinate(mapSpace, getZoom(), minPixelCoordinate.x, minPixelCoordinate.y);
+		GeoCoordinate tl = new MP2Corner(minPixelCoordinate.x, minPixelCoordinate.y, getZoom()).toGeoCoordinate();
 		@SuppressWarnings("unused") // /W #unused
-		EastNorthCoordinate br = new EastNorthCoordinate(mapSpace, getZoom(), maxPixelCoordinate.x, maxPixelCoordinate.y);
+		GeoCoordinate br = new MP2Corner(maxPixelCoordinate.x, maxPixelCoordinate.y, getZoom()).toGeoCoordinate();
 
 		StringWriter sw = new StringWriter(1024);
 		// sw.write("<html>");
@@ -478,30 +486,43 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		return tileDimension;
 	}
 
+// W #mapSpace
 	/**
 	 * This calculates of the upper left (north-west) corner of the map in {@link  osmb.program.map.IfMapSpace#MAX_TECH_ZOOM zoom 22}.
 	 * 
 	 * @return Corner coordinate (N-W) in zoom 22<br> see {@link MercatorPixelCoordinate}
 	 */
-	protected MercatorPixelCoordinate ulCornerToMaxZoom()
+//	protected MercatorPixelCoordinate ulCornerToMaxZoom()
+//	{
+//		MercatorPixelCoordinate borderCoord = new MercatorPixelCoordinate(mapSource.getMapSpace(), minPixelCoordinate.x, minPixelCoordinate.y, getZoom());
+//		borderCoord = borderCoord.adaptToZoomlevel(IfMapSpace.MAX_TECH_ZOOM);
+//		return borderCoord;
+//	}
+	protected MP2Corner ulCornerToMaxZoom()
 	{
-		MercatorPixelCoordinate borderCoord = new MercatorPixelCoordinate(mapSource.getMapSpace(), minPixelCoordinate.x, minPixelCoordinate.y, getZoom());
-		borderCoord = borderCoord.adaptToZoomlevel(IfMapSpace.MAX_TECH_ZOOM);
+		MP2Corner borderCoord = new MP2Corner(minPixelCoordinate.x, minPixelCoordinate.y, getZoom());
+		borderCoord = borderCoord.adaptToZoomlevel(MP2MapSpace.MAX_TECH_ZOOM); // W #mapSpace (IfMapSpace.MAX_TECH_ZOOM);
 		return borderCoord;
 	}
 
+//W #mapSpace
 	/**
 	 * This calculates of the lower right (south-east) corner of the map in {@link  osmb.program.map.IfMapSpace#MAX_TECH_ZOOM zoom 22}.
 	 * 
 	 * @return Corner coordinate (S-E) in zoom 22<br> see {@link MercatorPixelCoordinate}
 	 */
-	protected MercatorPixelCoordinate lrCornerToMaxZoom()
+//	protected MercatorPixelCoordinate lrCornerToMaxZoom()
+//	{
+//		MercatorPixelCoordinate borderCoord = new MercatorPixelCoordinate(mapSource.getMapSpace(), maxPixelCoordinate.x + 1, maxPixelCoordinate.y + 1, getZoom());
+//		borderCoord = borderCoord.adaptToZoomlevel(IfMapSpace.MAX_TECH_ZOOM);
+//		return borderCoord;
+//	}
+	protected MP2Corner lrCornerToMaxZoom()
 	{
-		MercatorPixelCoordinate borderCoord = new MercatorPixelCoordinate(mapSource.getMapSpace(), maxPixelCoordinate.x + 1, maxPixelCoordinate.y + 1, getZoom());
-		borderCoord = borderCoord.adaptToZoomlevel(IfMapSpace.MAX_TECH_ZOOM);
+		MP2Corner borderCoord = new MP2Corner(maxPixelCoordinate.x + 1, maxPixelCoordinate.y + 1, getZoom());
+		borderCoord = borderCoord.adaptToZoomlevel(MP2MapSpace.MAX_TECH_ZOOM); // W #mapSpace (IfMapSpace.MAX_TECH_ZOOM);
 		return borderCoord;
 	}
-
 	@Override
 	public int getXBorderMin()
 	{
@@ -529,25 +550,25 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public double getMinLat()
 	{
-		return mapSource.getMapSpace().cYToLat(maxPixelCoordinate.y, getZoom());
+		return MP2MapSpace.cYToLat(maxPixelCoordinate.y, getZoom()); // #mapSpace mapSource.getMapSpace().cYToLat(maxPixelCoordinate.y, getZoom());
 	}
 
 	@Override
 	public double getMaxLat()
 	{
-		return mapSource.getMapSpace().cYToLat(minPixelCoordinate.y, getZoom());
+		return MP2MapSpace.cYToLat(minPixelCoordinate.y, getZoom()); // #mapSpace mapSource.getMapSpace().cYToLat(minPixelCoordinate.y, getZoom());
 	}
 
 	@Override
 	public double getMinLon()
 	{
-		return mapSource.getMapSpace().cXToLon(minPixelCoordinate.x, getZoom());
+		return MP2MapSpace.cXToLon(minPixelCoordinate.x, getZoom()); // #mapSpace mapSource.getMapSpace().cXToLon(minPixelCoordinate.x, getZoom());
 	}
 
 	@Override
 	public double getMaxLon()
 	{
-		return mapSource.getMapSpace().cXToLon(maxPixelCoordinate.x, getZoom());
+		return MP2MapSpace.cXToLon(maxPixelCoordinate.x, getZoom()); // #mapSpace mapSource.getMapSpace().cXToLon(maxPixelCoordinate.x, getZoom());
 	}
 
 	@Override
@@ -619,7 +640,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	public long getTileCount()
 	{
 		long tiles = (maxPixelCoordinate.x - minPixelCoordinate.x + 1) * (maxPixelCoordinate.y - minPixelCoordinate.y + 1) // /W + 1, + 1
-		    / (mapSource.getMapSpace().getTileSize() * mapSource.getMapSpace().getTileSize());
+		    / (MP2MapSpace.getTileSize() * MP2MapSpace.getTileSize()); // #mapSpace  (mapSource.getMapSpace().getTileSize() * mapSource.getMapSpace().getTileSize());
 		return tiles;
 	}
 
@@ -655,11 +676,11 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		for (int i = 0; i < checks.length; i++)
 			if (checks[i])
 			{
-				log.error("Problem detectected with map \"" + name + "\" check: " + i);
+				log.error("Problem detected with map \"" + name + "\" check: " + i);
 				result = true;
 			}
 		// Automatically correct bad ordered min/max coordinates
-		try
+		try // W #??? try-catch
 		{
 			if (minPixelCoordinate.x > maxPixelCoordinate.x)
 			{

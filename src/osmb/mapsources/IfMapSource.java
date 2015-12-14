@@ -23,7 +23,7 @@ import java.io.IOException;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import osmb.program.jaxb.MapSourceAdapter;
-import osmb.program.map.IfMapSpace;
+// W #mapSpace import osmb.program.map.IfMapSpace;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
 
@@ -111,7 +111,7 @@ public interface IfMapSource
 	 */
 	public TileImageType getTileImageType();
 
-	public IfMapSpace getMapSpace();
+	// W #mapSpace public IfMapSpace getMapSpace();
 
 	public Color getBackgroundColor();
 

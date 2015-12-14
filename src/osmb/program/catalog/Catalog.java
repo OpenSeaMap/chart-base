@@ -58,7 +58,6 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 {
 	// standard data
 	public static final int CURRENT_CATALOG_VERSION = 2;
-	// public static final int MIN_CATALOG_ZOOMLEVEL = 4; // /W #zoom0-3 used to disable zoomlevels 0 t0 3 in MainFrame
 	protected static Logger log = Logger.getLogger(Catalog.class);
 
 	// class/static data
@@ -66,7 +65,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	public static final String CATALOG_FILENAME_PREFIX = "osmcb-catalog-";
 	public static final Pattern CATALOG_FILENAME_PATTERN = Pattern.compile(CATALOG_FILENAME_PREFIX + "(" + CATALOG_NAME_REGEX + ").xml");
 	// public static final Catalog DEFAULT = new Catalog();
-	@Deprecated // /W #deprecated
+	@Deprecated
 	protected static Vector<Catalog> catalogs = new Vector<Catalog>();
 
 	/**
@@ -120,7 +119,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	/**
 	 * Catalogs management method
 	 */
-	@Deprecated // /W #deprecated
+	@Deprecated
 	public static Vector<Catalog> getCatalogs()
 	{
 		updateCatalogs();
@@ -131,7 +130,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 * This updates the listing of the available catalogs in the catalogs
 	 * directory. It is used by {@link #JCatalogsComboBox}
 	 */
-	@Deprecated // /W #deprecated
+	@Deprecated
 	public static void updateCatalogs()
 	{
 		catalogs.clear();
@@ -162,7 +161,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		JAXBContext context = JAXBContext.newInstance(Catalog.class);
 		Unmarshaller um = context.createUnmarshaller();
 
-		// /W ValidationEventHandler is not helpful, user will get an info from GUIExceptionHandler
+		// W ValidationEventHandler is not helpful, user will get an info from GUIExceptionHandler
 		// um.setEventHandler(new ValidationEventHandler()
 		// {
 		// @Override
@@ -198,7 +197,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 * This checks whether testName is the name of an existing catalog in
 	 * catalogsDirectory.
 	 */
-	@Deprecated // /W #deprecated
+	@Deprecated
 	public static boolean isCatalogsName(String testName)
 	{
 		boolean bRet = false;
@@ -216,7 +215,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 */
 	public static boolean isCatalogsFileNamePart(final String testName)
 	{
-		if (testName == null) // /W otherwise #firstStart does not work
+		if (testName == null) // W otherwise #firstStart does not work
 			return false;
 		File testFile = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(testName));
 		return Files.exists(testFile.toPath());
@@ -254,7 +253,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 */
 	private Catalog()
 	{
-		name = "new ..."; // /W #???
+		name = "new ..."; // W #???
 		log.trace("default constructor catalog() called");
 	}
 
@@ -263,13 +262,13 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 * 
 	 * @param name
 	 */
-	// /W #deprecated?
+	// W #deprecated?
 	public Catalog(String catalogName)
 	{
 		this(new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(catalogName)), catalogName);
 	}
 
-	// /W #deprecated?
+	// W #deprecated?
 	protected Catalog(File file, String name)
 	{
 		this.file = file;
@@ -353,7 +352,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	public String toString()
 	{
 		// return getName() + " (" + ")";
-		return name; // /W #combobox: toString() sets items in dropdownList! But
+		return name; // W #combobox: toString() sets items in dropdownList! But
 		// name is fileNamesPart!!!
 	}
 
@@ -396,7 +395,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	 * 
 	 * @return true if catalog is empty
 	 */
-	// /W #??? to IfCatalog too?
+	// W not to IfCatalog!
 	public boolean isEmpty()
 	{
 		for (IfLayer layer : layers)
@@ -689,7 +688,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		FileOutputStream fo = null;
 		try
 		{
-			// /W every catalog will be saved in(to) CatalogsDirectory with filename based on catalogs name.
+			// W every catalog will be saved in(to) CatalogsDirectory with filename based on catalogs name.
 			// Catalog file member is still needed to discard changes
 			file = new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(name));
 			fo = new FileOutputStream(file);

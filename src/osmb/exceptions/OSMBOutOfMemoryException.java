@@ -20,6 +20,7 @@ import osmb.utilities.OSMBUtilities;
 
 public class OSMBOutOfMemoryException extends RuntimeException
 {
+	private static final long serialVersionUID = 1L;
 
 	long requiredMemory;
 	long heapAvailable;

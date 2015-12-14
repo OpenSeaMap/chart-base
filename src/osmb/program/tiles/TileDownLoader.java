@@ -25,8 +25,9 @@ import org.apache.log4j.Logger;
 
 import osmb.mapsources.IfHttpMapSource;
 import osmb.mapsources.IfMapSourceListener;
+import osmb.mapsources.MP2MapSpace;
 import osmb.program.ACSettings;
-import osmb.program.map.IfMapSpace;
+//W #mapSpace import osmb.program.map.IfMapSpace;
 import osmb.program.tilestore.ACSiTileStore;
 import osmb.program.tilestore.IfTileStoreEntry;
 import osmb.utilities.OSMBUtilities;
@@ -47,6 +48,7 @@ import osmb.utilities.OSMBUtilities;
 public class TileDownLoader
 {
 	private static Logger log = Logger.getLogger(TileDownLoader.class);
+	@SuppressWarnings("unused") // W #unused
 	private static ACSettings settings = ACSettings.getInstance();
 
 	public static String ACCEPT = "text/html, image/png, image/jpeg, image/gif, */*;q=0.1";
@@ -74,8 +76,8 @@ public class TileDownLoader
 	 */
 	public static byte[] getTileData(int x, int y, int zoom, IfHttpMapSource mapSource) throws IOException, InterruptedException, UnrecoverableDownloadException
 	{
-		IfMapSpace mapSpace = mapSource.getMapSpace();
-		int maxTileIndex = mapSpace.getMaxPixels(zoom) / mapSpace.getTileSize();
+	// W #mapSpace IfMapSpace mapSpace = mapSource.getMapSpace();
+		int maxTileIndex = MP2MapSpace.getSizeInPixel(zoom) / MP2MapSpace.getTileSize(); // W #mapSpace mapSpace.getMaxPixels(zoom) / mapSpace.getTileSize();
 		if (x > maxTileIndex)
 			throw new RuntimeException("Invalid tile index x=" + x + " for zoom " + zoom + ", MAX=" + maxTileIndex);
 		if (y > maxTileIndex)

@@ -30,6 +30,7 @@ import java.io.InputStream;
 import javax.imageio.ImageIO;
 
 import osmb.mapsources.IfMapSource;
+import osmb.mapsources.MP2MapSpace;
 import osmb.utilities.OSMBUtilities;
 
 /**
@@ -106,7 +107,7 @@ public class Tile
 	// This does not belong into here. It has to be moved upward in the hierarchy. The Tile should not know anything about the TileStore/Cache
 	public void loadPlaceholderFromCache(MemoryTileCache cache)
 	{
-		int tileSize = mMapSource.getMapSpace().getTileSize();
+		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace  mMapSource.getMapSpace().getTileSize();
 		BufferedImage tmpImage = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = (Graphics2D) tmpImage.getGraphics();
 		// g.drawImage(image, 0, 0, null);
@@ -260,7 +261,7 @@ public class Tile
 		if (mImage == null)
 			return;
 
-		int tileSize = mMapSource.getMapSpace().getTileSize();
+		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace  mMapSource.getMapSpace().getTileSize();
 		// Google Scale = 2, retina support
 		g.drawImage(mImage, x, y, tileSize, tileSize, Color.WHITE, null);
 		// g.drawImage(image, x, y, Color.WHITE);
@@ -271,7 +272,7 @@ public class Tile
 		if (mImage == null)
 			return;
 
-		int tileSize = mMapSource.getMapSpace().getTileSize();
+		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace  mMapSource.getMapSpace().getTileSize();
 		// Google Scale = 2, retina support
 		g.drawImage(mImage, x, y, tileSize, tileSize, null);
 		// g.drawImage(image, x, y, null);

@@ -30,14 +30,16 @@ import javax.swing.Box;
  * 
  * @author imi
  */
-public class GBC extends GridBagConstraints {
+public class GBC extends GridBagConstraints
+{
 
 	private static final long serialVersionUID = 1L;
 
 	/**
 	 * Use public static creator functions to create an GBC.
 	 */
-	private GBC() {
+	private GBC()
+	{
 	}
 
 	/**
@@ -45,7 +47,8 @@ public class GBC extends GridBagConstraints {
 	 * 
 	 * @return A standard constraint with no filling.
 	 */
-	public static GBC std() {
+	public static GBC std()
+	{
 		GBC c = new GBC();
 		c.anchor = WEST;
 		return c;
@@ -56,7 +59,8 @@ public class GBC extends GridBagConstraints {
 	 * 
 	 * @return A constraint which indicates the last item on a line.
 	 */
-	public static GBC eol() {
+	public static GBC eol()
+	{
 		GBC c = std();
 		c.gridwidth = REMAINDER;
 		return c;
@@ -68,7 +72,8 @@ public class GBC extends GridBagConstraints {
 	 * 
 	 * @return A constraint which indicates the last item on a line.
 	 */
-	public static GBC eop() {
+	public static GBC eop()
+	{
 		return eol().insets(0, 0, 0, 10);
 	}
 
@@ -77,7 +82,8 @@ public class GBC extends GridBagConstraints {
 	 * 
 	 * @return This constraint for chaining.
 	 */
-	public GBC fill() {
+	public GBC fill()
+	{
 		return fill(BOTH);
 	}
 
@@ -89,28 +95,33 @@ public class GBC extends GridBagConstraints {
 		return this;
 	}
 
-	public GBC gridwidth(int value) {
+	public GBC gridwidth(int value)
+	{
 		gridwidth = value;
 		return this;
 	}
 
-	public GBC gridheight(int value) {
+	public GBC gridheight(int value)
+	{
 		gridheight = value;
 		return this;
 	}
 
-	public GBC gridx(int value) {
+	public GBC gridx(int value)
+	{
 		gridx = value;
 		return this;
 	}
 
-	public GBC gridxy(int x, int y) {
+	public GBC gridxy(int x, int y)
+	{
 		gridx = x;
 		gridy = y;
 		return this;
 	}
 
-	public GBC gridy(int value) {
+	public GBC gridy(int value)
+	{
 		gridy = value;
 		return this;
 	}
@@ -122,7 +133,8 @@ public class GBC extends GridBagConstraints {
 	 *            The filling value, either NONE, HORIZONTAL, VERTICAL or BOTH
 	 * @return This constraint for chaining.
 	 */
-	public GBC fill(int value) {
+	public GBC fill(int value)
+	{
 		fill = value;
 		if (value == HORIZONTAL || value == BOTH)
 			weightx = 1.0;
@@ -131,7 +143,8 @@ public class GBC extends GridBagConstraints {
 		return this;
 	}
 
-	public GBC fillH() {
+	public GBC fillH()
+	{
 		return fill(GBC.HORIZONTAL);
 	}
 
@@ -142,7 +155,8 @@ public class GBC extends GridBagConstraints {
 	 *            The new anchor, e.g. GBC.CENTER or GBC.EAST.
 	 * @return This constraint for chaining.
 	 */
-	public GBC anchor(int a) {
+	public GBC anchor(int a)
+	{
 		anchor = a;
 		return this;
 	}
@@ -160,7 +174,8 @@ public class GBC extends GridBagConstraints {
 	 *            The bottom space of the insets
 	 * @return This constraint for chaining.
 	 */
-	public GBC insets(int left, int top, int right, int bottom) {
+	public GBC insets(int left, int top, int right, int bottom)
+	{
 		insets = new Insets(top, left, bottom, right);
 		return this;
 	}
@@ -175,7 +190,8 @@ public class GBC extends GridBagConstraints {
 	 *            If higher than 0, this will be a vertical glue with y as
 	 *            minimum vertical strut.
 	 */
-	public static Component glue(int x, int y) {
+	public static Component glue(int x, int y)
+	{
 		short maxx = x > 0 ? Short.MAX_VALUE : 0;
 		short maxy = y > 0 ? Short.MAX_VALUE : 0;
 		return new Box.Filler(new Dimension(x, y), new Dimension(x, y), new Dimension(maxx, maxy));

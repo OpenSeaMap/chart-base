@@ -20,7 +20,6 @@ import java.text.NumberFormat;
 
 import osmb.utilities.OSMBStrs;
 import osmb.utilities.OSMBUtilities;
-import osmb.utilities.OSMBUtilities;
 
 public enum CoordinateStringFormat
 {

@@ -49,6 +49,7 @@ public class ProgramInfo
 		}
 		catch (Exception e)
 		{
+			@SuppressWarnings("unused") // W #unused
 			String msg = "Error reading osmcb.properties";
 			// GUIExceptionHandler.processFatalExceptionSimpleDialog(msg, e);
 		}

@@ -36,17 +36,17 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.log4j.Logger;
 
-import osmb.mapsources.IfMapSource.LoadMethod;
-import osmb.mapsources.mapspace.MapSpaceFactory;
+//W #mapSpace import osmb.mapsources.IfMapSource.LoadMethod;
+//W #mapSpace import osmb.mapsources.mapspace.MapSpaceFactory;
 import osmb.program.jaxb.ColorAdapter;
-import osmb.program.map.IfMapSpace;
+//W #mapSpace import osmb.program.map.IfMapSpace;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
 import osmb.utilities.OSMBStrs;
 import osmb.utilities.OSMBUtilities;
 
 //import osmcd.gui.mapview.PreviewMap;
-
+//W #mapSpace MP2MapSpace EastNorthCoordinate <-> GeoCoordinate MP2Corner <-> MercatorPixelCoordinate
 @XmlRootElement(name = "localTileFiles")
 public class CustomLocalTileFilesMapSource implements IfFileBasedMapSource
 {
@@ -54,7 +54,8 @@ public class CustomLocalTileFilesMapSource implements IfFileBasedMapSource
 
 	private MapSourceLoaderInfo loaderInfo = null;
 
-	private IfMapSpace mapSpace = MapSpaceFactory.getInstance(256, true);
+//W #mapSpace 
+//	private IfMapSpace mapSpace = MapSpaceFactory.getInstance(256, true); // W #mapSpace =
 
 	private boolean initialized = false;
 
@@ -296,10 +297,11 @@ public class CustomLocalTileFilesMapSource implements IfFileBasedMapSource
 		return name;
 	}
 
-	public IfMapSpace getMapSpace()
-	{
-		return mapSpace;
-	}
+//W #mapSpace MP2MapSpace EastNorthCoordinate <-> GeoCoordinate MP2Corner <-> MercatorPixelCoordinate
+//	public IfMapSpace getMapSpace()
+//	{
+//		return mapSpace;
+//	}
 
 	public Color getBackgroundColor()
 	{

@@ -13,6 +13,7 @@ public class OSMBRsc
 	public static String localeLanguage;
 	public static String localeCountry;
 	private static ResourceBundle STRING_RESOURCE = null;
+	@SuppressWarnings("unused") // W #unused
 	private static ResourceBundle IMAGE_RESOURCE = null;
 
 	/**

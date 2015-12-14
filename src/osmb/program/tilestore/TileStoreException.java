@@ -20,6 +20,7 @@ import com.sleepycat.je.DatabaseException;
 
 public class TileStoreException extends DatabaseException
 {
+	private static final long serialVersionUID = 1L;
 
 	public TileStoreException(Throwable t)
 	{

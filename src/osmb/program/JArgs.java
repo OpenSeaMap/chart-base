@@ -60,6 +60,8 @@ public class JArgs
 	 */
 	public static abstract class OptionException extends Exception
 	{
+		private static final long serialVersionUID = 1L;
+		
 		OptionException(String msg)
 		{
 			super(msg);
@@ -72,6 +74,8 @@ public class JArgs
 	 */
 	public static class UnknownOptionException extends OptionException
 	{
+		private static final long serialVersionUID = 1L;
+
 		UnknownOptionException(String optionName)
 		{
 			this(optionName, "Unknown option '" + optionName + "'");
@@ -103,6 +107,8 @@ public class JArgs
 	 */
 	public static class UnknownSuboptionException extends UnknownOptionException
 	{
+		private static final long serialVersionUID = 1L;
+		
 		private char suboption;
 
 		UnknownSuboptionException(String option, char suboption)
@@ -126,6 +132,8 @@ public class JArgs
 	 */
 	public static class NotFlagException extends UnknownOptionException
 	{
+		private static final long serialVersionUID = 1L;
+		
 		private char notflag;
 
 		NotFlagException(String option, char unflaggish)
@@ -154,6 +162,8 @@ public class JArgs
 	 */
 	public static class IllegalOptionValueException extends OptionException
 	{
+		private static final long serialVersionUID = 1L;
+		
 		public <T> IllegalOptionValueException(Option<T> opt, String value)
 		{
 			super("Illegal value '" + value + "' for option " + (opt.shortForm() != null ? "-" + opt.shortForm() + "/" : "") + "--" + opt.longForm());

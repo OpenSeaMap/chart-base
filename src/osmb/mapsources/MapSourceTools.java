@@ -16,7 +16,7 @@
  ******************************************************************************/
 package osmb.mapsources;
 
-import osmb.program.map.IfMapSpace;
+//W #mapSpace import osmb.program.map.IfMapSpace;
 
 /**
  * Utility methods used by several iMap sources.
@@ -65,15 +65,15 @@ public class MapSourceTools
 	 */
 	public static double[] calculateLatLon(IfMapSource mapSource, int zoom, int tilex, int tiley)
 	{
-		IfMapSpace mapSpace = mapSource.getMapSpace();
-		int tileSize = mapSpace.getTileSize();
+		// W #mapSpace IfMapSpace mapSpace = mapSource.getMapSpace();
+		int tileSize = MP2MapSpace.getTileSize(); // W #mapSpace mapSpace.getTileSize();
 		double[] result = new double[4];
 		tilex *= tileSize;
 		tiley *= tileSize;
-		result[0] = mapSpace.cXToLon(tilex, zoom); // lon_min
-		result[1] = mapSpace.cYToLat(tiley + tileSize, zoom); // lat_min
-		result[2] = mapSpace.cXToLon(tilex + tileSize, zoom); // lon_max
-		result[3] = mapSpace.cYToLat(tiley, zoom); // lat_max
+		result[0] = MP2MapSpace.cXToLon(tilex, zoom); // lon_min // W #mapSpace mapSpace.cXToLon(tilex, zoom); // lon_min
+		result[1] = MP2MapSpace.cYToLat(tiley + tileSize, zoom); // lat_min // W #mapSpace mapSpace.cYToLat(tiley + tileSize, zoom); // lat_min
+		result[2] = MP2MapSpace.cXToLon(tilex + tileSize, zoom); // lon_max // W #mapSpace mapSpace.cXToLon(tilex + tileSize, zoom); // lon_max
+		result[3] = MP2MapSpace.cYToLat(tiley, zoom); // lat_max // W #mapSpace mapSpace.cYToLat(tiley, zoom); // lat_max
 		return result;
 	}
 

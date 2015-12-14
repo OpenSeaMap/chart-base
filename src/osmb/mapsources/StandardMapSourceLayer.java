@@ -25,7 +25,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import osmb.program.map.IfMapSpace;
+//W #mapSpace import osmb.program.map.IfMapSpace;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
 
@@ -88,11 +88,12 @@ public class StandardMapSourceLayer implements IfMapSource
 		return mapSource.getTileImageType();
 	}
 
-	@Override
-	public IfMapSpace getMapSpace()
-	{
-		return mapSource.getMapSpace();
-	}
+// #mapSpace 
+//	@Override
+//	public IfMapSpace getMapSpace()
+//	{
+//		return mapSource.getMapSpace();
+//	}
 
 	@Override
 	public Color getBackgroundColor()

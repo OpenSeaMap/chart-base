@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 public class JobDispatcher extends ThreadPoolExecutor implements ThreadFactory, RejectedExecutionHandler
 {
 	private static final Logger log = Logger.getLogger(JobDispatcher.class);
+	@SuppressWarnings("unused") // W #unused
 	private static JobDispatcher INSTANCE = new JobDispatcher();
 
 	private static final int WORKER_THREAD_INIT_COUNT = 5;

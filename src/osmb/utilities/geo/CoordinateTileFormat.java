@@ -22,11 +22,14 @@ import java.text.ParsePosition;
 
 import org.apache.log4j.Logger;
 
-import osmb.mapsources.mapspace.MercatorPower2MapSpace;
-import osmb.program.map.IfMapSpace;
+import osmb.mapsources.MP2MapSpace;
+// W #mapSpace import osmb.mapsources.mapspace.MercatorPower2MapSpace;
+// W #mapSpace import osmb.program.map.IfMapSpace;
 
 public class CoordinateTileFormat extends NumberFormat
 {
+	private static final long serialVersionUID = 1L;
+
 	protected static Logger log = Logger.getLogger(CoordinateTileFormat.class);
 
 	private final boolean isLongitude;
@@ -47,14 +50,15 @@ public class CoordinateTileFormat extends NumberFormat
 	@Override
 	public StringBuffer format(double number, StringBuffer toAppendTo, FieldPosition pos)
 	{
-		IfMapSpace mapSpace = MercatorPower2MapSpace.INSTANCE_256;
+// W #mapSpace
+//		IfMapSpace mapSpace = MercatorPower2MapSpace.INSTANCE_256; // W #mapSpace =
 		// int zoom = 1;  // /W #selCoord zoom -> nActZoom
 		int tileNum = 0;
 		if (isLongitude)
-			tileNum = mapSpace.cLonToX(number, nActZoom);
+			tileNum = MP2MapSpace.cLonToX(number, nActZoom); // W #mapSpace mapSpace.cLonToX(number, nActZoom);
 		else
-			tileNum = mapSpace.cLatToY(number, nActZoom);
-		toAppendTo.append(String.format("%d / z%d ", tileNum / mapSpace.getTileSize(), nActZoom));
+			tileNum = MP2MapSpace.cLatToY(number, nActZoom); // W #mapSpace mapSpace.cLatToY(number, nActZoom);
+		toAppendTo.append(String.format("%d / z%d ", tileNum / MP2MapSpace.getTileSize(), nActZoom)); // W #mapSpace ("%d / z%d ", tileNum / mapSpace.getTileSize(), nActZoom));
 		// /W #selCoord test: toAppendTo.append(String.format("%d / z%d ", tileNum, nActZoom));
 		return toAppendTo;
 	}
@@ -68,7 +72,8 @@ public class CoordinateTileFormat extends NumberFormat
 	@Override
 	public Number parse(String source, ParsePosition parsePosition)
 	{
-		IfMapSpace mapSpace = MercatorPower2MapSpace.INSTANCE_256;
+// W #mapSpace
+//		IfMapSpace mapSpace = MercatorPower2MapSpace.INSTANCE_256; // W #mapSpace =
 		try
 		{
 			String[] tokens = source.trim().split("/");
@@ -92,18 +97,18 @@ public class CoordinateTileFormat extends NumberFormat
 				if ((s.indexOf('.') < 0) && (s.indexOf(',') < 0))
 				{
 					tileNum = Integer.parseInt(s);
-					tileNum *= mapSpace.getTileSize();
+					tileNum *= MP2MapSpace.getTileSize(); // W #mapSpace mapSpace.getTileSize();
 				}
 				else
 				{
 					double num = Double.parseDouble(s);
-					tileNum = (int) (num * mapSpace.getTileSize());
+					tileNum = (int) (num * MP2MapSpace.getTileSize()); // W #mapSpace mapSpace.getTileSize());
 				}
 			}
 			parsePosition.setIndex(source.length());
 			if (isLongitude)
-				return mapSpace.cXToLon(tileNum, zoom);
-			return mapSpace.cYToLat(tileNum, zoom);
+				return MP2MapSpace.cXToLon(tileNum, zoom); // W #mapSpace mapSpace.cXToLon(tileNum, zoom);
+			return MP2MapSpace.cYToLat(tileNum, zoom); // W #mapSpace mapSpace.cYToLat(tileNum, zoom);
 		}
 		catch (Exception e)
 		{

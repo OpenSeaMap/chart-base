@@ -29,6 +29,8 @@ import osmb.program.tiles.TileImageParameters;
  */
 public class AnyAttributeMap extends TreeMap<QName, Object>
 {
+	private static final long serialVersionUID = 1L;
+	
 	public AnyAttributeMap()
 	{
 		super(new QNameComparator());

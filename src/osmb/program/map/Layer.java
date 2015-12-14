@@ -38,11 +38,13 @@ import org.apache.log4j.Logger;
 
 import osmb.exceptions.InvalidNameException;
 import osmb.mapsources.IfMapSource;
+import osmb.mapsources.MP2MapSpace;
 import osmb.program.catalog.Catalog;
 import osmb.program.catalog.IfCapabilityDeletable;
 import osmb.program.catalog.IfCatalog;
 import osmb.program.tiles.TileImageParameters;
-import osmb.utilities.geo.EastNorthCoordinate;
+//W #mapSpace import osmb.utilities.geo.EastNorthCoordinate;
+//W #mapSpace import osmb.utilities.geo.GeoCoordinate;
 
 /**
  * A layer holding one or multiple maps of the same map source and the same zoom level.
@@ -114,14 +116,16 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		nZoomLvl = zoom;
 	}
 
-	@Override
-	public void addMapsAutocut(String mapNameBase, IfMapSource ms, EastNorthCoordinate minCoordinate, EastNorthCoordinate maxCoordinate, int zoom,
-	    TileImageParameters parameters, int maxMapSize) throws InvalidNameException
-	{
-		IfMapSpace mapSpace = ms.getMapSpace();
-		addMapsAutocut(mapNameBase, ms, minCoordinate.toPixelCoordinate(mapSpace, zoom), maxCoordinate.toPixelCoordinate(mapSpace, zoom), zoom, parameters,
-		    maxMapSize, 0);
-	}
+//W #mapSpace ??? EastNorthCoordinate <-> GeoCoordinate
+// unused!!!
+//	@Override
+//	public void addMapsAutocut(String mapNameBase, IfMapSource ms, GeoCoordinate minCoordinate, GeoCoordinate maxCoordinate, int zoom,
+//	    TileImageParameters parameters, int maxMapSize) throws InvalidNameException
+//	{
+//		IfMapSpace mapSpace = ms.getMapSpace();
+//		addMapsAutocut(mapNameBase, ms, minCoordinate.toPixelCoordinate(mapSpace, zoom), maxCoordinate.toPixelCoordinate(mapSpace, zoom), zoom, parameters,
+//		    maxMapSize, 0);
+//	}
 
 	/**
 	 * addMapsAutocut() checks if the new map is already completely covered in
@@ -147,7 +151,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			nZoomLvl = zoom;
 		if (zoom == nZoomLvl)
 		{
-			int tileSize = mapSource.getMapSpace().getTileSize();
+			int tileSize = MP2MapSpace.getTileSize(); // W #mapSpace mapSource.getMapSpace().getTileSize();
 			int nXSize = (maxPixelCoordinate.x - minPixelCoordinate.x) / tileSize + 1;
 			int nYSize = (maxPixelCoordinate.y - minPixelCoordinate.y) / tileSize + 1;
 			int nXExp = 1, nYExp = 1;
@@ -289,7 +293,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 			{
 				newMapName = String.format("%s-%04d", mapName, c++);
 				log.error("newMapName=" + newMapName + "; c=" + c); // double mapNums
-				mapNr = -1; // double mapNums -> - 1 instead of 0, otherwise: first doing ++mapNr ...
+				mapNr = -1; // double mapNums -> -1 instead of 0, otherwise: first doing ++mapNr ...
 				// continue; ???
 			}
 		}
@@ -356,22 +360,14 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	}
 
 	/**
-	 * <<<<<<< HEAD
-	 * checks if the new map is an extension of an already existing map. If it is, the existing map will be deletd and the new coordinates will be modified to
-	 * include the new map.
+	 * checks if the new map is an extension of an already existing map. If it is, the existing map will be deleted and the new coordinates will be modified to
+	 * include the old (deleted) map.
 	 * 20151125 It should check if the new map size is allowed before deleting the old maps.
-	 * =======
-	 * checks if the new map is an extension of an already existing map. If it
-	 * is, the new map will be changed to new coordinates which include the
-	 * existing map. The existing map will be deleted.
-	 * 20140511 case new map lies between two already existing maps is
-	 * not covered yet. The new map will be extending both
-	 * >>>>>>> branch 'master' of https://github.com/humbach/ChartBase.git
 	 * 
 	 * @param mD
-	 *          a {@link MapDescription} of the new map
+	 *          A {@link MapDescription} of the new map
 	 * @return
-	 *         the possibly changed {@link MapDescription} of the new map
+	 *         The possibly changed {@link MapDescription} of the new map
 	 */
 	public MapDescription checkMapIsExtension(MapDescription mD)
 	{
@@ -750,5 +746,4 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	{
 		nZoomLvl = nZoom;
 	}
-
 }

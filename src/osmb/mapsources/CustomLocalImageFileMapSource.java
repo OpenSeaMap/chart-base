@@ -33,10 +33,10 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.log4j.Logger;
 
-import osmb.mapsources.IfMapSource.LoadMethod;
-import osmb.mapsources.mapspace.MapSpaceFactory;
+//W #mapSpace import osmb.mapsources.IfMapSource.LoadMethod;
+//W #mapSpace import osmb.mapsources.mapspace.MapSpaceFactory;
 import osmb.program.jaxb.ColorAdapter;
-import osmb.program.map.IfMapSpace;
+//W #mapSpace import osmb.program.map.IfMapSpace;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
 import osmb.utilities.OSMBStrs;
@@ -62,7 +62,8 @@ public class CustomLocalImageFileMapSource implements IfFileBasedMapSource
 	@XmlElement(required = true, nillable = false)
 	private double boxWest = -180.0;
 
-	private IfMapSpace mapSpace = MapSpaceFactory.getInstance(256, true);
+//W #mapSpace
+//	private IfMapSpace mapSpace = MapSpaceFactory.getInstance(256, true); // W #mapSpace =
 
 	private boolean initialized = false;
 
@@ -181,11 +182,12 @@ public class CustomLocalImageFileMapSource implements IfFileBasedMapSource
 			}
 			int imageWidth = fullImage.getWidth();
 			int imageHeight = fullImage.getHeight();
-			int tileSize = mapSpace.getTileSize();
-			double tileWest = mapSpace.cXToLon(x * tileSize, zoom);
-			double tileNorth = mapSpace.cYToLat(y * tileSize, zoom);
-			double tileEast = mapSpace.cXToLon((x + 1) * tileSize, zoom);
-			double tileSouth = mapSpace.cYToLat((y + 1) * tileSize, zoom);
+		//W #mapSpace MP2MapSpace EastNorthCoordinate <-> GeoCoordinate MP2Corner <-> MercatorPixelCoordinate
+			int tileSize = MP2MapSpace.getTileSize();
+			double tileWest =MP2MapSpace.cXToLon(x * tileSize, zoom);
+			double tileNorth = MP2MapSpace.cYToLat(y * tileSize, zoom);
+			double tileEast = MP2MapSpace.cXToLon((x + 1) * tileSize, zoom);
+			double tileSouth = MP2MapSpace.cYToLat((y + 1) * tileSize, zoom);
 			double tileWidth = tileEast - tileWest;
 			double tileHeight = tileNorth - tileSouth;
 
@@ -278,10 +280,11 @@ public class CustomLocalImageFileMapSource implements IfFileBasedMapSource
 		return name;
 	}
 
-	public IfMapSpace getMapSpace()
-	{
-		return mapSpace;
-	}
+// #mapSpace  
+//	public IfMapSpace getMapSpace()
+//	{
+//		return mapSpace;
+//	}
 
 	public Color getBackgroundColor()
 	{

@@ -16,13 +16,17 @@
  ******************************************************************************/
 package osmb.mapsources;
 
-public class MapSourceCreateException extends Exception {
+public class MapSourceCreateException extends Exception
+{
+	private static final long serialVersionUID = 1L;
 
-	public MapSourceCreateException(String message) {
+	public MapSourceCreateException(String message)
+	{
 		super(message);
 	}
 
-	public MapSourceCreateException(String message, Throwable cause) {
+	public MapSourceCreateException(String message, Throwable cause)
+	{
 		super(message, cause);
 	}
 

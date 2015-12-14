@@ -31,10 +31,13 @@ import javax.xml.bind.annotation.XmlElement;
 // /W ? import javax.xml.bind.annotation.XmlRootElement;
 
 import osmb.mapsources.IfMapSource;
+import osmb.mapsources.MP2Corner;
+import osmb.mapsources.MP2MapSpace;
 import osmb.program.Logging;
 import osmb.program.tiles.TileImageParameters;
 import osmb.utilities.MyMath;
-import osmb.utilities.geo.EastNorthCoordinate;
+import osmb.utilities.geo.GeoCoordinate;
+// W #mapSpace import osmb.utilities.geo.EastNorthCoordinate;
 
 // /W ? @XmlRootElement
 // /W #deprecated
@@ -48,20 +51,21 @@ public class MapPolygon extends Map implements IfMap
 	{
 	}
 
-	public static MapPolygon createTrackEnclosure(Layer layer, String name, IfMapSource mapSource, int zoom, EastNorthCoordinate[] trackPoints, int pixelDistance,
+//W #mapSpace EastNorthCoordinate <-> GeoCoordinate
+	public static MapPolygon createTrackEnclosure(Layer layer, String name, IfMapSource mapSource, int zoom, GeoCoordinate[] trackPoints, int pixelDistance,
 	    TileImageParameters parameters)
 	{
-		IfMapSpace mapSpace = mapSource.getMapSpace();
+		// W #mapSpace IfMapSpace mapSpace = mapSource.getMapSpace();
 		Area area = new Area();
 		for (int i = 1; i < trackPoints.length; i++)
 		{
-			EastNorthCoordinate point1 = trackPoints[i - 1];
-			EastNorthCoordinate point2 = trackPoints[i];
+			GeoCoordinate point1 = trackPoints[i - 1];
+			GeoCoordinate point2 = trackPoints[i];
 
-			int y1 = mapSpace.cLatToY(point1.lat, zoom);
-			int y2 = mapSpace.cLatToY(point2.lat, zoom);
-			int x1 = mapSpace.cLonToX(point1.lon, zoom);
-			int x2 = mapSpace.cLonToX(point2.lon, zoom);
+			int y1 = MP2MapSpace.cLatToY(point1.lat, zoom); // W #mapSpace mapSpace.cLatToY(point1.lat, zoom);
+			int y2 = MP2MapSpace.cLatToY(point2.lat, zoom); // W #mapSpace mapSpace.cLatToY(point2.lat, zoom);
+			int x1 = MP2MapSpace.cLonToX(point1.lon, zoom); // W #mapSpace mapSpace.cLonToX(point1.lon, zoom);
+			int x2 = MP2MapSpace.cLonToX(point2.lon, zoom); // W #mapSpace mapSpace.cLonToX(point2.lon, zoom);
 
 			Line2D.Double ln = new Line2D.Double(x1, y1, x2, y2);
 			double indent = pixelDistance; // distance from central line
@@ -136,7 +140,7 @@ public class MapPolygon extends Map implements IfMap
 	{
 		Polygon oldPolygon = map.getPolygon();
 		int oldZoom = map.getZoom();
-		IfMapSpace mapSpace = map.getMapSource().getMapSpace();
+		// W #mapSpace IfMapSpace mapSpace = map.getMapSource().getMapSpace();
 		int[] xPoints = new int[oldPolygon.npoints];
 		int[] yPoints = new int[oldPolygon.npoints];
 		Point p = new Point();
@@ -144,7 +148,7 @@ public class MapPolygon extends Map implements IfMap
 		{
 			p.x = oldPolygon.xpoints[i];
 			p.y = oldPolygon.ypoints[i];
-			Point nP = mapSpace.changeZoom(p, oldZoom, newZoom);
+			Point nP = MP2MapSpace.changeZoom(p, oldZoom, newZoom);
 			xPoints[i] = nP.x;
 			yPoints[i] = nP.y;
 		}
@@ -157,7 +161,7 @@ public class MapPolygon extends Map implements IfMap
 		super(layer, name, mapSource, zoom, null, null, parameters);
 		this.polygon = polygon;
 		Rectangle bounds = polygon.getBounds();
-		int mapSourceTileSize = mapSource.getMapSpace().getTileSize();
+		int mapSourceTileSize = MP2MapSpace.getTileSize(); // #mapSpace  mapSource.getMapSpace().getTileSize();
 		// Make sure the minimum tile coordinate starts/ends on the edge of a tile from the iMap source
 		int minx = MyMath.roundDownToNearest(bounds.x, mapSourceTileSize);
 		int miny = MyMath.roundDownToNearest(bounds.y, mapSourceTileSize);
@@ -178,7 +182,7 @@ public class MapPolygon extends Map implements IfMap
 
 	protected void internalCalculateTilesToDownload()
 	{
-		int tileSize = mapSource.getMapSpace().getTileSize();
+		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace  mapSource.getMapSpace().getTileSize();
 		double tileSizeD = tileSize;
 		int xMin = minPixelCoordinate.x;
 		int xMax = maxPixelCoordinate.x;
@@ -200,11 +204,12 @@ public class MapPolygon extends Map implements IfMap
 	@Override
 	public String getToolTip()
 	{
-		IfMapSpace mapSpace = mapSource.getMapSpace();
+		 // W #mapSpace IfMapSpace mapSpace = mapSource.getMapSpace();
+	//W #mapSpace EastNorthCoordinate <-> GeoCoordinate MP2Corner
 		@SuppressWarnings("unused") // /W #unused
-		EastNorthCoordinate tl = new EastNorthCoordinate(mapSpace, getZoom(), minPixelCoordinate.x, minPixelCoordinate.y);
+		GeoCoordinate tl = new MP2Corner(minPixelCoordinate.x, minPixelCoordinate.y, getZoom()).toGeoCoordinate();// W #mapSpace new EastNorthCoordinate(mapSpace, getZoom(), minPixelCoordinate.x, minPixelCoordinate.y);
 		@SuppressWarnings("unused") // /W #unused
-		EastNorthCoordinate br = new EastNorthCoordinate(mapSpace, getZoom(), maxPixelCoordinate.x, maxPixelCoordinate.y);
+		GeoCoordinate br = new MP2Corner(maxPixelCoordinate.x, maxPixelCoordinate.y, getZoom()).toGeoCoordinate();// W #mapSpace new EastNorthCoordinate(mapSpace, getZoom(), maxPixelCoordinate.x, maxPixelCoordinate.y);
 
 		StringWriter sw = new StringWriter(1024);
 		// sw.write("<html>");

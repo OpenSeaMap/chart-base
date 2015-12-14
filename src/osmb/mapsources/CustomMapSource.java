@@ -31,9 +31,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import osmb.mapsources.mapspace.MercatorPower2MapSpace;
+// W #mapSpace import osmb.mapsources.mapspace.MercatorPower2MapSpace;
 import osmb.program.jaxb.ColorAdapter;
-import osmb.program.map.IfMapSpace;
+// W #mapSpace import osmb.program.map.IfMapSpace;
 import osmb.program.tiles.TileDownLoader;
 import osmb.program.tiles.TileImageType;
 import osmb.program.tiles.UnrecoverableDownloadException;
@@ -208,7 +208,7 @@ public class CustomMapSource implements IfHttpMapSource
 				return null;
 			else
 			{
-				int tileSize = this.getMapSpace().getTileSize();
+				int tileSize = MP2MapSpace.getTileSize(); // #mapSpace  this.getMapSpace().getTileSize();
 				BufferedImage image = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_4BYTE_ABGR);
 				Graphics g = image.getGraphics();
 				try
@@ -235,11 +235,12 @@ public class CustomMapSource implements IfHttpMapSource
 		return name;
 	}
 
-	@Override
-	public IfMapSpace getMapSpace()
-	{
-		return MercatorPower2MapSpace.INSTANCE_256;
-	}
+// #mapSpace  
+//	@Override
+//	public IfMapSpace getMapSpace()
+//	{
+//		return MercatorPower2MapSpace.INSTANCE_256; // W #mapSpace =
+//	}
 
 	@Override
 	public Color getBackgroundColor()

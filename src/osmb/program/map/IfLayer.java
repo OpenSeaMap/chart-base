@@ -27,7 +27,7 @@ import osmb.program.catalog.IfCapabilityDeletable;
 import osmb.program.catalog.IfCatalog;
 import osmb.program.catalog.IfCatalogObject;
 import osmb.program.tiles.TileImageParameters;
-import osmb.utilities.geo.EastNorthCoordinate;
+//W #mapSpace import osmb.utilities.geo.EastNorthCoordinate;
 
 public interface IfLayer extends IfCatalogObject, Iterable<IfMap>, IfCapabilityDeletable, TreeNode
 {
@@ -44,9 +44,11 @@ public interface IfLayer extends IfCatalogObject, Iterable<IfMap>, IfCapabilityD
 	int getZoomLvl();
 
 	void setZoomLvl(int nZoomLvl);
-
-	void addMapsAutocut(String mapNameBase, IfMapSource mapSource, EastNorthCoordinate minCoordinate, EastNorthCoordinate maxCoordinate, int zoom,
-	    TileImageParameters parameters, int maxMapSize) throws InvalidNameException;
+	
+//W #mapSpace ??? EastNorthCoordinate <-> GeoCoordinate
+// unused!!!
+//	void addMapsAutocut(String mapNameBase, IfMapSource mapSource, EastNorthCoordinate minCoordinate, EastNorthCoordinate maxCoordinate, int zoom,
+//	    TileImageParameters parameters, int maxMapSize) throws InvalidNameException;
 
 	void addMapsAutocut(String mapNameBase, IfMapSource mapSource, Point minPixelCoordinate, Point maxPixelCoordinate, int zoom, TileImageParameters parameters,
 	    int maxMapSize, int overlapTiles) throws InvalidNameException;

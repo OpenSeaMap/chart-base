@@ -27,7 +27,8 @@ import java.awt.Stroke;
 
 import javax.swing.JComponent;
 
-import osmb.program.map.IfMapSpace;
+import osmb.mapsources.MP2MapSpace;
+//W #mapSpace import osmb.program.map.IfMapSpace;
 import osmb.utilities.OSMBStrs;
 import osmb.utilities.geo.Coordinate;
 
@@ -103,7 +104,7 @@ public class WgsGrid
 		this.c = c;
 	}
 
-	public void paintWgsGrid(Graphics2D g, IfMapSpace ms, Point tlc, int zoom)
+	public void paintWgsGrid(Graphics2D g, Point tlc, int zoom) // W #mapSpace (Graphics2D g, IfMapSpace ms, Point tlc, int zoom)
 	{
 		if (!s.enabled)
 		{
@@ -122,7 +123,7 @@ public class WgsGrid
 			density = DENSITIES[index];
 		}
 
-		final int maxPixels = ms.getMaxPixels(zoom);
+		final int maxPixels = MP2MapSpace.getSizeInPixel(zoom); // W #mapSpace ms.getMaxPixels(zoom);
 
 		// Check viewport
 		viewport.width = c.getWidth();
@@ -152,10 +153,11 @@ public class WgsGrid
 		final int vLineY2 = y2 - 1;
 
 		// Calculate line indexes
-		final int vMin = Coordinate.doubleToInt(ms.cXToLon(x1, zoom)) / density.iStep;
-		final int vMax = Coordinate.doubleToInt(ms.cXToLon(x2, zoom)) / density.iStep;
-		final int hMin = Coordinate.doubleToInt(ms.cYToLat(y2, zoom)) / density.iStep;
-		final int hMax = Coordinate.doubleToInt(ms.cYToLat(y1, zoom)) / density.iStep;
+		// W #mapSpace cLonToX_Borders! (180d -> getSizeInPixel(zoom)
+		final int vMin = Coordinate.doubleToInt(MP2MapSpace.cXToLon_Borders(x1, zoom)) / density.iStep; // W #mapSpace (ms.cXToLon(x1, zoom)) / density.iStep;
+		final int vMax = Coordinate.doubleToInt(MP2MapSpace.cXToLon_Borders(x2, zoom)) / density.iStep; // W #mapSpace (ms.cXToLon(x2, zoom)) / density.iStep;
+		final int hMin = Coordinate.doubleToInt(MP2MapSpace.cYToLat_Borders(y2, zoom)) / density.iStep; // W #mapSpace (ms.cYToLat(y2, zoom)) / density.iStep;
+		final int hMax = Coordinate.doubleToInt(MP2MapSpace.cYToLat_Borders(y1, zoom)) / density.iStep; // W #mapSpace (ms.cYToLat(y1, zoom)) / density.iStep;
 
 		g.setBackground(Color.WHITE);
 		g.setColor(s.color);
@@ -167,7 +169,8 @@ public class WgsGrid
 		for (int i = vMin; i <= vMax; i++)
 		{
 			int iLon = i * density.iStep;
-			int x = ms.cLonToX(Coordinate.intToDouble(iLon), zoom);
+			// W #mapSpace cLonToX_Borders! (180d -> getSizeInPixel(zoom)
+			int x = MP2MapSpace.cLonToX_Borders(Coordinate.intToDouble(iLon), zoom); // W #mapSpace ms.cLonToX(Coordinate.intToDouble(iLon), zoom);
 			if (x > x1 && x < x2)
 			{
 				g.drawLine(x, vLineY1, x, vLineY2);
@@ -178,7 +181,8 @@ public class WgsGrid
 		for (int i = hMin; i <= hMax; i++)
 		{
 			int iLat = i * density.iStep;
-			int y = ms.cLatToY(Coordinate.intToDouble(iLat), zoom);
+			// W #mapSpace cLatToY_Borders
+			int y = MP2MapSpace.cLatToY_Borders(Coordinate.intToDouble(iLat), zoom); // W #mapSpace ms.cLatToY(Coordinate.intToDouble(iLat), zoom);
 			if (y > y1 && y < y2)
 			{
 				g.drawLine(hLineX1, y, hLineX2, y);
@@ -205,7 +209,8 @@ public class WgsGrid
 
 			// Calculate coordinates
 			int iLon = i * density.iStep;
-			int x = ms.cLonToX(Coordinate.intToDouble(iLon), zoom);
+			// W #mapSpace cLonToX_Borders! (180d -> getSizeInPixel(zoom)
+			int x = MP2MapSpace.cLonToX_Borders(Coordinate.intToDouble(iLon), zoom); // W #mapSpace ms.cLonToX(Coordinate.intToDouble(iLon), zoom);
 
 			// Prepare label
 			String label = getLabel(iLon, density);
@@ -233,8 +238,8 @@ public class WgsGrid
 		for (int i = hMin; i <= hMax; i++)
 		{
 			int iLat = i * density.iStep;
-			int y = ms.cLatToY(Coordinate.intToDouble(iLat), zoom);
-
+			// W #mapSpace cLatToY_Borders
+			int y = MP2MapSpace.cLatToY_Borders(Coordinate.intToDouble(iLat), zoom); // W #mapSpace ms.cLatToY(Coordinate.intToDouble(iLat), zoom);
 			// Prepare label
 			String label = getLabel(iLat, density);
 			final int stringWidth = fontMetrics.stringWidth(label);
@@ -282,12 +287,15 @@ public class WgsGrid
 
 	private String getLabel(int coord, WgsDensity density)
 	{
+		float signum = Math.signum(coord);
 		coord = Math.abs(coord);
 		int degree = Coordinate.getDegree(coord);
 		int minute = Coordinate.getMinute(coord);
 		int second = Coordinate.getSecond(coord);
 		stringBuilder.setLength(0);
 		stringBuilder.append(" ");
+		if (signum < 0) // add minus sign
+			stringBuilder.append("-");
 		if (!s.compressLabels || lastDegree != degree || !density.compressDegree)
 		{
 			stringBuilder.append(degree);

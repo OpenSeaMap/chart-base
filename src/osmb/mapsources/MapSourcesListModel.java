@@ -25,7 +25,7 @@ import javax.swing.AbstractListModel;
 
 import osmb.mapsources.IfMapSource;
 
-// /W class copied from osmcb.program, used to manage enabled/disabled mapsources in osmcd.gui.settings.SettingsGUI.java
+// W class copied from osmcb.program, used to manage enabled/disabled mapsources in osmcd.gui.settings.SettingsGUI.java
 @SuppressWarnings("serial")
 public class MapSourcesListModel extends AbstractListModel<IfMapSource>
 {

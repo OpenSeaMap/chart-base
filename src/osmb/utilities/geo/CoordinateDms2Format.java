@@ -28,6 +28,8 @@ import org.apache.log4j.Logger;
 
 public class CoordinateDms2Format extends NumberFormat
 {
+	private static final long serialVersionUID = 1L;
+	
 	protected static Logger log = Logger.getLogger(CoordinateDms2Format.class);
 
 	NumberFormat degFmt;

@@ -26,7 +26,9 @@ import java.text.ParsePosition;
 
 import org.apache.log4j.Logger;
 
-public class CoordinateDm2Format extends NumberFormat {
+public class CoordinateDm2Format extends NumberFormat
+{
+	private static final long serialVersionUID = 1L;
 
 	protected static Logger log = Logger.getLogger(CoordinateDms2Format.class);
 
@@ -34,7 +36,8 @@ public class CoordinateDm2Format extends NumberFormat {
 	NumberFormat minFmt;
 	NumberFormat minFmtParser;
 
-	public CoordinateDm2Format(DecimalFormatSymbols dfs) {
+	public CoordinateDm2Format(DecimalFormatSymbols dfs)
+	{
 		degFmt = new DecimalFormat("00°", dfs);
 		minFmt = new DecimalFormat("00.00''", dfs);
 		minFmt.setRoundingMode(RoundingMode.FLOOR);
@@ -42,7 +45,8 @@ public class CoordinateDm2Format extends NumberFormat {
 	}
 
 	@Override
-	public StringBuffer format(double number, StringBuffer toAppendTo, FieldPosition pos) {
+	public StringBuffer format(double number, StringBuffer toAppendTo, FieldPosition pos)
+	{
 		int degrees;
 		if (number >= 0)
 			degrees = (int) Math.floor(number);
@@ -57,17 +61,20 @@ public class CoordinateDm2Format extends NumberFormat {
 	}
 
 	@Override
-	public StringBuffer format(long number, StringBuffer toAppendTo, FieldPosition pos) {
+	public StringBuffer format(long number, StringBuffer toAppendTo, FieldPosition pos)
+	{
 		throw new RuntimeException("Not implemented");
 	}
 
 	@Override
-	public Number parse(String source) throws ParseException {
+	public Number parse(String source) throws ParseException
+	{
 		return parse(source, new ParsePosition(0));
 	}
 
 	@Override
-	public Number parse(String source, ParsePosition parsePosition) {
+	public Number parse(String source, ParsePosition parsePosition)
+	{
 		String[] tokens = source.trim().split("[°\\']");
 		if (tokens.length != 2)
 			return null;
