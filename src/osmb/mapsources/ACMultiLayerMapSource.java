@@ -47,7 +47,7 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 
 	private int maxZoom;
 	private int minZoom;
-//W #mapSpace	private IfMapSpace mapSpace;
+	// W #mapSpace private IfMapSpace mapSpace;
 	protected MapSourceLoaderInfo loaderInfo = null;
 
 	public ACMultiLayerMapSource(String name, TileImageType tileImageType)
@@ -67,17 +67,17 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 		log.trace("START");
 		@SuppressWarnings("unused") // W #unused
 		IfMapSource refMapSource = mapSources[0];
-// W #mapSpace
-//		mapSpace = refMapSource.getMapSpace();
+		// W #mapSpace
+		// mapSpace = refMapSource.getMapSpace();
 		maxZoom = MP2MapSpace.MAX_TECH_ZOOM; // 18; // W MAX_TECH_ZOOM
 		minZoom = MP2MapSpace.MIN_TECH_ZOOM; // 0;
 		for (IfMapSource ms : mapSources)
 		{
 			maxZoom = Math.min(maxZoom, ms.getMaxZoom());
 			minZoom = Math.max(minZoom, ms.getMinZoom());
-// W #mapSpace
-//			if (!ms.getMapSpace().equals(mapSpace))
-//				throw new RuntimeException("Different map spaces used in multi-layer map source");
+			// W #mapSpace
+			// if (!ms.getMapSpace().equals(mapSpace))
+			// throw new RuntimeException("Different map spaces used in multi-layer map source");
 		}
 	}
 
@@ -87,8 +87,8 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 		log.trace("START");
 		@SuppressWarnings("unused") // W #unused
 		IfMapSource refMapSource = mapSources[0];
-// W #mapSpace		
-//		mapSpace = refMapSource.getMapSpace();
+		// W #mapSpace
+		// mapSpace = refMapSource.getMapSpace();
 		maxZoom = MP2MapSpace.MAX_TECH_ZOOM; // 18; // W MAX_TECH_ZOOM
 		minZoom = MP2MapSpace.MIN_TECH_ZOOM; // 0;
 		for (IfMapSource ms : mapSources)
@@ -111,12 +111,12 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 		return Color.BLACK;
 	}
 
-// W #mapSpace
-//	@Override
-//	public IfMapSpace getMapSpace()
-//	{
-//		return mapSpace;
-//	}
+	// W #mapSpace
+	// @Override
+	// public IfMapSpace getMapSpace()
+	// {
+	// return mapSpace;
+	// }
 
 	@Override
 	public int getMaxZoom()
@@ -173,7 +173,6 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 		try
 		{
 			ArrayList<BufferedImage> layerImages = new ArrayList<BufferedImage>(mapSources.length);
-		// W #mapSpace			int maxSize = mapSpace.getTileSize();
 			int maxSize = MP2MapSpace.getTileSize();
 			for (int i = 0; i < mapSources.length; i++)
 			{
@@ -234,6 +233,12 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 				g2.dispose();
 			}
 		}
+	}
+
+	@Override
+	public BufferedImage downloadTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
+	{
+		return getTileImage(zoom, x, y, LoadMethod.SOURCE);
 	}
 
 	protected float getLayerAlpha(int layerIndex)

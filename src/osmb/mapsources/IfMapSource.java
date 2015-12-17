@@ -42,16 +42,17 @@ public interface IfMapSource
 	};
 
 	/**
-	 * Specifies the maximum zoom value. The number of zoom levels supported by this map source is [{@link #getMinZoom()}.. {@link #getMaxZoom()}].
-	 * To use the zoom level it has to checked against Bundle.getMaxZoomLevel() and IfMapSpace.MAX_TECH_ZOOM. The first one is the maximum reasonable to be used
-	 * in the bundles output format and device, the latter is the maximum zoom level supported by osmbs internal data structures.
+	 * Specifies the maximum zoom value. The number of zoom levels supported by this map source is [{@link #getMinZoom}.. {@link #getMaxZoom}].
+	 * To use the zoom level it has to checked against {@link Bundle#getMaxZoomLevel}() and {@link MP2MapSpace#MAX_TECH_ZOOM}. <br>
+	 * The first one is the maximum reasonable to be used in the bundles output format and device, the latter is the maximum zoom level supported by osmbs
+	 * internal data structures.
 	 * 
-	 * @return maximum zoom value - currently (2015) <= 22
+	 * @return maximum zoom value - currently (2015) <= 22 {@value MP2MapSpace#MAX_TECH_ZOOM}
 	 */
 	public int getMaxZoom();
 
 	/**
-	 * Specifies the minimum zoom value. The number of zoom levels supported by this map source is [{@link #getMinZoom()}.. {@link #getMaxZoom()}].
+	 * Specifies the minimum zoom value. The number of zoom levels supported by this map source is [{@link #getMinZoom}.. {@link #getMaxZoom}].
 	 * To use the zoom level it has to checked against Bundle.getMinZoomLevel() and IfMapSpace.MIN_TECH_ZOOM. The first one is the minimum reasonable to be used
 	 * in the bundles output format and device, the latter is the minimum zoom level supported by osmbs internal data structures.
 	 * 
@@ -67,12 +68,14 @@ public interface IfMapSource
 	public String getName();
 
 	/**
-	 * Retrieves the tile data as a byte array.
-	 * The loadMethod specifies where to look for the tile.
-	 * - STORE: looks if the tile is available in the tile store.
-	 * - SOURCE:
-	 * - CACHE:
-	 * - DEFAULT:
+	 * Retrieves the data for the specified tile according to the specified load method as a byte array. If no data are available at the specified location, null
+	 * is returned.<br>
+	 * The loadMethod specifies where to look for the tile.<br>
+	 * - STORE: looks if the tile is available in the tile store.<br>
+	 * - SOURCE: loads the tile data from the (online) source.<br>
+	 * - CACHE: looks in the mtc for the tile data.<br>
+	 * - DEFAULT:<br>
+	 * - ALL:<br>
 	 * 
 	 * @param zoom
 	 * @param x
@@ -87,22 +90,37 @@ public interface IfMapSource
 
 	/**
 	 * Retrieves the tile data as an image.
-	 * The loadMethod specifies where to look for the tile.
-	 * - STORE: looks if the tile is available in the tile store.
-	 * - SOURCE:
-	 * - CACHE:
-	 * - DEFAULT:
+	 * The loadMethod specifies where to look for the tile.<br>
+	 * - STORE: looks if the tile is available in the tile store.<br>
+	 * - SOURCE: loads the tile data from the (online) source.<br>
+	 * - CACHE: looks in the mtc for the tile data.<br>
+	 * - DEFAULT:<br>
+	 * - ALL:<br>
 	 * 
 	 * @param zoom
 	 * @param x
 	 * @param y
 	 * @param loadMethod
-	 * @return the tile data as an image
+	 * @return The tile data as an image or null if no image available
 	 * @throws IOException
 	 * @throws TileException
 	 * @throws InterruptedException
 	 */
 	public BufferedImage getTileImage(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException;
+
+	/**
+	 * This retrieves the tile image directly from the online map source.
+	 * <p>
+	 * 
+	 * @param zoom
+	 * @param x
+	 * @param y
+	 * @return The tile data as an image or null if no image available.
+	 * @throws IOException
+	 * @throws TileException
+	 * @throws InterruptedException
+	 */
+	public BufferedImage downloadTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException;
 
 	/**
 	 * Specifies the tile image type. For tiles rendered by Mapnik or Osmarenderer this is usually {@link TileImageType#PNG}.

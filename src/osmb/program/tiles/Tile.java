@@ -36,12 +36,11 @@ import osmb.utilities.OSMBUtilities;
 /**
  * Holds one map tile. Additionally the code for loading the tile image and painting it is also included in this class.
  * This contains code originally from Jan Peter Stotz.
+ * 
+ * @author humbach
  */
 public class Tile
 {
-	/**
-	 * Hourglass image that is displayed until a map tile has been loaded
-	 */
 	public static BufferedImage LOADING_IMAGE;
 	public static BufferedImage ERROR_IMAGE;
 
@@ -60,7 +59,6 @@ public class Tile
 	}
 
 	/**
-	 * 
 	 * @author humbach
 	 */
 	public enum TileState
@@ -107,7 +105,7 @@ public class Tile
 	// This does not belong into here. It has to be moved upward in the hierarchy. The Tile should not know anything about the TileStore/Cache
 	public void loadPlaceholderFromCache(MemoryTileCache cache)
 	{
-		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace  mMapSource.getMapSpace().getTileSize();
+		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace mMapSource.getMapSpace().getTileSize();
 		BufferedImage tmpImage = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = (Graphics2D) tmpImage.getGraphics();
 		// g.drawImage(image, 0, 0, null);
@@ -166,13 +164,16 @@ public class Tile
 		}
 	}
 
+	/**
+	 * @return The map source of this tile.
+	 */
 	public IfMapSource getSource()
 	{
 		return mMapSource;
 	}
 
 	/**
-	 * @return tile number on the x axis of this tile
+	 * @return The tile number on the x axis of this tile.
 	 */
 	public int getXtile()
 	{
@@ -180,7 +181,7 @@ public class Tile
 	}
 
 	/**
-	 * @return tile number on the y axis of this tile
+	 * @return The tile number on the y axis of this tile.
 	 */
 	public int getYtile()
 	{
@@ -188,30 +189,48 @@ public class Tile
 	}
 
 	/**
-	 * @return zoom level of this tile
+	 * @return The zoom level of this tile.
 	 */
 	public int getZoom()
 	{
 		return mZoom;
 	}
 
+	/**
+	 * @return The image for this tile.
+	 */
 	public BufferedImage getImage()
 	{
 		return mImage;
 	}
 
+	/**
+	 * Associates a specified image with this tile.
+	 * 
+	 * @param image
+	 *          The image to be used.
+	 */
 	public void setImage(BufferedImage image)
 	{
 		this.mImage = image;
 	}
 
 	/**
-	 * uses a predefined image as an error indicator
+	 * Uses predefined image as an error indicator.
 	 */
 	public void setErrorImage()
 	{
 		mImage = ERROR_IMAGE;
 		mTileState = TileState.TS_ERROR;
+	}
+
+	/**
+	 * Uses predefined image as a loading indicator.
+	 */
+	public void setLoadingImage()
+	{
+		mImage = LOADING_IMAGE;
+		mTileState = TileState.TS_LOADING;
 	}
 
 	public void loadImage(InputStream input) throws IOException
@@ -261,7 +280,7 @@ public class Tile
 		if (mImage == null)
 			return;
 
-		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace  mMapSource.getMapSpace().getTileSize();
+		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace mMapSource.getMapSpace().getTileSize();
 		// Google Scale = 2, retina support
 		g.drawImage(mImage, x, y, tileSize, tileSize, Color.WHITE, null);
 		// g.drawImage(image, x, y, Color.WHITE);
@@ -272,7 +291,7 @@ public class Tile
 		if (mImage == null)
 			return;
 
-		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace  mMapSource.getMapSpace().getTileSize();
+		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace mMapSource.getMapSpace().getTileSize();
 		// Google Scale = 2, retina support
 		g.drawImage(mImage, x, y, tileSize, tileSize, null);
 		// g.drawImage(image, x, y, null);

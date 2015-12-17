@@ -62,8 +62,8 @@ public class CustomLocalImageFileMapSource implements IfFileBasedMapSource
 	@XmlElement(required = true, nillable = false)
 	private double boxWest = -180.0;
 
-//W #mapSpace
-//	private IfMapSpace mapSpace = MapSpaceFactory.getInstance(256, true); // W #mapSpace =
+	// W #mapSpace
+	// private IfMapSpace mapSpace = MapSpaceFactory.getInstance(256, true); // W #mapSpace =
 
 	private boolean initialized = false;
 
@@ -101,6 +101,7 @@ public class CustomLocalImageFileMapSource implements IfFileBasedMapSource
 		super();
 	}
 
+	@Override
 	public synchronized void initialize()
 	{
 		if (initialized)
@@ -108,6 +109,7 @@ public class CustomLocalImageFileMapSource implements IfFileBasedMapSource
 		reinitialize();
 	}
 
+	@Override
 	public void reinitialize()
 	{
 		try
@@ -115,7 +117,7 @@ public class CustomLocalImageFileMapSource implements IfFileBasedMapSource
 			if (!imageFile.isFile())
 			{
 				JOptionPane.showMessageDialog(null, String.format(OSMBStrs.RStr("msg_environment_invalid_source_folder"), name, imageFile.toString()),
-						OSMBStrs.RStr("msg_environment_invalid_source_folder_title"), JOptionPane.ERROR_MESSAGE);
+				    OSMBStrs.RStr("msg_environment_invalid_source_folder_title"), JOptionPane.ERROR_MESSAGE);
 				initialized = true;
 				return;
 			}
@@ -141,6 +143,7 @@ public class CustomLocalImageFileMapSource implements IfFileBasedMapSource
 		}
 	}
 
+	@Override
 	public byte[] getTileData(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException
 	{
 		ByteArrayOutputStream buf = new ByteArrayOutputStream(16000);
@@ -163,6 +166,7 @@ public class CustomLocalImageFileMapSource implements IfFileBasedMapSource
 		return value > 0 ? (int) Math.ceil(value) : (int) Math.floor(value);
 	}
 
+	@Override
 	public BufferedImage getTileImage(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException
 	{
 		if (!initialized)
@@ -182,9 +186,9 @@ public class CustomLocalImageFileMapSource implements IfFileBasedMapSource
 			}
 			int imageWidth = fullImage.getWidth();
 			int imageHeight = fullImage.getHeight();
-		//W #mapSpace MP2MapSpace EastNorthCoordinate <-> GeoCoordinate MP2Corner <-> MercatorPixelCoordinate
+			// W #mapSpace MP2MapSpace EastNorthCoordinate <-> GeoCoordinate MP2Corner <-> MercatorPixelCoordinate
 			int tileSize = MP2MapSpace.getTileSize();
-			double tileWest =MP2MapSpace.cXToLon(x * tileSize, zoom);
+			double tileWest = MP2MapSpace.cXToLon(x * tileSize, zoom);
 			double tileNorth = MP2MapSpace.cYToLat(y * tileSize, zoom);
 			double tileEast = MP2MapSpace.cXToLon((x + 1) * tileSize, zoom);
 			double tileSouth = MP2MapSpace.cYToLat((y + 1) * tileSize, zoom);
@@ -254,21 +258,25 @@ public class CustomLocalImageFileMapSource implements IfFileBasedMapSource
 		return image;
 	}
 
+	@Override
 	public TileImageType getTileImageType()
 	{
 		return tileImageType;
 	}
 
+	@Override
 	public int getMaxZoom()
 	{
 		return maxZoom;
 	}
 
+	@Override
 	public int getMinZoom()
 	{
 		return minZoom;
 	}
 
+	@Override
 	public String getName()
 	{
 		return name;
@@ -280,26 +288,36 @@ public class CustomLocalImageFileMapSource implements IfFileBasedMapSource
 		return name;
 	}
 
-// #mapSpace  
-//	public IfMapSpace getMapSpace()
-//	{
-//		return mapSpace;
-//	}
+	// #mapSpace
+	// public IfMapSpace getMapSpace()
+	// {
+	// return mapSpace;
+	// }
 
+	@Override
 	public Color getBackgroundColor()
 	{
 		return backgroundColor;
 	}
 
+	@Override
 	@XmlTransient
 	public MapSourceLoaderInfo getLoaderInfo()
 	{
 		return loaderInfo;
 	}
 
+	@Override
 	public void setLoaderInfo(MapSourceLoaderInfo loaderInfo)
 	{
 		this.loaderInfo = loaderInfo;
+	}
+
+	@Override
+	public BufferedImage downloadTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

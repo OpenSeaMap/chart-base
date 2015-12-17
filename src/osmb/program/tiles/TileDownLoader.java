@@ -30,6 +30,7 @@ import osmb.program.ACSettings;
 //W #mapSpace import osmb.program.map.IfMapSpace;
 import osmb.program.tilestore.ACSiTileStore;
 import osmb.program.tilestore.IfTileStoreEntry;
+import osmb.utilities.OSMBStrs;
 import osmb.utilities.OSMBUtilities;
 
 /**
@@ -55,9 +56,9 @@ public class TileDownLoader
 
 	static
 	{
-		Object defaultReadTimeout = System.getProperty("sun.net.client.defaultReadTimeout");
-		if (defaultReadTimeout == null)
-			System.setProperty("sun.net.client.defaultReadTimeout", "15000");
+		// Object defaultReadTimeout = System.getProperty("sun.net.client.defaultReadTimeout");
+		// if (defaultReadTimeout == null)
+		System.setProperty("sun.net.client.defaultReadTimeout", "20000");
 		System.setProperty("http.maxConnections", "20");
 	}
 
@@ -76,17 +77,14 @@ public class TileDownLoader
 	 */
 	public static byte[] getTileData(int x, int y, int zoom, IfHttpMapSource mapSource) throws IOException, InterruptedException, UnrecoverableDownloadException
 	{
-	// W #mapSpace IfMapSpace mapSpace = mapSource.getMapSpace();
-		int maxTileIndex = MP2MapSpace.getSizeInPixel(zoom) / MP2MapSpace.getTileSize(); // W #mapSpace mapSpace.getMaxPixels(zoom) / mapSpace.getTileSize();
+		log.trace(OSMBStrs.RStr("START"));
+		int maxTileIndex = MP2MapSpace.getSizeInPixel(zoom) / MP2MapSpace.getTileSize();
 		if (x > maxTileIndex)
 			throw new RuntimeException("Invalid tile index x=" + x + " for zoom " + zoom + ", MAX=" + maxTileIndex);
 		if (y > maxTileIndex)
 			throw new RuntimeException("Invalid tile index y=" + y + " for zoom " + zoom + ", MAX=" + maxTileIndex);
 
 		ACSiTileStore ts = ACSiTileStore.getInstance();
-
-		// Thread.sleep(2000);
-
 		ACSettings s = ACSettings.getInstance();
 
 		IfTileStoreEntry tile = null;
@@ -156,7 +154,7 @@ public class TileDownLoader
 	 * @param y
 	 * @param zoom
 	 * @param mapSource
-	 * @return
+	 * @return The tile image as byte[] or null if no image available.
 	 * @throws UnrecoverableDownloadException
 	 * @throws IOException
 	 * @throws InterruptedException
@@ -164,18 +162,26 @@ public class TileDownLoader
 	public static byte[] downloadTileAndUpdateStore(int x, int y, int zoom, IfHttpMapSource mapSource)
 	    throws UnrecoverableDownloadException, IOException, InterruptedException
 	{
+		log.trace(OSMBStrs.RStr("START"));
 		return downloadTileAndUpdateStore(x, y, zoom, mapSource, ACSettings.getInstance().getTileStoreEnabled());
 	}
 
-	// public static byte[] downloadTile(int x, int y, int zoom, IfHttpMapSource mapSource) throws UnrecoverableDownloadException, IOException,
-	// InterruptedException
-	// {
-	// return downloadTileAndUpdateStore(x, y, zoom, mapSource, false);
-	// }
-
+	/**
+	 * 
+	 * @param x
+	 * @param y
+	 * @param zoom
+	 * @param mapSource
+	 * @param useTileStore
+	 * @return The tile image as byte[] or null if no image available.
+	 * @throws UnrecoverableDownloadException
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
 	public static byte[] downloadTileAndUpdateStore(int x, int y, int zoom, IfHttpMapSource mapSource, boolean useTileStore)
 	    throws UnrecoverableDownloadException, IOException, InterruptedException
 	{
+		log.trace(OSMBStrs.RStr("START"));
 		if (zoom < 0)
 			throw new UnrecoverableDownloadException("Negative zoom!");
 		HttpURLConnection conn = mapSource.getTileUrlConnection(zoom, x, y);
@@ -191,7 +197,10 @@ public class TileDownLoader
 		byte[] data = loadBodyDataInBuffer(conn);
 
 		if (code != HttpURLConnection.HTTP_OK)
+		{
+			log.error("loadBodyDataInBuffer() failed:" + code);
 			throw new DownloadFailedException(conn, code);
+		}
 
 		checkContentType(conn, data);
 		checkContentLength(conn, data);
@@ -226,6 +235,7 @@ public class TileDownLoader
 	public static byte[] updateStoredTile(IfTileStoreEntry tile, IfHttpMapSource mapSource)
 	    throws UnrecoverableDownloadException, IOException, InterruptedException
 	{
+		log.trace(OSMBStrs.RStr("START"));
 		final int x = tile.getX();
 		final int y = tile.getY();
 		final int zoom = tile.getZoom();
@@ -239,7 +249,7 @@ public class TileDownLoader
 				if (!different)
 				{
 					if (log.isTraceEnabled())
-						log.trace("Data unchanged on server (eTag): " + mapSource + " " + tile);
+						log.debug("Data unchanged on server (eTag): " + mapSource + " " + tile);
 					return null;
 				}
 				break;
@@ -371,6 +381,7 @@ public class TileDownLoader
 	 */
 	protected static byte[] loadBodyDataInBuffer(HttpURLConnection conn) throws IOException
 	{
+		log.trace(OSMBStrs.RStr("START"));
 		InputStream input = null;
 		byte[] data = null;
 		try
@@ -421,6 +432,7 @@ public class TileDownLoader
 	 */
 	protected static boolean isTileNewer(IfTileStoreEntry tile, IfHttpMapSource mapSource) throws IOException
 	{
+		log.trace(OSMBStrs.RStr("START"));
 		long oldLastModified = tile.getTimeLastModified();
 		if (oldLastModified <= 0)
 		{
@@ -442,6 +454,7 @@ public class TileDownLoader
 	 */
 	protected static boolean isETagDifferent(IfTileStoreEntry tile, IfHttpMapSource mapSource) throws IOException
 	{
+		log.trace(OSMBStrs.RStr("START"));
 		String eTag = tile.getETag();
 		if (eTag == null || eTag.length() == 0)
 		{
@@ -459,6 +472,7 @@ public class TileDownLoader
 
 	protected static void prepareConnection(HttpURLConnection conn) throws ProtocolException
 	{
+		log.trace(OSMBStrs.RStr("START"));
 		conn.setRequestMethod("GET");
 
 		ACSettings s = ACSettings.getInstance();
@@ -471,6 +485,7 @@ public class TileDownLoader
 
 	protected static void checkContentType(HttpURLConnection conn, byte[] data) throws UnrecoverableDownloadException
 	{
+		log.trace(OSMBStrs.RStr("START"));
 		String contentType = conn.getContentType();
 		if (contentType != null)
 		{
@@ -496,6 +511,7 @@ public class TileDownLoader
 	 */
 	protected static void checkContentLength(HttpURLConnection conn, byte[] data) throws UnrecoverableDownloadException
 	{
+		log.trace(OSMBStrs.RStr("START"));
 		int len = conn.getContentLength();
 		if (len < 0)
 			return;

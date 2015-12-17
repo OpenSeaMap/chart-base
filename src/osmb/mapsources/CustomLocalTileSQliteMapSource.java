@@ -150,14 +150,14 @@ public class CustomLocalTileSQliteMapSource implements IfFileBasedMapSource
 		if (bundleType == null)
 		{
 			JOptionPane.showMessageDialog(null, String.format(OSMBStrs.RStr("msg_custom_map_invalid_source_file"), name, sourceFile),
-					OSMBStrs.RStr("msg_custom_map_invalid_source_file_title"), JOptionPane.ERROR_MESSAGE);
+			    OSMBStrs.RStr("msg_custom_map_invalid_source_file_title"), JOptionPane.ERROR_MESSAGE);
 			initialized = true;
 			return;
 		}
 		if (!sourceFile.isFile())
 		{
 			JOptionPane.showMessageDialog(null, String.format(OSMBStrs.RStr("msg_custom_map_invalid_source_sqlitedb"), name, sourceFile),
-					OSMBStrs.RStr("msg_custom_map_invalid_source_file_title"), JOptionPane.ERROR_MESSAGE);
+			    OSMBStrs.RStr("msg_custom_map_invalid_source_file_title"), JOptionPane.ERROR_MESSAGE);
 			initialized = true;
 			return;
 		}
@@ -175,7 +175,7 @@ public class CustomLocalTileSQliteMapSource implements IfFileBasedMapSource
 		catch (SQLException e)
 		{
 			JOptionPane.showMessageDialog(null, String.format(OSMBStrs.RStr("msg_custom_map_source_failed_load_sqlitedb"), name, sourceFile, e.getMessage()),
-					OSMBStrs.RStr("msg_custom_map_source_failed_load_sqlitedb_title"), JOptionPane.ERROR_MESSAGE);
+			    OSMBStrs.RStr("msg_custom_map_source_failed_load_sqlitedb_title"), JOptionPane.ERROR_MESSAGE);
 			initialized = true;
 			return;
 		}
@@ -235,8 +235,8 @@ public class CustomLocalTileSQliteMapSource implements IfFileBasedMapSource
 			OSMBUtilities.closeStatement(statement);
 		}
 		if (tileImageType == null)
-			throw new RuntimeException("Unable to detect image type of " + sourceFile + ".\n"
-					+ "Please specify it manually using <tileImageType> entry in iMap source definition.");
+			throw new RuntimeException(
+			    "Unable to detect image type of " + sourceFile + ".\n" + "Please specify it manually using <tileImageType> entry in iMap source definition.");
 
 	}
 
@@ -327,12 +327,12 @@ public class CustomLocalTileSQliteMapSource implements IfFileBasedMapSource
 		return name;
 	}
 
-// W #mapSpace
-//	@Override
-//	public IfMapSpace getMapSpace()
-//	{
-//		return mapSpace;
-//	}
+	// W #mapSpace
+	// @Override
+	// public IfMapSpace getMapSpace()
+	// {
+	// return mapSpace;
+	// }
 
 	@Override
 	public Color getBackgroundColor()
@@ -364,5 +364,12 @@ public class CustomLocalTileSQliteMapSource implements IfFileBasedMapSource
 		{
 		}
 		conn = null;
+	}
+
+	@Override
+	public BufferedImage downloadTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

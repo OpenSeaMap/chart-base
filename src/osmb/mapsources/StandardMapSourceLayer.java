@@ -31,7 +31,7 @@ import osmb.program.tiles.TileImageType;
 
 @XmlRootElement
 /**
- * Wraps an already existing iMap source so that it can be loaded by name in a custom multi-layer iMap  
+ * Wraps an already existing map source so that it can be loaded by name in a custom multi-layer map source
  */
 public class StandardMapSourceLayer implements IfMapSource
 {
@@ -49,7 +49,7 @@ public class StandardMapSourceLayer implements IfMapSource
 	{
 		mapSource = ACMapSourcesManager.getInstance().getSourceByName(mapSourceName);
 		if (mapSource == null)
-			throw new RuntimeException("Invalid iMap source name used: " + mapSourceName);
+			throw new RuntimeException("Invalid map source name used: " + mapSourceName);
 	}
 
 	@Override
@@ -83,17 +83,16 @@ public class StandardMapSourceLayer implements IfMapSource
 	}
 
 	@Override
+	public BufferedImage downloadTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
+	{
+		return mapSource.downloadTileImage(zoom, x, y);
+	}
+
+	@Override
 	public TileImageType getTileImageType()
 	{
 		return mapSource.getTileImageType();
 	}
-
-// #mapSpace 
-//	@Override
-//	public IfMapSpace getMapSpace()
-//	{
-//		return mapSource.getMapSpace();
-//	}
 
 	@Override
 	public Color getBackgroundColor()

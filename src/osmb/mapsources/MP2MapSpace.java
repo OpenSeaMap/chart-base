@@ -21,17 +21,18 @@ import java.awt.Point;
 import org.apache.log4j.Logger;
 
 /**
- * Mercator projection (globe <-> map space) with a map space width and height of 256 * 2<sup>zoom</sup> pixel.<br>
+ * Mercator projection (globe <-> map space) with a map space width and height of {@value #TECH_TILESIZE} * 2<sup>zoom</sup> pixel.<br>
  * 
  * This is the common projection used by OpenStreetMap and Google.<br>
  * It provides methods to translate coordinates from 'map space' into latitude and longitude (on the WGS84 ellipsoid) and vice versa.<br>
  * Map space is measured in pixel. The origin of the map space is the top left pixel ( 0 | 0 ).
- * <ul>	Differentiations: (x/y integers, lat/lon doubles)
- * <li> Border coordinates: Every pixel ( x | y ) has four borders ( x: western, x + 1: eastern, y: northern, y + 1: southern )<br>
- *      The mapping x <-> lon/y <-> lat is 	within the limits of rounding
- * <li> Pixel coordinate:
- * <li> Pixel center:
- *  The map space origin  has latitude ~85 and longitude -180.
+ * <ul>
+ * Differentiations: (x/y integers, lat/lon doubles)
+ * <li>Border coordinates: Every pixel ( x | y ) has four borders ( x: western, x + 1: eastern, y: northern, y + 1: southern )<br>
+ * The mapping x <-> lon/y <-> lat is within the limits of rounding
+ * <li>Pixel coordinate:
+ * <li>Pixel center:
+ * The map space origin has latitude ~85 and longitude -180.
  * this makes: xMin - west; yMin - north; xMax - east; yMax - south.
  * While the geo coordinates are independent of zoom level the map space is NOT. Map space coordinates, pixel and tiles, are depending on the zoom level for
  * the same geographic point.
@@ -40,54 +41,60 @@ import org.apache.log4j.Logger;
  * This is the only implementation that is currently supported by OpenSeaMap ChartBundler.
  * </p>
  * 
- * Currently it supports a world up to zoom level 22 because of the use of 32bit integer for pixel coordinates.
+ * Currently it supports a world up to zoom level {@value #MAX_TECH_ZOOM} because of the use of 32bit integer for pixel coordinates.
  * 
- * <ul> Determinations:
- * <li> {@link #TECH_TILESIZE} = 256 = 2<sup>8</sup></li>
- * <li> {@link #MAX_TECH_ZOOM} = 22</li>
- * <li> {@link #MIN_TECH_ZOOM} = 0</li>
- * <li> {@link #MAX_LAT} = 85.0511...° North</li>
- * <li> {@link #MIN_LAT} = -85.0511...° South</li>
- * <li> -180° (West) == 180° (East) <-> longitudinal cut</li>
+ * <ul>
+ * Determinations:
+ * <li>{@link #TECH_TILESIZE} = {@value #TECH_TILESIZE} = 2<sup>8</sup></li>
+ * <li>{@link #MAX_TECH_ZOOM} = {@value #MAX_TECH_ZOOM}</li>
+ * <li>{@link #MIN_TECH_ZOOM} = {@value #MIN_TECH_ZOOM}</li>
+ * <li>{@link #MAX_LAT} = 85.0511...° North</li>
+ * <li>{@link #MIN_LAT} = -85.0511...° South</li>
+ * <li>-180° (West) == 180° (East) <-> longitudinal cut</li>
  * </ul>
  * 
  * This contains code originally from Jan Peter Stotz.
+ * 
  * @author wilbert
  *
  */
 public class MP2MapSpace
 {
 	private static final Logger log = Logger.getLogger(MP2MapSpace.class);
-	
+
 	/**
 	 * These are the software technical limits because we use an int for the pixel coordinates. In zoom level 23 the coordinate would exceed the int...
-	 * If we will want to provide higher zoom levels, we have to change the data type used to 64bit int... This is a lot of work, so we do it not (now).<p>
+	 * If we will want to provide higher zoom levels, we have to change the data type used to 64bit int... This is a lot of work, so we do it not (now).
+	 * <p>
 	 * see {@link #TECH_TILESIZE} and {@link #MAX_TECH_ZOOM}
+	 * <p>
+	 * 
+	 * The value is <code>MIN_TECH_ZOOM = {@value}</code>
 	 */
 	public static final int MIN_TECH_ZOOM = 0;
 	/**
-	 * <code>MAX_TECH_ZOOM = 22</code>
+	 * The value is <code>MAX_TECH_ZOOM = {@value}</code>
 	 */
 	public static final int MAX_TECH_ZOOM = 22;
 	/**
-	 * <code>TECH_TILESIZE = 256</code> = 2<sup>8</sup>
+	 * The value is <code>TECH_TILESIZE = {@value}</code> = 2<sup>8</sup>
 	 */
 	public static final int TECH_TILESIZE = 256;
-	
+
 	/**
-	 * The northernmost border of map space (MAX_LAT = cYToLat_UR(0, zoom) = 85.05112877980659...).
+	 * The northernmost border of map space (MAX_LAT = cYToLat_Borders(0, zoom) = 85.05112877980659...).
 	 */
-	public static final double MAX_LAT = cYToLat_Borders(0, 0); // (0, 0): (northernmost border, any zoom level)
+	public static final double MAX_LAT = cYToLat_Borders(0, MIN_TECH_ZOOM);
 	/**
-	 * The southernmost border of map space (MIN_LAT = cYToLat_UR(getMaxPixels(zoom), zoom) = -85.05112877980659...).
+	 * The southernmost border of map space (MIN_LAT = cYToLat_Borders(getMaxPixels(zoom), zoom) = -85.05112877980659...).
 	 */
-	public static final double MIN_LAT = cYToLat_Borders(TECH_TILESIZE, MIN_TECH_ZOOM); // (TECH_TILESIZE, MIN_TECH_ZOOM): (southernmost border in zoom 0, zoom level 0)
-	
+	public static final double MIN_LAT = cYToLat_Borders(TECH_TILESIZE, MIN_TECH_ZOOM);
+
 	/**
 	 * The pixel difference between latitude = {@link #MAX_LAT} and latitude = 0° depending on (UnChecked) zoom level.
 	 * 
-	 * @param aZoomlevel
-	 *                   The parameter zoom has to be checked before using this method!
+	 * @param zoom
+	 *          The parameter zoom has to be checked before using this method!
 	 * @return
 	 *         -1/2 * 2<sup>zoom + 8</sup>
 	 */
@@ -95,12 +102,13 @@ public class MP2MapSpace
 	{
 		return (-1 * getSizeInPixel_UC(zoom) / 2);
 	}
-	
+
 	/**
-	 * The size (width or height) of the map space in pixel depending on (UnChecked) zoom level.
+	 * The size (width or height) of the map space in pixel depending on (UnChecked) zoom level. There are 2<sup>zoom</sup> tiles in width and height. Each tile
+	 * is {@value #TECH_TILESIZE} pixels wide.
 	 * 
 	 * @param zoom
-	 *             The parameter zoom has to be checked before using this method!
+	 *          The parameter zoom has to be checked before using this method!
 	 * @return
 	 *         2<sup>zoom + 8</sup>
 	 */
@@ -108,12 +116,12 @@ public class MP2MapSpace
 	{
 		return TECH_TILESIZE * (1 << zoom);
 	}
-	
+
 	/**
 	 * The radius of the globe in equatorial pixel width depending on (UnChecked) zoom level.
 	 * 
 	 * @param zoom
-	 *             The parameter zoom has to be checked before using this method!
+	 *          The parameter zoom has to be checked before using this method!
 	 * @return
 	 *         2<sup>zoom + 8</sup> / (2 * &Pi;)
 	 */
@@ -121,7 +129,7 @@ public class MP2MapSpace
 	{
 		return getSizeInPixel_UC(zoom) / (2.0 * Math.PI);
 	}
-	
+
 	/**
 	 * Calculates horizontal map space coordinate x to 'longitude' in radian depending on zoom level.<br>
 	 * 
@@ -130,7 +138,7 @@ public class MP2MapSpace
 	 * @param x
 	 *          UnChecked map space coordinate
 	 * @param zoom
-	 *             UnChecked zoom level
+	 *          UnChecked zoom level
 	 * @return
 	 *         Longitude in radian
 	 */
@@ -149,9 +157,9 @@ public class MP2MapSpace
 	// unrestricted
 	private static int cRadianToLeftXBorder(double lonRad, int zoom)
 	{
-		return  (int) ((getSizeInPixel_UC(zoom) * (lonRad + Math.PI)) / (2.0 * Math.PI));
+		return (int) ((getSizeInPixel_UC(zoom) * (lonRad + Math.PI)) / (2.0 * Math.PI));
 	}
-	
+
 	// NOT RESTRICTED! Check parameters in calling methods! if unchecked: log(0), div(0), ...
 	private static int cRadianToUpperYBorder(double latRad, int zoom)
 	{
@@ -159,7 +167,7 @@ public class MP2MapSpace
 		double log = Math.log((1.0 + sinLat) / (1.0 - sinLat));
 		return (int) (getSizeInPixel_UC(zoom) * (0.5 - (log / (4.0 * Math.PI))));
 	}
-	
+
 	protected static int checkZoom(int zoom, String methodName)
 	{
 		int nRet = zoom;
@@ -175,19 +183,19 @@ public class MP2MapSpace
 	 * @return
 	 *         size (height or width) of each tile in pixel. A tile is a square in pixels.<br>
 	 *         Currently we support only tiles with 256 x 256 pixels.<br>
-	 *         see {@link #MIN_TECH_ZOOM TECH_TILESIZE}.
+	 *         see {@link #TECH_TILESIZE}.
 	 */
 	public static int getTileSize()
 	{
 		return TECH_TILESIZE;
 	}
-	
+
 	public static int getSizeInPixel(int zoom)
 	{
 		checkZoom(zoom, "int getSizeInPixel(int zoom)");
 		return getSizeInPixel_UC(zoom);
 	}
-	
+
 	/**
 	 * Converts the horizontal map space coordinate x to longitudinal border coordinate depending on zoom level.<br>
 	 * 
@@ -196,9 +204,9 @@ public class MP2MapSpace
 	 * @param x
 	 *          The horizontal map space coordinate at the specified zoom level (restricted to x in { 0 ... 2<sup>zoom + 8</sup> })
 	 * @param zoom
-	 *             A zoom level (restricted to zoom in { 0 ... 22 })
+	 *          A zoom level (restricted to zoom in { 0 ... 22 })
 	 * @return
-	 *          Longitudinal border in degrees (in { -180d (W) ... 180d (E)})
+	 *         Longitudinal border in degrees (in { -180d (W) ... 180d (E)})
 	 */
 	public static double cXToLon_Borders(int x, int zoom)
 	{
@@ -211,7 +219,7 @@ public class MP2MapSpace
 		}
 		return Math.toDegrees(cXToRadian_UC(x, checkedZoom));
 	}
-	
+
 	public static double cXToLon_PixelCoo(int x, int zoom)
 	{
 		int checkedZoom = checkZoom(zoom, "double cXToLon_PixelCoo(int x, int zoom)");
@@ -223,7 +231,7 @@ public class MP2MapSpace
 		}
 		return Math.toDegrees(cXToRadian_UC(x, checkedZoom));
 	}
-	
+
 	public static double cXToLon_PixelCenter(int x, int zoom)
 	{
 		int checkedZoom = checkZoom(zoom, "double cXToLon_PixelCenter(int x, int zoom)");
@@ -266,7 +274,7 @@ public class MP2MapSpace
 		}
 		return Math.toDegrees(cYToRadian_UC(y, checkedZoom));
 	}
-	
+
 	public static double cYToLat_PixelCenter(int y, int zoom)
 	{
 		int checkedZoom = checkZoom(zoom, "double cYToLat_Borders(int y, int zoom)");
@@ -278,7 +286,7 @@ public class MP2MapSpace
 		}
 		return Math.toDegrees((cYToRadian_UC(y, checkedZoom) + cYToRadian_UC(y + 1, checkedZoom)) / 2);
 	}
-	
+
 	/**
 	 * Converts longitude to the horizontal pixel coordinate from map space.xxx
 	 * 
@@ -342,7 +350,7 @@ public class MP2MapSpace
 		return Math.max(0, Math.min(getSizeInPixel(checkedZoom) - 1, cRadianToUpperYBorder(Math.toRadians(lat), checkedZoom))); // restriction to pixel coord
 	}
 
-	// horizontalDistance(0, y, 255) ~= 2 * PI, 
+	// horizontalDistance(0, y, 255) ~= 2 * PI,
 	public static double horizontalDistance(int zoom, int y, int xDist)
 	{
 		int checkedZoom = checkZoom(zoom, "double horizontalDistance(int zoom, int y, int xDist)");
@@ -368,7 +376,7 @@ public class MP2MapSpace
 		double dLonRad = lon2Rad - lon1Rad;
 		double cos_lat = Math.cos(latRad);
 		return dLonRad * cos_lat;
-		
+
 		// W ??? old code instead of return dLonRad * cos_lat;
 		// double sin_dLon_2 = Math.sin(dLonRad) / 2;
 		// double a = cos_lat * cos_lat * sin_dLon_2 * sin_dLon_2;
@@ -379,10 +387,10 @@ public class MP2MapSpace
 	{
 		int checkedOldZoom = checkZoom(oldZoom, "int xyChangeZoom(int xy, int oldZoom, int newZoom)");
 		int checkedNewZoom = checkZoom(newZoom, "int xyChangeZoom(int xy, int oldZoom, int newZoom)");
-		//check xy, restrict? #mapSpace ???
+		// check xy, restrict? #mapSpace ???
 		if (xy < 0 || xy > getSizeInPixel_UC(checkedOldZoom))
 			log.error("OUT OF RANGE: called with xy = " + xy + " (oldZoom = " + checkedOldZoom + ")");
-				
+
 		int zoomDiff = checkedOldZoom - checkedNewZoom;
 		return (zoomDiff > 0) ? xy >> zoomDiff : xy << -zoomDiff;
 	}
@@ -393,29 +401,29 @@ public class MP2MapSpace
 	 * to satisfy often used 'Point changeZoom(Point pixelCoordinate, int oldZoom, int newZoom)'
 	 * 
 	 * @param mcc
-	 *            insisting on Merator corner coordinate {@link #MP2Corner} (-> checked/modified input)
+	 *          insisting on Merator corner coordinate {@link #MP2Corner} (-> checked/modified input)
 	 * @param newZoom
-	 *                self-documenting 
+	 *          self-documenting
 	 * @return
-	 *         Point 
+	 *         Point
 	 */
-	public static Point changeZoom(MP2Corner mcc,  int newZoom)
+	public static Point changeZoom(MP2Corner mcc, int newZoom)
 	{
 		int x = xyChangeZoom(mcc.getX(), mcc.getZoom(), newZoom);
 		int y = xyChangeZoom(mcc.getY(), mcc.getZoom(), newZoom);
 		return new Point(x, y);
 	}
-	
+
 	@Deprecated // often used
-	public static Point changeZoom(Point pixelCoordinate, int oldZoom, int newZoom) //???Point-> MP2Coord
+	public static Point changeZoom(Point pixelCoordinate, int oldZoom, int newZoom) // ???Point-> MP2Coord
 	{
 		return changeZoom(new MP2Corner(pixelCoordinate.x, pixelCoordinate.y, oldZoom), newZoom);
 	}
-	
-//	public static double horizontalDistance(int zoom, int y, int xDist)
-//	{
-//		return 1;
-//	}
+
+	// public static double horizontalDistance(int zoom, int y, int xDist)
+	// {
+	// return 1;
+	// }
 
 	@Deprecated
 	public static double cXToLon(int x, int zoom) // old rules: no limitations
@@ -428,13 +436,14 @@ public class MP2MapSpace
 		if (x >= sizeInPixel_UC)
 		{
 			if (x == sizeInPixel_UC)
-				log.error("DEPRECATED METHOD - called with x = getSizeInPixel_UC(zoom) = " + x + " (zoom = " + zoom + ") -> out of range for 'double cXToLon_Pixel...(int y, int zoom)'");
+				log.error("DEPRECATED METHOD - called with x = getSizeInPixel_UC(zoom) = " + x + " (zoom = " + zoom
+				    + ") -> out of range for 'double cXToLon_Pixel...(int y, int zoom)'");
 			else // x > sizeInPixel_UC
 				log.error("DEPRECATED METHOD - OUT OF RANGE_NEW: called with x = " + x + " (zoom = " + zoom + ")");
 		}
 		return Math.toDegrees(cXToRadian_UC(x, zoom));
 	}
-	
+
 	@Deprecated
 	public static double cYToLat(int y, int zoom) // old rules: no limitations, returns lat in { ~ -90 ... ~ 90 }
 	{
@@ -446,13 +455,14 @@ public class MP2MapSpace
 		if (y >= sizeInPixel_UC)
 		{
 			if (y == sizeInPixel_UC)
-				log.error("DEPRECATED METHOD - called with x = getSizeInPixel_UC(zoom) = " + y + " (zoom = " + zoom + ") -> out of range for 'double cYToLat_Pixel...(int y, int zoom)'");
+				log.error("DEPRECATED METHOD - called with x = getSizeInPixel_UC(zoom) = " + y + " (zoom = " + zoom
+				    + ") -> out of range for 'double cYToLat_Pixel...(int y, int zoom)'");
 			else // (y > sizeInPixel_UC
 				log.error("DEPRECATED METHOD - OUT OF RANGE_NEW: called with y = " + y + " (zoom = " + zoom + ")");
 		}
 		return Math.toDegrees(cYToRadian_UC(y, zoom));
 	}
-	
+
 	@Deprecated
 	public static int cLonToX(double lon, int zoom) // old rules: no limitations to west, limitation to east (~ 180d), ignoring easternmost border
 	{
@@ -469,9 +479,10 @@ public class MP2MapSpace
 		}
 		return x;
 	}
-	
+
 	@Deprecated
-	public static int cLatToY(double lat, int zoom) // old rules: input restricted to [MIN_LAT, MAX_LAT] (-> limitations to north, limitation to south), additional ignoring southernmost border
+	public static int cLatToY(double lat, int zoom) // old rules: input restricted to [MIN_LAT, MAX_LAT] (-> limitations to north, limitation to south),
+	                                                // additional ignoring southernmost border
 	{
 		int sizeInPixel_UC = getSizeInPixel_UC(zoom);
 		if (zoom < 0 || zoom > 22)
@@ -491,6 +502,5 @@ public class MP2MapSpace
 		}
 		return y;
 	}
-	
-	
+
 }

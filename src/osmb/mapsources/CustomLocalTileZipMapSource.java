@@ -55,7 +55,7 @@ public class CustomLocalTileZipMapSource implements IfFileBasedMapSource
 
 	private MapSourceLoaderInfo loaderInfo = null;
 
-	//private IfMapSpace mapSpace = MapSpaceFactory.getInstance(256, true); // W #mapSpace =
+	// private IfMapSpace mapSpace = MapSpaceFactory.getInstance(256, true); // W #mapSpace =
 
 	private boolean initialized = false;
 
@@ -97,7 +97,7 @@ public class CustomLocalTileZipMapSource implements IfFileBasedMapSource
 			if (!zipFile.isFile())
 			{
 				JOptionPane.showMessageDialog(null, String.format(OSMBStrs.RStr("msg_custom_map_invalid_source_zip_title"), name, zipFile.toString()),
-						OSMBStrs.RStr("msg_custom_map_invalid_source_zip_title"), JOptionPane.ERROR_MESSAGE);
+				    OSMBStrs.RStr("msg_custom_map_invalid_source_zip_title"), JOptionPane.ERROR_MESSAGE);
 			}
 			else
 			{
@@ -110,12 +110,13 @@ public class CustomLocalTileZipMapSource implements IfFileBasedMapSource
 				catch (Exception e)
 				{
 					JOptionPane.showMessageDialog(null, String.format(OSMBStrs.RStr("msg_custom_map_failed_open_source_zip"), name, zipFile.toString()),
-							OSMBStrs.RStr("msg_custom_map_failed_open_source_zip_title"), JOptionPane.ERROR_MESSAGE);
+					    OSMBStrs.RStr("msg_custom_map_failed_open_source_zip_title"), JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		}
 	}
 
+	@Override
 	public synchronized void initialize()
 	{
 		if (initialized)
@@ -123,6 +124,7 @@ public class CustomLocalTileZipMapSource implements IfFileBasedMapSource
 		reinitialize();
 	}
 
+	@Override
 	public void reinitialize()
 	{
 		try
@@ -245,6 +247,7 @@ public class CustomLocalTileZipMapSource implements IfFileBasedMapSource
 		maxZoom = max;
 	}
 
+	@Override
 	public byte[] getTileData(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException
 	{
 		if (!initialized)
@@ -287,6 +290,7 @@ public class CustomLocalTileZipMapSource implements IfFileBasedMapSource
 		return null;
 	}
 
+	@Override
 	public BufferedImage getTileImage(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException
 	{
 		byte[] data = getTileData(zoom, x, y, loadMethod);
@@ -295,21 +299,25 @@ public class CustomLocalTileZipMapSource implements IfFileBasedMapSource
 		return ImageIO.read(new ByteArrayInputStream(data));
 	}
 
+	@Override
 	public TileImageType getTileImageType()
 	{
 		return tileImageType;
 	}
 
+	@Override
 	public int getMaxZoom()
 	{
 		return maxZoom;
 	}
 
+	@Override
 	public int getMinZoom()
 	{
 		return minZoom;
 	}
 
+	@Override
 	public String getName()
 	{
 		return name;
@@ -321,26 +329,36 @@ public class CustomLocalTileZipMapSource implements IfFileBasedMapSource
 		return name;
 	}
 
-//W #mapSpace MP2MapSpace
-//	public IfMapSpace getMapSpace()
-//	{
-//		return mapSpace;
-//	}
+	// W #mapSpace MP2MapSpace
+	// public IfMapSpace getMapSpace()
+	// {
+	// return mapSpace;
+	// }
 
+	@Override
 	public Color getBackgroundColor()
 	{
 		return backgroundColor;
 	}
 
+	@Override
 	@XmlTransient
 	public MapSourceLoaderInfo getLoaderInfo()
 	{
 		return loaderInfo;
 	}
 
+	@Override
 	public void setLoaderInfo(MapSourceLoaderInfo loaderInfo)
 	{
 		this.loaderInfo = loaderInfo;
+	}
+
+	@Override
+	public BufferedImage downloadTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -31,10 +31,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
+import org.apache.log4j.Logger;
+
 // W #mapSpace import osmb.mapsources.mapspace.MercatorPower2MapSpace;
 import osmb.program.jaxb.ColorAdapter;
 // W #mapSpace import osmb.program.map.IfMapSpace;
 import osmb.program.tiles.TileDownLoader;
+import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
 import osmb.program.tiles.UnrecoverableDownloadException;
 import osmb.program.tilestore.ACSiTileStore;
@@ -46,6 +49,7 @@ import osmb.program.tilestore.IfTileStoreEntry;
 @XmlRootElement
 public class CustomMapSource implements IfHttpMapSource
 {
+	private static Logger log = Logger.getLogger(CustomMapSource.class);
 
 	@XmlElement(nillable = false, defaultValue = "Custom")
 	private String name = "Custom";
@@ -54,7 +58,7 @@ public class CustomMapSource implements IfHttpMapSource
 	private int minZoom = 0;
 
 	@XmlElement(required = true)
-	private int maxZoom = 0;
+	private int maxZoom = 18;
 
 	@XmlElement(defaultValue = "PNG")
 	protected TileImageType tileType = TileImageType.PNG;
@@ -68,9 +72,9 @@ public class CustomMapSource implements IfHttpMapSource
 	@XmlElement(defaultValue = "false")
 	private boolean invertYCoordinate = false;
 
-	@XmlElement(defaultValue = "#000000")
+	@XmlElement(defaultValue = "#FFFFFF")
 	@XmlJavaTypeAdapter(ColorAdapter.class)
-	private Color backgroundColor = Color.BLACK;
+	private Color backgroundColor = Color.WHITE;
 
 	@XmlElement(required = false, defaultValue = "false")
 	private boolean ignoreErrors = false;
@@ -161,6 +165,9 @@ public class CustomMapSource implements IfHttpMapSource
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public byte[] getTileData(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, UnrecoverableDownloadException, InterruptedException
 	{
@@ -168,6 +175,11 @@ public class CustomMapSource implements IfHttpMapSource
 			y = ((1 << zoom) - y - 1);
 
 		if (loadMethod == LoadMethod.CACHE)
+		{
+			log.error("no image data from mtc");
+			return null;
+		}
+		else if (loadMethod == LoadMethod.STORE)
 		{
 			IfTileStoreEntry entry = ACSiTileStore.getInstance().getTile(x, y, zoom, this);
 			if (entry == null)
@@ -179,7 +191,8 @@ public class CustomMapSource implements IfHttpMapSource
 			}
 			return data;
 		}
-		if (ignoreErrors)
+		// if (ignoreErrors)
+		else if (loadMethod == LoadMethod.SOURCE)
 		{
 			try
 			{
@@ -187,6 +200,7 @@ public class CustomMapSource implements IfHttpMapSource
 			}
 			catch (Exception e)
 			{
+				log.error("download failed with exception: " + e.getCause());
 				return null;
 			}
 		}
@@ -196,19 +210,24 @@ public class CustomMapSource implements IfHttpMapSource
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public BufferedImage getTileImage(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, UnrecoverableDownloadException, InterruptedException
 	{
-
 		byte[] data = getTileData(zoom, x, y, loadMethod);
 
 		if (data == null)
 		{
 			if (!ignoreErrors)
+			{
+				log.error("no image data");
 				return null;
+			}
 			else
 			{
-				int tileSize = MP2MapSpace.getTileSize(); // #mapSpace  this.getMapSpace().getTileSize();
+				int tileSize = MP2MapSpace.getTileSize();
 				BufferedImage image = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_4BYTE_ABGR);
 				Graphics g = image.getGraphics();
 				try
@@ -229,18 +248,33 @@ public class CustomMapSource implements IfHttpMapSource
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public BufferedImage downloadTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
+	{
+		byte[] data = TileDownLoader.downloadTileAndUpdateStore(x, y, zoom, this);
+		if (data == null)
+		{
+			log.error("no image data");
+			return null;
+		}
+		return ImageIO.read(new ByteArrayInputStream(data));
+	}
+
 	@Override
 	public String toString()
 	{
 		return name;
 	}
 
-// #mapSpace  
-//	@Override
-//	public IfMapSpace getMapSpace()
-//	{
-//		return MercatorPower2MapSpace.INSTANCE_256; // W #mapSpace =
-//	}
+	// #mapSpace
+	// @Override
+	// public IfMapSpace getMapSpace()
+	// {
+	// return MercatorPower2MapSpace.INSTANCE_256; // W #mapSpace =
+	// }
 
 	@Override
 	public Color getBackgroundColor()
@@ -262,4 +296,5 @@ public class CustomMapSource implements IfHttpMapSource
 			throw new RuntimeException("LoaderInfo already set");
 		this.loaderInfo = loaderInfo;
 	}
+
 }

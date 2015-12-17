@@ -32,13 +32,12 @@ import javax.management.NotificationListener;
 import org.apache.log4j.Logger;
 
 import osmb.mapsources.IfMapSource;
-import osmb.program.tiles.Tile.TileState;
 
 /**
  * {@link TileImageCache} implementation that stores all {@link Tile} objects in memory up to a certain limit ( {@link #getCacheSize()}). If the limit is
  * exceeded the least recently used {@link Tile} objects will be deleted.
- * 
- * its based upon code from Jan Peter Stotz
+ * <p>
+ * Its based upon code from Jan Peter Stotz.
  * 
  * @author humbach
  */
@@ -50,19 +49,24 @@ public class MemoryTileCache implements NotificationListener
 	 * Default cache size in tiles. May be modified by constructor {@link #MemoryTileCache(int cacheSize)}.
 	 */
 	protected int mCacheSize = 2000;
-	protected Hashtable<String, CacheEntry> mHT;
+	// protected Hashtable<String, CacheEntry> mHT;
+	/**
+	 * hashtable holding the actual tile data.
+	 */
+	protected Hashtable<String, Tile> mHT;
 
 	/**
-	 * List of all tiles in their last recently used order
+	 * List of all tiles by their key in their most recently used order.
 	 */
-	protected CacheLinkedListElement lruTiles;
+	protected CacheLinkedListElement mruTiles;
 
 	public MemoryTileCache()
 	{
 		log = Logger.getLogger(this.getClass());
 		mCacheSize = 5000;
-		mHT = new Hashtable<String, CacheEntry>(mCacheSize);
-		lruTiles = new CacheLinkedListElement();
+		// mHT = new Hashtable<String, CacheEntry>(mCacheSize);
+		mHT = new Hashtable<String, Tile>(mCacheSize);
+		mruTiles = new CacheLinkedListElement();
 
 		MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
 		NotificationBroadcaster emitter = (NotificationBroadcaster) mbean;
@@ -88,8 +92,9 @@ public class MemoryTileCache implements NotificationListener
 	{
 		log = Logger.getLogger(this.getClass());
 		mCacheSize = cacheSize;
-		mHT = new Hashtable<String, CacheEntry>(mCacheSize);
-		lruTiles = new CacheLinkedListElement();
+		// mHT = new Hashtable<String, CacheEntry>(mCacheSize);
+		mHT = new Hashtable<String, Tile>(mCacheSize);
+		mruTiles = new CacheLinkedListElement();
 
 		MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
 		NotificationBroadcaster emitter = (NotificationBroadcaster) mbean;
@@ -115,18 +120,18 @@ public class MemoryTileCache implements NotificationListener
 		log.trace("Memory notification: " + notification.toString());
 		if (!MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED.equals(notification.getType()))
 			return;
-		synchronized (lruTiles)
+		synchronized (mruTiles)
 		{
-			int count_half = lruTiles.getElementCount() / 2;
+			int count_half = mruTiles.getElementCount() / 2;
 			count_half = Math.max(25, count_half);
-			if (lruTiles.getElementCount() <= count_half)
+			if (mruTiles.getElementCount() <= count_half)
 				return;
-			log.warn("memory low - freeing cached tiles: " + lruTiles.getElementCount() + " -> " + count_half);
+			log.warn("memory low - freeing cached tiles: " + mruTiles.getElementCount() + " -> " + count_half);
 			try
 			{
-				while (lruTiles.getElementCount() > count_half)
+				while (mruTiles.getElementCount() > count_half)
 				{
-					removeEntry(lruTiles.getLastElement());
+					removeEntry(mruTiles.getLastElement());
 				}
 			}
 			catch (Exception e)
@@ -143,23 +148,30 @@ public class MemoryTileCache implements NotificationListener
 	public void addTile(Tile tile)
 	{
 		CacheEntry entry = createCacheEntry(tile);
-		mHT.put(tile.getKey(), entry);
-		lruTiles.addFirst(entry);
+		// mHT.put(tile.getKey(), entry);
+		mHT.put(tile.getKey(), tile);
+		mruTiles.addFirst(entry);
 		if (mHT.size() > mCacheSize)
 			removeOldEntries();
 		log.debug("mtc[" + mHT.size() + "] modified");
 	}
 
+	/**
+	 * Retrieves the tile from the memory tile cache. The tile is identified by its x and y indices. Each zoom level holds 2<sup>zoom</sup> tiles.
+	 * This currently does not handle 'special' tiles (hourglass, error, empty, plain sea), they exist multiple times in the cache.
+	 * 
+	 * @param source
+	 * @param x
+	 *          tile x-index
+	 * @param y
+	 *          tile y-index
+	 * @param z
+	 *          Zoom level
+	 * @return The tile or null if the tile is not in the cache.
+	 */
 	public Tile getTile(IfMapSource source, int x, int y, int z)
 	{
-		CacheEntry entry = mHT.get(Tile.getTileKey(source, x, y, z));
-		if (entry == null)
-			return null;
-		// We don't care about placeholder tiles and hourglass image tiles, the
-		// important tiles are the loaded ones
-		if (entry.tile.getTileState() == TileState.TS_LOADED)
-			lruTiles.moveElementToFirstPos(entry);
-		return entry.tile;
+		return mHT.get(Tile.getTileKey(source, x, y, z));
 	}
 
 	/**
@@ -167,13 +179,13 @@ public class MemoryTileCache implements NotificationListener
 	 */
 	protected void removeOldEntries()
 	{
-		synchronized (lruTiles)
+		synchronized (mruTiles)
 		{
 			try
 			{
-				while (lruTiles.getElementCount() > mCacheSize)
+				while (mruTiles.getElementCount() > mCacheSize)
 				{
-					removeEntry(lruTiles.getLastElement());
+					removeEntry(mruTiles.getLastElement());
 				}
 			}
 			catch (Exception e)
@@ -185,8 +197,8 @@ public class MemoryTileCache implements NotificationListener
 
 	protected void removeEntry(CacheEntry entry)
 	{
-		mHT.remove(entry.tile.getKey());
-		lruTiles.removeEntry(entry);
+		mHT.remove(entry.tileID);
+		mruTiles.removeEntry(entry);
 		log.debug("mtc[" + mHT.size() + "] modified");
 	}
 
@@ -200,10 +212,10 @@ public class MemoryTileCache implements NotificationListener
 	 */
 	public void clear()
 	{
-		synchronized (lruTiles)
+		synchronized (mruTiles)
 		{
 			mHT.clear();
-			lruTiles.clear();
+			mruTiles.clear();
 		}
 	}
 
@@ -235,21 +247,22 @@ public class MemoryTileCache implements NotificationListener
 	 */
 	protected static class CacheEntry
 	{
-		Tile tile;
+		// Tile tile;
+		String tileID;
 
 		CacheEntry next;
 		CacheEntry prev;
 
 		protected CacheEntry(Tile tile)
 		{
-			this.tile = tile;
+			this.tileID = tile.getKey();
 		}
 
-		public Tile getTile()
-		{
-			return tile;
-		}
-
+		// public String getTile()
+		// {
+		// return tileID;
+		// }
+		//
 		public CacheEntry getNext()
 		{
 			return next;
@@ -262,16 +275,14 @@ public class MemoryTileCache implements NotificationListener
 	}
 
 	/**
-	 * Special implementation of a double linked list for {@link CacheEntry} elements. It supports element removal in
-	 * constant time - in difference to the Java implementation which needs O(n).
 	 * 
-	 * @author Jan Peter Stotz
+	 * @author humbach
 	 */
 	protected static class CacheLinkedListElement
 	{
+		protected int elementCount = 0;
 		protected CacheEntry firstElement = null;
-		protected CacheEntry lastElement;
-		protected int elementCount;
+		protected CacheEntry lastElement = null;
 
 		public CacheLinkedListElement()
 		{
@@ -288,7 +299,7 @@ public class MemoryTileCache implements NotificationListener
 		/**
 		 * Add the element to the head of the list.
 		 * 
-		 * @param new
+		 * @param element
 		 *          element to be added
 		 */
 		public synchronized void addFirst(CacheEntry element)

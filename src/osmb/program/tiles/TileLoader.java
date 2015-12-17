@@ -30,6 +30,7 @@ import osmb.program.JobDispatcher;
 import osmb.program.tiles.Tile.TileState;
 import osmb.program.tilestore.ACSiTileStore;
 import osmb.program.tilestore.IfTileStoreEntry;
+import osmb.utilities.OSMBStrs;
 
 /**
  * A {@link Runnable} providing implementation that loads tiles from some online map source via HTTP and saves all loaded files in a directory located in the
@@ -39,12 +40,14 @@ public class TileLoader
 {
 	private static final Logger log = Logger.getLogger(TileLoader.class);
 
-	protected IfTileLoaderListener listener;
+	protected IfTileLoaderListener listener = null;
+	protected MemoryTileCache mMTC = null;
 
-	public TileLoader(IfTileLoaderListener listener)
+	public TileLoader(IfTileLoaderListener listener, MemoryTileCache mtc)
 	{
 		super();
 		this.listener = listener;
+		this.mMTC = mtc;
 	}
 
 	/**
@@ -95,29 +98,22 @@ public class TileLoader
 		@Override
 		public void run()
 		{
+			log.trace(OSMBStrs.RStr("START"));
 			boolean bLoadOK = false;
-			// We don't use the memory cache here currently (2015).
-			// The check if the tile is available in the memory cache should be done before starting a loader job.
-			// MemoryTileCache cache = listener.getTileImageCache();
-			// if (cache != null)
-			// {
-			// // log.debug("Cache=" + cache.toString());
-			// synchronized (cache)
-			// {
-			// mTile = cache.getTile(mMapSource, mTileX, mTileY, mZoom);
-			// if (mTile == null || mTile.mTileState != TileState.TS_NEW)
-			// return;
-			// mTile.setTileState(TileState.TS_LOADING);
-			// }
-			// }
-			// else
-			mTile = new Tile(mMapSource, mTileX, mTileY, mZoom);
-			log.trace(mTile);
-			log.debug("load " + mTile + " started");
-			if (!(bLoadOK = loadTileFromStore()))
-				bLoadOK = loadAndUpdateTile();
+			if ((mTile = mMTC.getTile(mMapSource, mTileX, mTileY, mZoom)) != null)
+			{
+				bLoadOK = true;
+				log.debug("use " + mTile + " from mtc");
+			}
+			else
+			{
+				mTile = new Tile(mMapSource, mTileX, mTileY, mZoom);
+				log.debug("loading of " + mTile + " started");
+				if (!(bLoadOK = loadTileFromStore()))
+					bLoadOK = downloadAndUpdateTile();
+			}
 			listener.tileLoadingFinished(mTile, bLoadOK);
-			log.debug("load " + mTile + " finished");
+			log.debug("loading of " + mTile + " finished");
 		}
 
 		/**
@@ -130,38 +126,39 @@ public class TileLoader
 		 */
 		private boolean loadTileFromStore()
 		{
+			log.trace(OSMBStrs.RStr("START"));
 			boolean bLoadOK = false;
 			try
 			{
 				BufferedImage image = mMapSource.getTileImage(mZoom, mTileX, mTileY, LoadMethod.STORE);
 				if (image == null)
 				{
-					log.warn("tile " + mTile + " not in store -> use empty and load from online");
+					log.warn(mTile + " not in store -> use empty and load from online");
 					mTile.setErrorImage();
 				}
 				else
 				{
 					mTile.setTileState(Tile.TileState.TS_LOADED);
 					mTile.setImage(image);
-					// listener.tileLoadingFinished(mTile, true);
+					mMTC.addTile(mTile);
 
 					tileStoreEntry = ACSiTileStore.getInstance().getTile(mTileX, mTileY, mZoom, mMapSource);
 
 					if (ACSiTileStore.getInstance().isTileExpired(tileStoreEntry))
 					{
 						mTile.setTileState(Tile.TileState.TS_EXPIRED);
-						log.warn("expired tile " + mTile + " in store -> use old and load from online");
+						log.warn("expired " + mTile + " in store -> use old and load from online");
 					}
 					else
 					{
 						bLoadOK = true;
-						log.debug("tile " + mTile + " loaded from store");
+						log.debug(mTile + " loaded from store");
 					}
 				}
 			}
 			catch (Exception e)
 			{
-				log.error("Failed to load tile " + mTile + " from tile store", e);
+				log.error("Excepted to load " + mTile + " from tile store", e);
 			}
 			return bLoadOK;
 		}
@@ -169,12 +166,14 @@ public class TileLoader
 		/**
 		 * This loads the tile from the online map source. The caller has to push it into the tile store.
 		 */
-		private boolean loadAndUpdateTile()
+		private boolean downloadAndUpdateTile()
 		{
+			log.trace(OSMBStrs.RStr("START"));
 			boolean bLoadOK = false;
 			try
 			{
-				BufferedImage image = mMapSource.getTileImage(mZoom, mTileX, mTileY, LoadMethod.SOURCE);
+				// BufferedImage image = mMapSource.getTileImage(mZoom, mTileX, mTileY, LoadMethod.SOURCE);
+				BufferedImage image = mMapSource.downloadTileImage(mZoom, mTileX, mTileY);
 				if (image != null)
 				{
 					mTile.setImage(image);
@@ -206,6 +205,5 @@ public class TileLoader
 			listener.tileLoadingFinished(mTile, bLoadOK);
 			return bLoadOK;
 		}
-
 	}
 }

@@ -49,7 +49,7 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 	protected int maxZoom;
 	protected TileImageType tileType;
 	protected IfHttpMapSource.TileUpdate tileUpdate;
-//	protected IfMapSpace mapSpace = MercatorPower2MapSpace.INSTANCE_256; // W #mapSpace =
+	// protected IfMapSpace mapSpace = MercatorPower2MapSpace.INSTANCE_256; // W #mapSpace =
 	protected MapSourceLoaderInfo loaderInfo = null;
 
 	public ACHttpMapSource(String name, int minZoom, int maxZoom, TileImageType tileType)
@@ -140,7 +140,10 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 		{
 			IfTileStoreEntry entry = ACSiTileStore.getInstance().getTile(x, y, zoom, this);
 			if (entry == null)
+			{
+				log.error("no image data in tile store");
 				return null;
+			}
 			byte[] data = entry.getData();
 			return data;
 		}
@@ -148,8 +151,6 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 		{
 			initializeHttpMapSource();
 			return TileDownLoader.downloadTileAndUpdateStore(x, y, zoom, this);
-			// ACSiTileStore.getInstance().putTileData(data, x, y, zoom, this, timeLastModified, timeExpires, eTag);
-
 		}
 		else
 		{
@@ -167,7 +168,23 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 	{
 		byte[] data = getTileData(zoom, x, y, loadMethod);
 		if (data == null)
+		{
+			log.error("no image data");
 			return null;
+		}
+		return ImageIO.read(new ByteArrayInputStream(data));
+	}
+
+	@Override
+	public BufferedImage downloadTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
+	{
+		initializeHttpMapSource();
+		byte[] data = TileDownLoader.downloadTileAndUpdateStore(x, y, zoom, this);
+		if (data == null)
+		{
+			log.error("no image data");
+			return null;
+		}
 		return ImageIO.read(new ByteArrayInputStream(data));
 	}
 
@@ -217,12 +234,12 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 		return true;
 	}
 
-// #mapSpace
-//	@Override
-//	public IfMapSpace getMapSpace()
-//	{
-//		return mapSpace;
-//	}
+	// #mapSpace
+	// @Override
+	// public IfMapSpace getMapSpace()
+	// {
+	// return mapSpace;
+	// }
 
 	@Override
 	public Color getBackgroundColor()
