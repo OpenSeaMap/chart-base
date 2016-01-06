@@ -118,6 +118,16 @@ public class MP2MapSpace
 	}
 
 	/**
+	 * @param zoom
+	 *          The zoom level is checked by this method.
+	 * @return The size of the world in pixels for the specified zoom level.
+	 */
+	public static int getSizeInPixel(int zoom)
+	{
+		return TECH_TILESIZE * (1 << (Math.max(MIN_TECH_ZOOM, Math.min(zoom, MAX_TECH_ZOOM))));
+	}
+
+	/**
 	 * The radius of the globe in equatorial pixel width depending on (UnChecked) zoom level.
 	 * 
 	 * @param zoom
@@ -154,6 +164,18 @@ public class MP2MapSpace
 		return 2.0 * Math.atan(Math.exp(-1.0 * y / radius_UC(zoom))) - (Math.PI / 2.0);
 	}
 
+	private static double cXToLongitude(int x, int zoom)
+	{
+		return ((360.0 * x) / getSizeInPixel(zoom)) - 180.0;
+	}
+
+	// unrestricted
+	private static double cYToLatitudeUC(int y, int zoom)
+	{
+		y += falseNorthing_UC(zoom);
+		return 2.0 * Math.atan(Math.exp(-1.0 * y / radius_UC(zoom))) - (180.0);
+	}
+
 	// unrestricted
 	private static int cRadianToLeftXBorder(double lonRad, int zoom)
 	{
@@ -188,12 +210,6 @@ public class MP2MapSpace
 	public static int getTileSize()
 	{
 		return TECH_TILESIZE;
-	}
-
-	public static int getSizeInPixel(int zoom)
-	{
-		checkZoom(zoom, "int getSizeInPixel(int zoom)");
-		return getSizeInPixel_UC(zoom);
 	}
 
 	/**
@@ -242,6 +258,36 @@ public class MP2MapSpace
 			x = Math.max(0, Math.min(x, sizeInPixel - 1));
 		}
 		return Math.toDegrees((cXToRadian_UC(x, checkedZoom) + cXToRadian_UC(x + 1, checkedZoom)) / 2);
+	}
+
+	/**
+	 * This returns the geographic coordinate of the left border of the specified pixel
+	 * 
+	 * @param x
+	 *          The pixel index.
+	 * @param zoom
+	 * @return The longitude of the left border of the pixel.
+	 */
+	public static double cXToLonLeftBorder(int x, int zoom)
+	{
+		int checkedZoom = Math.max(MIN_TECH_ZOOM, Math.min(zoom, MAX_TECH_ZOOM));
+		x = Math.max(0, Math.min(x, getSizeInPixel(checkedZoom) - 1));
+		return cXToLongitude(x, checkedZoom);
+	}
+
+	/**
+	 * This returns the geographic coordinate of the right border of the specified pixel
+	 * 
+	 * @param x
+	 *          The pixel index.
+	 * @param zoom
+	 * @return The longitude of the right border of the pixel.
+	 */
+	public static double cXToLonRightBorder(int x, int zoom)
+	{
+		int checkedZoom = Math.max(MIN_TECH_ZOOM, Math.min(zoom, MAX_TECH_ZOOM));
+		x = Math.max(0, Math.min(x, getSizeInPixel(checkedZoom) - 1)) + 1;
+		return cXToLongitude(x, checkedZoom);
 	}
 
 	/**
@@ -401,7 +447,7 @@ public class MP2MapSpace
 	 * to satisfy often used 'Point changeZoom(Point pixelCoordinate, int oldZoom, int newZoom)'
 	 * 
 	 * @param mcc
-	 *          insisting on Merator corner coordinate {@link #MP2Corner} (-> checked/modified input)
+	 *          insisting on Mercator corner coordinate {@link #MP2Corner} (-> checked/modified input)
 	 * @param newZoom
 	 *          self-documenting
 	 * @return

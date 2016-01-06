@@ -100,7 +100,7 @@ public class TileLoader
 		{
 			log.trace(OSMBStrs.RStr("START"));
 			boolean bLoadOK = false;
-			if ((mTile = mMTC.getTile(mMapSource, mTileX, mTileY, mZoom)) != null)
+			if (((mTile = mMTC.getTile(mMapSource, mTileX, mTileY, mZoom)) != null) && (mTile.getTileState() != TileState.TS_LOADING))
 			{
 				bLoadOK = true;
 				log.debug("use " + mTile + " from mtc");

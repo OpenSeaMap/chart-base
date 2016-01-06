@@ -280,7 +280,7 @@ public class Tile
 		if (mImage == null)
 			return;
 
-		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace mMapSource.getMapSpace().getTileSize();
+		int tileSize = MP2MapSpace.getTileSize();
 		// Google Scale = 2, retina support
 		g.drawImage(mImage, x, y, tileSize, tileSize, Color.WHITE, null);
 		// g.drawImage(image, x, y, Color.WHITE);
@@ -291,7 +291,7 @@ public class Tile
 		if (mImage == null)
 			return;
 
-		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace mMapSource.getMapSpace().getTileSize();
+		int tileSize = MP2MapSpace.getTileSize();
 		// Google Scale = 2, retina support
 		g.drawImage(mImage, x, y, tileSize, tileSize, null);
 		// g.drawImage(image, x, y, null);
