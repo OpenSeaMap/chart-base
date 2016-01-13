@@ -1,11 +1,20 @@
 package osmb.utilities.lzma;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 
 public class OsmbLzma
 {
+	/**
+	 * This encodes a file or directory in 7z/lzma.
+	 * 
+	 * @param strInFileName
+	 * @param strOutFileName
+	 * @throws IOException
+	 */
 	static public void encode7z(String strInFileName, String strOutFileName) throws IOException
 	{
+		java.nio.file.Path inPath = FileSystems.getDefault().getPath(strInFileName);
 		java.io.File inFile = new java.io.File(strInFileName);
 		java.io.File outFile = new java.io.File(strOutFileName);
 
