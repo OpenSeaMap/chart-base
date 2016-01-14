@@ -153,11 +153,10 @@ public class WgsGrid
 		final int vLineY2 = y2 - 1;
 
 		// Calculate line indexes
-		// W #mapSpace cLonToX_Borders! (180d -> getSizeInPixel(zoom)
-		final int vMin = Coordinate.doubleToInt(MP2MapSpace.cXToLon_Borders(x1, zoom)) / density.iStep; // W #mapSpace (ms.cXToLon(x1, zoom)) / density.iStep;
-		final int vMax = Coordinate.doubleToInt(MP2MapSpace.cXToLon_Borders(x2, zoom)) / density.iStep; // W #mapSpace (ms.cXToLon(x2, zoom)) / density.iStep;
-		final int hMin = Coordinate.doubleToInt(MP2MapSpace.cYToLat_Borders(y2, zoom)) / density.iStep; // W #mapSpace (ms.cYToLat(y2, zoom)) / density.iStep;
-		final int hMax = Coordinate.doubleToInt(MP2MapSpace.cYToLat_Borders(y1, zoom)) / density.iStep; // W #mapSpace (ms.cYToLat(y1, zoom)) / density.iStep;
+		final int vMin = Coordinate.doubleToInt(MP2MapSpace.cXToLon(x1, zoom)) / density.iStep; // W #mapSpace (ms.cXToLon(x1, zoom)) / density.iStep;
+		final int vMax = Coordinate.doubleToInt(MP2MapSpace.cXToLon(x2, zoom)) / density.iStep; // W #mapSpace (ms.cXToLon(x2, zoom)) / density.iStep;
+		final int hMin = Coordinate.doubleToInt(MP2MapSpace.cYToLat(y2, zoom)) / density.iStep; // W #mapSpace (ms.cYToLat(y2, zoom)) / density.iStep;
+		final int hMax = Coordinate.doubleToInt(MP2MapSpace.cYToLat(y1, zoom)) / density.iStep; // W #mapSpace (ms.cYToLat(y1, zoom)) / density.iStep;
 
 		g.setBackground(Color.WHITE);
 		g.setColor(s.color);
@@ -170,7 +169,7 @@ public class WgsGrid
 		{
 			int iLon = i * density.iStep;
 			// W #mapSpace cLonToX_Borders! (180d -> getSizeInPixel(zoom)
-			int x = MP2MapSpace.cLonToX_Borders(Coordinate.intToDouble(iLon), zoom); // W #mapSpace ms.cLonToX(Coordinate.intToDouble(iLon), zoom);
+			int x = MP2MapSpace.cLonToX(Coordinate.intToDouble(iLon), zoom); // W #mapSpace ms.cLonToX(Coordinate.intToDouble(iLon), zoom);
 			if (x > x1 && x < x2)
 			{
 				g.drawLine(x, vLineY1, x, vLineY2);
@@ -182,7 +181,7 @@ public class WgsGrid
 		{
 			int iLat = i * density.iStep;
 			// W #mapSpace cLatToY_Borders
-			int y = MP2MapSpace.cLatToY_Borders(Coordinate.intToDouble(iLat), zoom); // W #mapSpace ms.cLatToY(Coordinate.intToDouble(iLat), zoom);
+			int y = MP2MapSpace.cLatToY(Coordinate.intToDouble(iLat), zoom); // W #mapSpace ms.cLatToY(Coordinate.intToDouble(iLat), zoom);
 			if (y > y1 && y < y2)
 			{
 				g.drawLine(hLineX1, y, hLineX2, y);
@@ -210,7 +209,7 @@ public class WgsGrid
 			// Calculate coordinates
 			int iLon = i * density.iStep;
 			// W #mapSpace cLonToX_Borders! (180d -> getSizeInPixel(zoom)
-			int x = MP2MapSpace.cLonToX_Borders(Coordinate.intToDouble(iLon), zoom); // W #mapSpace ms.cLonToX(Coordinate.intToDouble(iLon), zoom);
+			int x = MP2MapSpace.cLonToX(Coordinate.intToDouble(iLon), zoom); // W #mapSpace ms.cLonToX(Coordinate.intToDouble(iLon), zoom);
 
 			// Prepare label
 			String label = getLabel(iLon, density);

@@ -1,7 +1,24 @@
+/*******************************************************************************
+ * Copyright (c) OSMCB developers
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
 package osmb.utilities.geo;
 
 import osmb.mapsources.MP2Corner;
 import osmb.mapsources.MP2MapSpace;
+import osmb.mapsources.MP2Pixel;
 import osmb.utilities.OSMBUtilities;
 
 public class GeoCoordinate
@@ -32,13 +49,13 @@ public class GeoCoordinate
 		mcc.toGeoCoordinate();
 	}
 	
-	@Deprecated//? // #mapSpace ??? toCornerCoordinate ??? -> only used in unused!!! AddGpxTrackPolygonMap 
-	public MP2Corner toPixelCoordinate(int zoom)
+	// W #mapSpace ??? only used in unused!!! AddGpxTrackPolygonMap 
+	public MP2Pixel toPixelCoordinate(int zoom)
 	{
-		return new MP2Corner(MP2MapSpace.cLonToX_Pixel(lon, zoom), MP2MapSpace.cLatToY_Pixel(lat, zoom), zoom);
+		return new MP2Pixel(MP2MapSpace.cLonToX_Pixel(lon, zoom), MP2MapSpace.cLatToY_Pixel(lat, zoom), zoom);
 	}
 
-// W #mapSpace ??? where used
+	// W  ??? where used
 	@Override
 	public String toString()
 	{

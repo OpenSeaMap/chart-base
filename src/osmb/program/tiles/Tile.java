@@ -105,7 +105,7 @@ public class Tile
 	// This does not belong into here. It has to be moved upward in the hierarchy. The Tile should not know anything about the TileStore/Cache
 	public void loadPlaceholderFromCache(MemoryTileCache cache)
 	{
-		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace mMapSource.getMapSpace().getTileSize();
+		int tileSize = MP2MapSpace.getTileSize();
 		BufferedImage tmpImage = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = (Graphics2D) tmpImage.getGraphics();
 		// g.drawImage(image, 0, 0, null);
