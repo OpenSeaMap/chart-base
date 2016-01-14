@@ -1,21 +1,42 @@
+/*******************************************************************************
+ * Copyright (c) OSMCB developers
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ******************************************************************************/
 package osmb.mapsources;
 
 import org.apache.log4j.Logger;
 
 import osmb.utilities.geo.GeoCoordinate;
 
-// W #mapspace ??? MP2PixelCoo / MP2PixelCenter
+/**
+ * Klasse soll wieder rausfliegen!!!
+ * 
+ * @author wilbert
+ *
+ */
 public class MP2Corner
 {
 	private static final Logger log = Logger.getLogger(MP2Corner.class);
-	
+
 	private final int x;
 	private final int y;
 	private final int zoom;
-	
+
 	public MP2Corner(int x, int y, int zoom)
 	{
-		this.zoom = MP2MapSpace.checkZoom(zoom, "MP2Corner(int x, int y, int zoom)");
+		this.zoom = Math.max(MP2MapSpace.MIN_TECH_ZOOM, Math.min(zoom, MP2MapSpace.MAX_TECH_ZOOM));
 		int sizeInPixel = MP2MapSpace.getSizeInPixel_UC(this.zoom);
 		if (x < 0 || x > sizeInPixel)
 		{
@@ -30,7 +51,14 @@ public class MP2Corner
 		}
 		this.y = y;
 	}
-	
+
+	public MP2Corner(MP2Pixel mpc)
+	{
+		this.zoom = mpc.getZoom();
+		this.x = mpc.getX();
+		this.y = mpc.getY();
+	}
+
 	/**
 	 * 
 	 * 
@@ -39,11 +67,9 @@ public class MP2Corner
 	 */
 	public MP2Corner(double lat, double lon)
 	{
-		this(MP2MapSpace.cLonToX_Borders(lon, MP2MapSpace.MAX_TECH_ZOOM) , MP2MapSpace.cLatToY_Borders(lat, MP2MapSpace.MAX_TECH_ZOOM), MP2MapSpace.MAX_TECH_ZOOM);
+		this(MP2MapSpace.cLonToX(lon, MP2MapSpace.MAX_TECH_ZOOM), MP2MapSpace.cLatToY(lat, MP2MapSpace.MAX_TECH_ZOOM), MP2MapSpace.MAX_TECH_ZOOM);
 	}
-	
-	// other constructors: GeoCoo NWCoo NECoo SWCoo SECoo ???
-	
+
 	public int getX()
 	{
 		return x;
@@ -58,18 +84,18 @@ public class MP2Corner
 	{
 		return zoom;
 	}
-	
-	// W #mapspace ??? ..._Borders / ..._PixelCoo / ..._PixelCenter
+
 	public GeoCoordinate toGeoCoordinate()
 	{
-		double lon = MP2MapSpace.cXToLon_Borders(x, zoom);
-		double lat = MP2MapSpace.cYToLat_Borders(y, zoom);
+		double lon = MP2MapSpace.cXToLon(x, zoom);
+		double lat = MP2MapSpace.cYToLat(y, zoom);
 		return new GeoCoordinate(lat, lon);
 	}
 
+	// be careful
 	public MP2Corner adaptToZoomlevel(int aZoomLevel)
 	{
-		aZoomLevel = MP2MapSpace.checkZoom(aZoomLevel, "MP2Corner adaptToZoomlevel(int aZoomLevel)");
-		return new MP2Corner(MP2MapSpace.xyChangeZoom(x, zoom, aZoomLevel), MP2MapSpace.xyChangeZoom(y, zoom, aZoomLevel), aZoomLevel);
+		aZoomLevel = Math.max(MP2MapSpace.MIN_TECH_ZOOM, Math.min(aZoomLevel, MP2MapSpace.MAX_TECH_ZOOM));
+		return new MP2Corner(MP2MapSpace.xyChangeZoom_UC(x, zoom, aZoomLevel), MP2MapSpace.xyChangeZoom_UC(y, zoom, aZoomLevel), aZoomLevel);
 	}
 }
