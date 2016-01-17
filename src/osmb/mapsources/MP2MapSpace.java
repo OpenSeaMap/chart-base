@@ -337,7 +337,7 @@ public class MP2MapSpace
 	}
 
 	/**
-	 * Converts longitude to the horizontal map space pixel coordinate x depending on zoom level.<br>
+	 * Converts longitude to the horizontal map space pixel index x depending on zoom level.<br>
 	 * 
 	 * This method checks and restricts parameters to tolerable values.
 	 * 
@@ -361,7 +361,7 @@ public class MP2MapSpace
 	}
 
 	/**
-	 * Converts latitude to the vertical map space coordinate y of upper pixel border depending on zoom level.<br>
+	 * Converts latitude to the vertical map space index y of upper pixel border depending on zoom level.<br>
 	 * 
 	 * This method checks and restricts parameters to tolerable values.
 	 * 
@@ -473,6 +473,12 @@ public class MP2MapSpace
 	}
 
 	@Deprecated
+	/**
+	 * 
+	 * @param x
+	 * @param zoom
+	 * @return
+	 */
 	public static double cXToLon(int x, int zoom) // old rules: no limitations
 	{
 		int sizeInPixel_UC = getSizeInPixel_UC(zoom);
@@ -492,6 +498,12 @@ public class MP2MapSpace
 	}
 
 	@Deprecated
+	/**
+	 * 
+	 * @param y
+	 * @param zoom
+	 * @return
+	 */
 	public static double cYToLat(int y, int zoom) // old rules: no limitations, returns lat in { ~ -90 ... ~ 90 }
 	{
 		int sizeInPixel_UC = getSizeInPixel_UC(zoom);
@@ -511,6 +523,12 @@ public class MP2MapSpace
 	}
 
 	@Deprecated
+	/**
+	 * 
+	 * @param lon
+	 * @param zoom
+	 * @return
+	 */
 	public static int cLonToX(double lon, int zoom) // old rules: no limitations to west, limitation to east (~ 180d), ignoring easternmost border
 	{
 		int x = cRadianToLeftXBorder(Math.toRadians(lon), zoom);
@@ -528,6 +546,12 @@ public class MP2MapSpace
 	}
 
 	@Deprecated
+	/**
+	 * 
+	 * @param lat
+	 * @param zoom
+	 * @return
+	 */
 	public static int cLatToY(double lat, int zoom) // old rules: input restricted to [MIN_LAT, MAX_LAT] (-> limitations to north, limitation to south),
 	                                                // additional ignoring southernmost border
 	{

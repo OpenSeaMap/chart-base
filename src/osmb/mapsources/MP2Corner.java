@@ -70,6 +70,14 @@ public class MP2Corner
 		this(MP2MapSpace.cLonToX(lon, MP2MapSpace.MAX_TECH_ZOOM), MP2MapSpace.cLatToY(lat, MP2MapSpace.MAX_TECH_ZOOM), MP2MapSpace.MAX_TECH_ZOOM);
 	}
 
+	public MP2Corner(MP2Tile mp2Tile)
+	{
+		// TODO Auto-generated constructor stub
+		this.x = mp2Tile.getX();
+		this.y = mp2Tile.getY();
+		this.zoom = mp2Tile.getZoom();
+	}
+
 	public int getX()
 	{
 		return x;
