@@ -88,7 +88,8 @@ public class TileDownLoader
 		ACSettings s = ACSettings.getInstance();
 
 		IfTileStoreEntry tile = null;
-		if (s.getTileStoreEnabled())
+		// if (s.getTileStoreEnabled())
+		if (false)
 		{
 			// Copy the file from the persistent tile store instead of downloading it from internet.
 			tile = ts.getTile(x, y, zoom, mapSource);
