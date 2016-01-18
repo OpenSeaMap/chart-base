@@ -123,7 +123,7 @@ public class WgsGrid
 			density = DENSITIES[index];
 		}
 
-		final int maxPixels = MP2MapSpace.getSizeInPixel(zoom); // W #mapSpace ms.getMaxPixels(zoom);
+		final int maxPixels = MP2MapSpace.getSizeInPixel(zoom);
 
 		// Check viewport
 		viewport.width = c.getWidth();
@@ -153,10 +153,14 @@ public class WgsGrid
 		final int vLineY2 = y2 - 1;
 
 		// Calculate line indexes
-		final int vMin = Coordinate.doubleToInt(MP2MapSpace.cXToLon(x1, zoom)) / density.iStep; // W #mapSpace (ms.cXToLon(x1, zoom)) / density.iStep;
-		final int vMax = Coordinate.doubleToInt(MP2MapSpace.cXToLon(x2, zoom)) / density.iStep; // W #mapSpace (ms.cXToLon(x2, zoom)) / density.iStep;
-		final int hMin = Coordinate.doubleToInt(MP2MapSpace.cYToLat(y2, zoom)) / density.iStep; // W #mapSpace (ms.cYToLat(y2, zoom)) / density.iStep;
-		final int hMax = Coordinate.doubleToInt(MP2MapSpace.cYToLat(y1, zoom)) / density.iStep; // W #mapSpace (ms.cYToLat(y1, zoom)) / density.iStep;
+		final int vMin = Coordinate.doubleToInt(MP2MapSpace.cXToLonLeftBorder(x1, zoom)) / density.iStep; // W #mapSpace (ms.cXToLon(x1, zoom)) / density.iStep;
+		final int vMax;
+		if (x2 == maxPixels) // W 180d-problem
+			vMax = Coordinate.doubleToInt(MP2MapSpace.cXToLonRightBorder(x2, zoom)) / density.iStep;
+		else
+			vMax = Coordinate.doubleToInt(MP2MapSpace.cXToLonLeftBorder(x2, zoom)) / density.iStep; // W #mapSpace (ms.cXToLon(x2, zoom)) / density.iStep;
+		final int hMin = Coordinate.doubleToInt(MP2MapSpace.cYToLatUpperBorder(y2, zoom)) / density.iStep; // W #mapSpace (ms.cYToLat(y2, zoom)) / density.iStep;
+		final int hMax = Coordinate.doubleToInt(MP2MapSpace.cYToLatUpperBorder(y1, zoom)) / density.iStep; // W #mapSpace (ms.cYToLat(y1, zoom)) / density.iStep;
 
 		g.setBackground(Color.WHITE);
 		g.setColor(s.color);
@@ -168,9 +172,13 @@ public class WgsGrid
 		for (int i = vMin; i <= vMax; i++)
 		{
 			int iLon = i * density.iStep;
-			// W #mapSpace cLonToX_Borders! (180d -> getSizeInPixel(zoom)
-			int x = MP2MapSpace.cLonToX(Coordinate.intToDouble(iLon), zoom); // W #mapSpace ms.cLonToX(Coordinate.intToDouble(iLon), zoom);
-			if (x > x1 && x < x2)
+			int x;
+			if (iLon == 64800000) // W 180d-problem: 180° * 360000 milliseconds/° = 64800000 milliseconds
+				x = x2; // (180d: no line to Paint!!!)
+			else
+			  // W #mapSpace cLonToXIndex!
+			  x = MP2MapSpace.cLonToXIndex(Coordinate.intToDouble(iLon), zoom); // W #mapSpace ms.cLonToX(Coordinate.intToDouble(iLon), zoom);
+			if (x > x1 && x < x2) // (180d: no line to Paint!!!)
 			{
 				g.drawLine(x, vLineY1, x, vLineY2);
 			}
@@ -180,8 +188,8 @@ public class WgsGrid
 		for (int i = hMin; i <= hMax; i++)
 		{
 			int iLat = i * density.iStep;
-			// W #mapSpace cLatToY_Borders
-			int y = MP2MapSpace.cLatToY(Coordinate.intToDouble(iLat), zoom); // W #mapSpace ms.cLatToY(Coordinate.intToDouble(iLat), zoom);
+			// W #mapSpace cLatToYIndex (MIN_LAT not needed (-85.05112877980659... = 85°3'4.0636...")
+			int y = MP2MapSpace.cLatToYIndex(Coordinate.intToDouble(iLat), zoom); // W #mapSpace ms.cLatToY(Coordinate.intToDouble(iLat), zoom);
 			if (y > y1 && y < y2)
 			{
 				g.drawLine(hLineX1, y, hLineX2, y);
@@ -205,11 +213,13 @@ public class WgsGrid
 		// Paint vertical labels
 		for (int i = vMin; i <= vMax; i++)
 		{
-
 			// Calculate coordinates
 			int iLon = i * density.iStep;
-			// W #mapSpace cLonToX_Borders! (180d -> getSizeInPixel(zoom)
-			int x = MP2MapSpace.cLonToX(Coordinate.intToDouble(iLon), zoom); // W #mapSpace ms.cLonToX(Coordinate.intToDouble(iLon), zoom);
+			int x;
+			if (iLon == 64800000) // W 180d-problem: 180° * 360000 milliseconds/° = 64800000 milliseconds
+				x = maxPixels;
+			else
+				x = MP2MapSpace.cLonToXIndex(Coordinate.intToDouble(iLon), zoom); // W #mapSpace ms.cLonToX(Coordinate.intToDouble(iLon), zoom);
 
 			// Prepare label
 			String label = getLabel(iLon, density);
@@ -237,8 +247,8 @@ public class WgsGrid
 		for (int i = hMin; i <= hMax; i++)
 		{
 			int iLat = i * density.iStep;
-			// W #mapSpace cLatToY_Borders
-			int y = MP2MapSpace.cLatToY_Borders(Coordinate.intToDouble(iLat), zoom); // W #mapSpace ms.cLatToY(Coordinate.intToDouble(iLat), zoom);
+			// W #mapSpace cLatToYIndex (MIN_LAT not needed (-85.05112877980659... = 85°3'4.0636...")
+			int y = MP2MapSpace.cLatToYIndex(Coordinate.intToDouble(iLat), zoom);
 			// Prepare label
 			String label = getLabel(iLat, density);
 			final int stringWidth = fontMetrics.stringWidth(label);

@@ -18,7 +18,7 @@ package osmb.utilities.geo;
 
 import osmb.mapsources.MP2Corner;
 import osmb.mapsources.MP2MapSpace;
-import osmb.mapsources.MP2Pixel;
+import osmb.mapsources.PixelAddress;
 import osmb.utilities.OSMBUtilities;
 
 public class GeoCoordinate
@@ -50,9 +50,9 @@ public class GeoCoordinate
 	}
 	
 	// W #mapSpace ??? only used in unused!!! AddGpxTrackPolygonMap 
-	public MP2Pixel toPixelCoordinate(int zoom)
+	public PixelAddress toPixelCoordinate(int zoom)
 	{
-		return new MP2Pixel(MP2MapSpace.cLonToX_Pixel(lon, zoom), MP2MapSpace.cLatToY_Pixel(lat, zoom), zoom);
+		return new PixelAddress(MP2MapSpace.cLonToXIndex(lon, zoom), MP2MapSpace.cLatToYIndex(lat, zoom), zoom);
 	}
 
 	// W  ??? where used

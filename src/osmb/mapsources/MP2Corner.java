@@ -7,7 +7,7 @@
  * (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  * 
@@ -52,7 +52,7 @@ public class MP2Corner
 		this.y = y;
 	}
 
-	public MP2Corner(MP2Pixel mpc)
+	public MP2Corner(PixelAddress mpc)
 	{
 		this.zoom = mpc.getZoom();
 		this.x = mpc.getX();
@@ -68,14 +68,6 @@ public class MP2Corner
 	public MP2Corner(double lat, double lon)
 	{
 		this(MP2MapSpace.cLonToX(lon, MP2MapSpace.MAX_TECH_ZOOM), MP2MapSpace.cLatToY(lat, MP2MapSpace.MAX_TECH_ZOOM), MP2MapSpace.MAX_TECH_ZOOM);
-	}
-
-	public MP2Corner(MP2Tile mp2Tile)
-	{
-		// TODO Auto-generated constructor stub
-		this.x = mp2Tile.getX();
-		this.y = mp2Tile.getY();
-		this.zoom = mp2Tile.getZoom();
 	}
 
 	public int getX()
