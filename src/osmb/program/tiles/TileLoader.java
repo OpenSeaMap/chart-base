@@ -100,7 +100,7 @@ public class TileLoader
 		{
 			log.trace(OSMBStrs.RStr("START"));
 			boolean bLoadOK = false;
-			if ((mTile = mMTC.getTile(mMapSource, mTileX, mTileY, mZoom)) != null && mTile.getTileState() != TileState.TS_LOADING)
+			if (((mTile = mMTC.getTile(mMapSource, mTileX, mTileY, mZoom)) != null) && (mTile.getTileState() != TileState.TS_LOADING))
 			{
 				bLoadOK = true;
 				log.debug("use " + mTile + " from mtc");
@@ -109,8 +109,8 @@ public class TileLoader
 			{
 				mTile = new Tile(mMapSource, mTileX, mTileY, mZoom);
 				log.debug("loading of " + mTile + " started");
-				if (!(bLoadOK = loadTileFromStore()))
-					bLoadOK = downloadAndUpdateTile();
+				// if (!(bLoadOK = loadTileFromStore()))
+				bLoadOK = downloadAndUpdateTile();
 			}
 			listener.tileLoadingFinished(mTile, bLoadOK);
 			log.debug("loading of " + mTile + " finished");
@@ -120,7 +120,6 @@ public class TileLoader
 		 * This loads the tile from the tile store.
 		 * If there is no tile in the store it returns an 'error' tile.
 		 * If the tile in the store is expired, it tries to download an updated tile from the online map source.
-		 * sometime the result seems strange
 		 * 
 		 * @return TRUE if the tile found in the store is not expired. In all other cases it returns FALSE.
 		 */
