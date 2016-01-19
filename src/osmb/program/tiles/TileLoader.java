@@ -109,8 +109,8 @@ public class TileLoader
 			{
 				mTile = new Tile(mMapSource, mTileX, mTileY, mZoom);
 				log.debug("loading of " + mTile + " started");
-				// if (!(bLoadOK = loadTileFromStore()))
-				bLoadOK = downloadAndUpdateTile();
+				if (!(bLoadOK = loadTileFromStore()))
+					bLoadOK = downloadAndUpdateTile();
 			}
 			listener.tileLoadingFinished(mTile, bLoadOK);
 			log.debug("loading of " + mTile + " finished");
