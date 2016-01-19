@@ -16,11 +16,25 @@
  ******************************************************************************/
 package osmb.utilities.geo;
 
-public class Coordinate {
+/**
+ * This class provides conversion methods for geographic coordinates.<br>
+ * 
+ * Double values in degrees to integer values in milliseconds and the other way round.
+ *
+ */
+// W rename to CoordinateMillisecond???
+public class Coordinate
+{
 
 	public static final int MILLISECOND = 1, SECOND = MILLISECOND * 1000, MINUTE = SECOND * 60, DEGREE = MINUTE * 60;
 
-	public static int doubleToInt(double value) {
+	/**
+	 * @param value
+	 *          Latitude or longitude as double in degrees.
+	 * @return Value as integer in milliseconds.
+	 */
+	public static int doubleToInt(double value)
+	{
 		int degree = (int) value;
 		int minute = (int) (value = (value - degree) * 60d);
 		int second = (int) (value = (value - minute) * 60d);
@@ -28,27 +42,57 @@ public class Coordinate {
 		return degree * DEGREE + minute * MINUTE + second * SECOND + millisecond * MILLISECOND;
 	}
 
-	public static double intToDouble(int value) {
+	/**
+	 * @param value
+	 *          Latitude or longitude as integer in milliseconds.
+	 * @return Value as double in degrees.
+	 */
+	public static double intToDouble(int value)
+	{
 		double degree = value / DEGREE;
 		double minute = (value = value % DEGREE) / MINUTE;
-		double second = (int) (value %= MINUTE) / SECOND;
-		double millisecond = (int) (value %= SECOND) / MILLISECOND;
+		double second = (value %= MINUTE) / SECOND;
+		double millisecond = (value %= SECOND) / MILLISECOND;
 		return degree + minute / 60d + second / 3600d + millisecond / 3600000d;
 	}
 
-	public static int getDegree(int value) {
+	/**
+	 * @param value
+	 *          Latitude or longitude as integer in milliseconds.
+	 * @return The degree portion of value as integer.
+	 */
+	public static int getDegree(int value)
+	{
 		return value / DEGREE;
 	}
 
-	public static int getMinute(int value) {
+	/**
+	 * @param value
+	 *          Latitude or longitude as integer in milliseconds.
+	 * @return The minute portion of value as integer.
+	 */
+	public static int getMinute(int value)
+	{
 		return Math.abs(value) % DEGREE / MINUTE;
 	}
 
-	public static int getSecond(int value) {
+	/**
+	 * @param value
+	 *          Latitude or longitude as integer in milliseconds.
+	 * @return The second portion of value as integer.
+	 */
+	public static int getSecond(int value)
+	{
 		return Math.abs(value) % MINUTE / SECOND;
 	}
 
-	public static int getMillisecond(int value) {
+	/**
+	 * @param value
+	 *          Latitude or longitude as integer in milliseconds.
+	 * @return The millisecond portion of value as integer.
+	 */
+	public static int getMillisecond(int value)
+	{
 		return Math.abs(value) % SECOND / MILLISECOND;
 	}
 }
