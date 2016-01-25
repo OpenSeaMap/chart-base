@@ -5,7 +5,7 @@
 <layers>
 <customMapSource>
 <name>AH OpenStreetMap Mapnik</name>
-<minZoom>0</minZoom>
+<minZoom>2</minZoom>
 <maxZoom>18</maxZoom>
 <tileType>PNG</tileType>
 <tileUpdate>None</tileUpdate>
@@ -14,7 +14,7 @@
 </customMapSource>
 <customMapSource>
 <name>AH OpenSeaMap</name>
-<minZoom>0</minZoom>
+<minZoom>2</minZoom>
 <maxZoom>18</maxZoom>
 <tileType>PNG</tileType>
 <tileUpdate>None</tileUpdate>

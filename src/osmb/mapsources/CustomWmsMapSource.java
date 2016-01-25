@@ -20,7 +20,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Custom tile store provider for wms map sources, configurable via xml file
+ * Custom map source for wms, configurable via xml file
  * 
  * @author oruxman
  */
@@ -34,7 +34,7 @@ public class CustomWmsMapSource extends CustomMapSource
 	private String version = "1.1.1";
 
 	/**
-	 * no spaces allowed, must be replaced with %20 in the url
+	 * no spaces allowed, spaces must be replaced with %20 in the url
 	 */
 	@XmlElement(required = true, name = "layers")
 	private String layers = "";
@@ -56,7 +56,7 @@ public class CustomWmsMapSource extends CustomMapSource
 	{
 		double[] coords = MapSourceTools.calculateLatLon(this, zoom, tilex, tiley);
 		String url = this.url + "REQUEST=GetMap" + "&LAYERS=" + layers + "&SRS=" + coordinatesystem + "&VERSION=" + version + "&FORMAT=image/"
-				+ tileType.getMimeType() + "&BBOX=" + coords[0] + "," + coords[1] + "," + coords[2] + "," + coords[3] + "&WIDTH=256&HEIGHT=256" + additionalparameters;
+		    + tileType.getMimeType() + "&BBOX=" + coords[0] + "," + coords[1] + "," + coords[2] + "," + coords[3] + "&WIDTH=256&HEIGHT=256" + additionalparameters;
 		return url;
 	}
 
@@ -75,4 +75,9 @@ public class CustomWmsMapSource extends CustomMapSource
 		return coordinatesystem;
 	}
 
+	@Override
+	public void initialize()
+	{
+		// TODO Auto-generated method stub
+	}
 }

@@ -14,58 +14,58 @@ public interface IfCatalogObject
 	boolean isInvalid();
 
 	/**
-	 * This calculates the westernmost border over all maps in {@link  osmb.program.map.IfMapSpace#MAX_TECH_ZOOM zoom 22}.
+	 * This calculates the westernmost border over all maps in {@link osmb.program.map.IfMapSpace#MAX_TECH_ZOOM zoom 22}.
 	 * 
 	 * @return {@link osmb.utilities.image.MercatorPixelCoordinate Border Coordinate} (W)
 	 */
 	public int getXBorderMin();
 
 	/**
-	 * This calculates the easternmost border over all maps in {@link  osmb.program.map.IfMapSpace#MAX_TECH_ZOOM zoom 22}.
+	 * This calculates the easternmost border over all maps in {@link osmb.program.map.IfMapSpace#MAX_TECH_ZOOM zoom 22}.
 	 * 
 	 * @return {@link osmb.utilities.image.MercatorPixelCoordinate Border Coordinate} (E)
 	 */
 	public int getXBorderMax();
 
 	/**
-	 * This calculates the northernmost border over all maps in {@link  osmb.program.map.IfMapSpace#MAX_TECH_ZOOM zoom 22}.
+	 * This calculates the northernmost border over all maps in {@link osmb.program.map.IfMapSpace#MAX_TECH_ZOOM zoom 22}.
 	 * 
 	 * @return {@link osmb.utilities.image.MercatorPixelCoordinate Border Coordinate} (N)
 	 */
 	public int getYBorderMin();
 
 	/**
-	 * This calculates the southernmost border over all maps in {@link  osmb.program.map.IfMapSpace#MAX_TECH_ZOOM zoom 22}.
+	 * This calculates the southernmost border over all maps in {@link osmb.program.map.IfMapSpace#MAX_TECH_ZOOM zoom 22}.
 	 * 
 	 * @return {@link osmb.utilities.image.MercatorPixelCoordinate Border Coordinate} (S)
 	 */
 	public int getYBorderMax();
 
 	/**
-	 * This calculates the latiude of the southernmost pixel over all maps.
+	 * This calculates the latitude of the southernmost border over all maps.
 	 * 
-	 * @return {@link osmb.utilities.geo.EastNorthCoordinate Double pixel coordinate} (S)
+	 * @return (S)
 	 */
 	double getMinLat();
 
 	/**
-	 * This calculates the latiude of the northernmost pixel over all maps.
+	 * This calculates the latitude of the northernmost border over all maps.
 	 * 
-	 * @return {@link osmb.utilities.geo.EastNorthCoordinate Double pixel coordinate} (N)
+	 * @return (N)
 	 */
 	double getMaxLat();
 
 	/**
-	 * This calculates the longitude of the westernmost pixel over all maps.
+	 * This calculates the longitude of the westernmost border over all maps.
 	 * 
-	 * @return {@link osmb.utilities.geo.EastNorthCoordinate Double pixel coordinate} (W)
+	 * @return (W)
 	 */
 	double getMinLon();
 
 	/**
-	 * This calculates the longitude of the easternmost pixel over all maps.
+	 * This calculates the longitude of the easternmost border over all maps.
 	 * 
-	 * @return {@link osmb.utilities.geo.EastNorthCoordinate Double pixel coordinate} (E)
+	 * @return (E)
 	 */
 	double getMaxLon();
 

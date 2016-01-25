@@ -37,7 +37,7 @@ import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
 import osmb.program.tilestore.ACSiTileStore;
 
-public abstract class ACMultiLayerMapSource implements IfInitializableMapSource, Iterable<IfMapSource>
+public abstract class ACMultiLayerMapSource implements IfMapSource, Iterable<IfMapSource>
 {
 	protected Logger log;
 
@@ -87,14 +87,11 @@ public abstract class ACMultiLayerMapSource implements IfInitializableMapSource,
 		log.trace("START");
 		@SuppressWarnings("unused") // W #unused
 		IfMapSource refMapSource = mapSources[0];
-		// W #mapSpace
-		// mapSpace = refMapSource.getMapSpace();
-		maxZoom = MP2MapSpace.MAX_TECH_ZOOM; // 18; // W MAX_TECH_ZOOM
-		minZoom = MP2MapSpace.MIN_TECH_ZOOM; // 0;
+		maxZoom = MP2MapSpace.MAX_TECH_ZOOM;
+		minZoom = MP2MapSpace.MIN_TECH_ZOOM;
 		for (IfMapSource ms : mapSources)
 		{
-			if (ms instanceof IfInitializableMapSource)
-				((IfInitializableMapSource) ms).initialize();
+			ms.initialize();
 			maxZoom = Math.min(maxZoom, ms.getMaxZoom());
 			minZoom = Math.max(minZoom, ms.getMinZoom());
 		}

@@ -19,11 +19,10 @@ package osmb.mapsources;
 //W #mapSpace import osmb.program.map.IfMapSpace;
 
 /**
- * Utility methods used by several iMap sources.
+ * Utility methods used by several map sources.
  */
 public class MapSourceTools
 {
-
 	protected static final char[] NUM_CHAR =
 	{ '0', '1', '2', '3' };
 
@@ -41,8 +40,7 @@ public class MapSourceTools
 		char[] tileNum = new char[zoom];
 		for (int i = zoom - 1; i >= 0; i--)
 		{
-			// Binary encoding using ones for tilex and twos for tiley. if a bit
-			// is set in tilex and tiley we get a three.
+			// Binary encoding using ones for tilex and twos for tiley. If a bit is set in tilex and tiley we get a three.
 			int num = (tilex % 2) | ((tiley % 2) << 1);
 			tileNum[i] = NUM_CHAR[num];
 			tilex >>= 1;
@@ -52,7 +50,7 @@ public class MapSourceTools
 	}
 
 	/**
-	 * Calculates latitude and longitude of the upper left corner of the specified tile of <code>mapsource</code> regarding the zoom level specified by
+	 * Calculates latitude and longitude of the four borders of the specified tile of <code>mapsource</code> regarding the zoom level specified by
 	 * <code>zoom</code>.
 	 * 
 	 * @param mapSource
@@ -61,19 +59,18 @@ public class MapSourceTools
 	 *          horizontal tile number
 	 * @param tiley
 	 *          vertical tile number
-	 * @return <code>double[] {lon_min , lat_min , lon_max , lat_max}</code>
+	 * @return <code>double[] {lon_min: west, lat_min: south, lon_max: east, lat_max: north}</code>
 	 */
 	public static double[] calculateLatLon(IfMapSource mapSource, int zoom, int tilex, int tiley)
 	{
-		// W #mapSpace IfMapSpace mapSpace = mapSource.getMapSpace();
-		int tileSize = MP2MapSpace.getTileSize(); // W #mapSpace mapSpace.getTileSize();
+		int tileSize = MP2MapSpace.getTileSize();
 		double[] result = new double[4];
 		tilex *= tileSize;
 		tiley *= tileSize;
-		result[0] = MP2MapSpace.cXToLon(tilex, zoom); // lon_min // W #mapSpace mapSpace.cXToLon(tilex, zoom); // lon_min
-		result[1] = MP2MapSpace.cYToLat(tiley + tileSize, zoom); // lat_min // W #mapSpace mapSpace.cYToLat(tiley + tileSize, zoom); // lat_min
-		result[2] = MP2MapSpace.cXToLon(tilex + tileSize, zoom); // lon_max // W #mapSpace mapSpace.cXToLon(tilex + tileSize, zoom); // lon_max
-		result[3] = MP2MapSpace.cYToLat(tiley, zoom); // lat_max // W #mapSpace mapSpace.cYToLat(tiley, zoom); // lat_max
+		result[0] = MP2MapSpace.cXToLonLeftBorder(tilex, zoom);
+		result[1] = MP2MapSpace.cYToLatLowerBorder(tiley, zoom);
+		result[2] = MP2MapSpace.cXToLonRightBorder(tilex, zoom);
+		result[3] = MP2MapSpace.cYToLatUpperBorder(tiley, zoom);
 		return result;
 	}
 

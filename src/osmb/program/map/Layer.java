@@ -116,16 +116,16 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		nZoomLvl = zoom;
 	}
 
-//W #mapSpace ??? EastNorthCoordinate <-> GeoCoordinate
-// unused!!!
-//	@Override
-//	public void addMapsAutocut(String mapNameBase, IfMapSource ms, GeoCoordinate minCoordinate, GeoCoordinate maxCoordinate, int zoom,
-//	    TileImageParameters parameters, int maxMapSize) throws InvalidNameException
-//	{
-//		IfMapSpace mapSpace = ms.getMapSpace();
-//		addMapsAutocut(mapNameBase, ms, minCoordinate.toPixelCoordinate(mapSpace, zoom), maxCoordinate.toPixelCoordinate(mapSpace, zoom), zoom, parameters,
-//		    maxMapSize, 0);
-//	}
+	// W #mapSpace ??? EastNorthCoordinate <-> GeoCoordinate
+	// unused!!!
+	// @Override
+	// public void addMapsAutocut(String mapNameBase, IfMapSource ms, GeoCoordinate minCoordinate, GeoCoordinate maxCoordinate, int zoom,
+	// TileImageParameters parameters, int maxMapSize) throws InvalidNameException
+	// {
+	// IfMapSpace mapSpace = ms.getMapSpace();
+	// addMapsAutocut(mapNameBase, ms, minCoordinate.toPixelCoordinate(mapSpace, zoom), maxCoordinate.toPixelCoordinate(mapSpace, zoom), zoom, parameters,
+	// maxMapSize, 0);
+	// }
 
 	/**
 	 * addMapsAutocut() checks if the new map is already completely covered in
@@ -226,8 +226,9 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 
 				// String mapName = String.format(mapNameFormat, new Object[]
 				// {mapNameBase, mapCounter++});
-				String mapName = MakeValidMapName(mD.name, "0000");
-				Map s = new Map(this, mapName, mD.mapSource, mD.nZoomLvl, mD.minPixelC, mD.maxPixelC, parameters);
+				// String mapName = MakeValidMapName(mD.name, "0000");
+				// Map s = new Map(this, mapName, mD.mapSource, mD.nZoomLvl, mD.minPixelC, mD.maxPixelC, parameters);
+				Map s = new Map(this, mD.mapSource, mD.nZoomLvl, mD.minPixelC, mD.maxPixelC, parameters);
 				maps.add(s);
 			}
 			else
@@ -274,6 +275,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 
 	/**
 	 * This checks if there is already a map with the specified number and if so tests the next number until an unused number is found.
+	 * 20160123 AH modified to use the osm internal number
 	 * 
 	 * @param mapName
 	 *          The name part of the map name

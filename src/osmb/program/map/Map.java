@@ -133,6 +133,24 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		}
 	};
 
+	/**
+	 * This makes an osm-internal chart number, which is worldwide unique
+	 * 
+	 * @param nZoom
+	 * @param nMinY
+	 * @param nMaxY
+	 * @param nMinX
+	 * @param nMaxX
+	 * @return A String containing the unique chart number.
+	 */
+	public static String makeMapNumber(int nZoom, int nMinY, int nMaxY, int nMinX, int nMaxX)
+	{
+		// 20150722 AH use fixed numbers in here
+		String strNum = nZoom + "-" + nMinY / (MP2MapSpace.TECH_TILESIZE * 8) + "-" + nMinX / (MP2MapSpace.TECH_TILESIZE * 8) + "-"
+		    + ((nMaxY - nMinY + 1) / MP2MapSpace.TECH_TILESIZE) + "-" + ((nMaxX - nMinX + 1) / MP2MapSpace.TECH_TILESIZE);
+		return strNum;
+	}
+
 	// instance data
 	/**
 	 * the osm internal name
@@ -141,6 +159,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	/**
 	 * the osm internal number, the numbering scheme is still to be defined
 	 * 20150722 AH proposal: ZL-LAT-LON-HEI-WID, LAT and LON in tiles/8 since this is our map alignment grid, HEI, WID in tiles.
+	 * 20160123 AH: this get higher priority, since OpenCPN needs the map file names to be unique over all maps.
 	 */
 	protected String number;
 	/**
@@ -171,19 +190,23 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	protected Map(Map map)
 	{
 		name = map.name;
+		number = map.number;
 	}
 
-	protected Map(Layer layer, String name, IfMapSource mapSource, int zoom, Point minPixelCoordinate, Point maxPixelCoordinate, TileImageParameters parameters)
+	// protected Map(Layer layer, String name, IfMapSource mapSource, int zoom, Point minPixelCoordinate, Point maxPixelCoordinate, TileImageParameters
+	// parameters)
+	protected Map(Layer layer, IfMapSource mapSource, int zoom, Point minPixelCoordinate, Point maxPixelCoordinate, TileImageParameters parameters)
 	{
 		this.layer = layer;
 		this.maxPixelCoordinate = maxPixelCoordinate;
 		this.minPixelCoordinate = minPixelCoordinate;
-		this.name = name;
+		this.number = makeMapNumber(zoom, minPixelCoordinate.y, maxPixelCoordinate.y, minPixelCoordinate.x, maxPixelCoordinate.x);
+		this.name = "L" + number;
 		this.mapSource = mapSource;
 		// this.zoom = zoom;
 		this.parameters = parameters;
 		calculateRuntimeValues();
-		setMapNumber(zoom, minPixelCoordinate.y, maxPixelCoordinate.y, minPixelCoordinate.x, maxPixelCoordinate.x);
+		// setMapNumber(zoom, minPixelCoordinate.y, maxPixelCoordinate.y, minPixelCoordinate.x, maxPixelCoordinate.x);
 	}
 
 	/**
@@ -384,6 +407,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	public void setNumber(String strNum)
 	{
 		number = strNum;
+		this.name = "L" + strNum;
 	}
 
 	/**
@@ -399,13 +423,14 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	 * @param nMaxX
 	 *          Pixel coordinate
 	 */
-	public void setMapNumber(int nZoom, int nMinY, int nMaxY, int nMinX, int nMaxX) // W #mapSpace IfMapSpace.TECH_TILESIZE;
+	public void setMapNumber(int nZoom, int nMinY, int nMaxY, int nMinX, int nMaxX)
 	{
 		// 20150722 AH fixed numbers in here
-		String mapNumber = nZoom + "-" + nMinY / (MP2MapSpace.TECH_TILESIZE * 8) + "-" + nMinX / (MP2MapSpace.TECH_TILESIZE * 8) + "-"
+		String strNum = nZoom + "-" + nMinY / (MP2MapSpace.TECH_TILESIZE * 8) + "-" + nMinX / (MP2MapSpace.TECH_TILESIZE * 8) + "-"
 		    + ((nMaxY - nMinY + 1) / MP2MapSpace.TECH_TILESIZE) + "-" + ((nMaxX - nMinX + 1) / MP2MapSpace.TECH_TILESIZE);
-		log.trace("new map: '" + mapNumber + "'");
-		this.number = mapNumber;
+		log.trace("new map: '" + strNum + "'");
+		this.number = strNum;
+		this.name = "L" + strNum;
 	}
 
 	@Override
@@ -544,25 +569,29 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public double getMinLat()
 	{
-		return MP2MapSpace.cYToLat(maxPixelCoordinate.y, getZoom()); // #mapSpace mapSource.getMapSpace().cYToLat(maxPixelCoordinate.y, getZoom());
+		// return MP2MapSpace.cYToLat(maxPixelCoordinate.y, getZoom()); // #mapSpace mapSource.getMapSpace().cYToLat(maxPixelCoordinate.y, getZoom());
+		return MP2MapSpace.cYToLatLowerBorder(maxPixelCoordinate.y, getZoom());
 	}
 
 	@Override
 	public double getMaxLat()
 	{
-		return MP2MapSpace.cYToLat(minPixelCoordinate.y, getZoom()); // #mapSpace mapSource.getMapSpace().cYToLat(minPixelCoordinate.y, getZoom());
+		// return MP2MapSpace.cYToLat(minPixelCoordinate.y, getZoom()); // #mapSpace mapSource.getMapSpace().cYToLat(minPixelCoordinate.y, getZoom());
+		return MP2MapSpace.cYToLatUpperBorder(minPixelCoordinate.y, getZoom());
 	}
 
 	@Override
 	public double getMinLon()
 	{
-		return MP2MapSpace.cXToLon(minPixelCoordinate.x, getZoom()); // #mapSpace mapSource.getMapSpace().cXToLon(minPixelCoordinate.x, getZoom());
+		// return MP2MapSpace.cXToLon(minPixelCoordinate.x, getZoom()); // #mapSpace mapSource.getMapSpace().cXToLon(minPixelCoordinate.x, getZoom());
+		return MP2MapSpace.cXToLonLeftBorder(minPixelCoordinate.x, getZoom());
 	}
 
 	@Override
 	public double getMaxLon()
 	{
-		return MP2MapSpace.cXToLon(maxPixelCoordinate.x, getZoom()); // #mapSpace mapSource.getMapSpace().cXToLon(maxPixelCoordinate.x, getZoom());
+		// return MP2MapSpace.cXToLon(maxPixelCoordinate.x, getZoom()); // #mapSpace mapSource.getMapSpace().cXToLon(maxPixelCoordinate.x, getZoom());
+		return MP2MapSpace.cXToLonRightBorder(maxPixelCoordinate.x, getZoom());
 	}
 
 	@Override

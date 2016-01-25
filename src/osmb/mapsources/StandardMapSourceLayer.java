@@ -131,4 +131,9 @@ public class StandardMapSourceLayer implements IfMapSource
 		return mapSource.equals(obj);
 	}
 
+	@Override
+	public void initialize()
+	{
+		// TODO Auto-generated method stub
+	}
 }

@@ -102,11 +102,6 @@ public class CustomMapSource implements IfHttpMapSource
 		this.url = url;
 	}
 
-	// public boolean ignoreContentMismatch()
-	// {
-	// return ignoreContentMismatch;
-	// }
-
 	@Override
 	public TileUpdate getTileUpdate()
 	{
@@ -222,7 +217,7 @@ public class CustomMapSource implements IfHttpMapSource
 		{
 			if (!ignoreErrors)
 			{
-				log.error("no image data");
+				log.error("no image data: " + loadMethod.toString());
 				return null;
 			}
 			else
@@ -269,13 +264,6 @@ public class CustomMapSource implements IfHttpMapSource
 		return name;
 	}
 
-	// #mapSpace
-	// @Override
-	// public IfMapSpace getMapSpace()
-	// {
-	// return MercatorPower2MapSpace.INSTANCE_256; // W #mapSpace =
-	// }
-
 	@Override
 	public Color getBackgroundColor()
 	{
@@ -297,4 +285,8 @@ public class CustomMapSource implements IfHttpMapSource
 		this.loaderInfo = loaderInfo;
 	}
 
+	@Override
+	public void initialize()
+	{
+	}
 }

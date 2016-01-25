@@ -329,12 +329,6 @@ public class CustomLocalTileZipMapSource implements IfFileBasedMapSource
 		return name;
 	}
 
-	// W #mapSpace MP2MapSpace
-	// public IfMapSpace getMapSpace()
-	// {
-	// return mapSpace;
-	// }
-
 	@Override
 	public Color getBackgroundColor()
 	{
@@ -360,5 +354,4 @@ public class CustomLocalTileZipMapSource implements IfFileBasedMapSource
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 }

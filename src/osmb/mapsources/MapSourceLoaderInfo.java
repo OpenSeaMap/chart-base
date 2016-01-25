@@ -22,8 +22,8 @@ public class MapSourceLoaderInfo
 {
 	public enum LoaderType
 	{
-		MAPPACK, // iMap pack file
-		XML, // custom iMap xml
+		MAPPACK, // map pack file
+		XML, // custom map xml
 		BSH // BeanShell script
 		;
 	};
@@ -32,11 +32,13 @@ public class MapSourceLoaderInfo
 	protected final File sourceFile;
 	protected final String revision;
 
-	public MapSourceLoaderInfo(LoaderType loaderType, File sourceFile) {
+	public MapSourceLoaderInfo(LoaderType loaderType, File sourceFile)
+	{
 		this(loaderType, sourceFile, null);
 	}
 
-	public MapSourceLoaderInfo(LoaderType loaderType, File sourceFile, String revision) {
+	public MapSourceLoaderInfo(LoaderType loaderType, File sourceFile, String revision)
+	{
 		super();
 		this.loaderType = loaderType;
 		this.sourceFile = sourceFile;

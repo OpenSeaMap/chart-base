@@ -60,5 +60,4 @@ public interface IfHttpMapSource extends IfMapSource
 	 * @return the initialized urlConnection for downloading the specified tile image
 	 */
 	public HttpURLConnection getTileUrlConnection(int zoom, int tilex, int tiley) throws IOException;
-
 }

@@ -342,7 +342,6 @@ public class CustomLocalTileFilesMapSource implements IfFileBasedMapSource
 				return false;
 			return p.matcher(f.getName()).matches();
 		}
-
 	}
 
 	@Override

@@ -35,8 +35,6 @@ import osmb.program.tiles.TileImageType;
 import osmb.program.tilestore.ACSiTileStore;
 import osmb.program.tilestore.IfTileStoreEntry;
 
-//import osmcd.gui.mapview.JMapViewer;
-
 /**
  * Abstract base class for map sources.
  */
@@ -64,12 +62,26 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 	{
 	}
 
+	/**
+	 * Creates a new map source able to connect and retrieve tiles from an online source by http requests.
+	 * 
+	 * @param name
+	 *          The map sources name.
+	 * @param minZoom
+	 *          The smallest zoom level this map source supports.
+	 * @param maxZoom
+	 *          The highest zoom level this map source supports.
+	 * @param tileType
+	 *          The image file type of the tiles as delivered by the map source.
+	 * @param tileUpdate
+	 *          The updating mechanism supported by this map source.
+	 */
 	public ACHttpMapSource(String name, int minZoom, int maxZoom, TileImageType tileType, IfHttpMapSource.TileUpdate tileUpdate)
 	{
 		log = Logger.getLogger(this.getClass());
 		this.name = name;
 		this.minZoom = minZoom;
-		this.maxZoom = Math.min(maxZoom, 18);
+		this.maxZoom = Math.min(maxZoom, MP2MapSpace.MAX_TECH_ZOOM);
 		this.tileType = tileType;
 		this.tileUpdate = tileUpdate;
 	}
@@ -100,7 +112,8 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 	/**
 	 * Can be used to e.g. retrieve the url pattern before the first call
 	 */
-	protected final void initializeHttpMapSource()
+	@Override
+	public void initialize()
 	{
 		if (initialized)
 			return;
@@ -112,7 +125,7 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 				if (initialized)
 				  // Another thread has already completed initialization while this one was blocked
 				  return;
-				initernalInitialize();
+				internalInitialize();
 				initialized = true;
 				log.debug("Map source has been initialized");
 			}
@@ -125,7 +138,7 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 		initialized = true;
 	}
 
-	protected void initernalInitialize() throws MapSourceInitializationException
+	protected void internalInitialize() throws MapSourceInitializationException
 	{
 	}
 
@@ -138,6 +151,7 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 		// if (loadMethod == LoadMethod.CACHE)
 		if (loadMethod == LoadMethod.STORE)
 		{
+			log.debug("called with 'LoadMethod.STORE'");
 			IfTileStoreEntry entry = ACSiTileStore.getInstance().getTile(x, y, zoom, this);
 			if (entry == null)
 			{
@@ -149,12 +163,14 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 		}
 		else if (loadMethod == LoadMethod.SOURCE)
 		{
-			initializeHttpMapSource();
+			log.debug("called with 'LoadMethod.SOURCE'");
+			initialize();
 			return TileDownLoader.downloadTileAndUpdateStore(x, y, zoom, this);
 		}
 		else
 		{
-			initializeHttpMapSource();
+			log.warn("called with other LoadMethod:" + loadMethod);
+			initialize();
 			return TileDownLoader.getTileData(x, y, zoom, this);
 		}
 	}
@@ -178,7 +194,7 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 	@Override
 	public BufferedImage downloadTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
 	{
-		initializeHttpMapSource();
+		initialize();
 		byte[] data = TileDownLoader.downloadTileAndUpdateStore(x, y, zoom, this);
 		if (data == null)
 		{
@@ -233,13 +249,6 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 	{
 		return true;
 	}
-
-	// #mapSpace
-	// @Override
-	// public IfMapSpace getMapSpace()
-	// {
-	// return mapSpace;
-	// }
 
 	@Override
 	public Color getBackgroundColor()

@@ -28,7 +28,7 @@ import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
 
 /**
- * 
+ * These are the methods common for all types of map sources.
  */
 @XmlJavaTypeAdapter(MapSourceAdapter.class)
 public interface IfMapSource
@@ -40,6 +40,20 @@ public interface IfMapSource
 	{
 		DEFAULT, CACHE, SOURCE, STORE, ALL
 	};
+
+	/**
+	 * A map source name has to be unique. This retrieves a 'user friendly' name.
+	 * 
+	 * @return Name of the map source as used in the UI.
+	 */
+	public String getName();
+
+	/**
+	 * The map source has an internally used ID to avoid string compares with the map source name.
+	 * 
+	 * @return ID of this map source as used internally, esp. by the tile store.
+	 */
+	// public int getID();
 
 	/**
 	 * Specifies the maximum zoom value. The number of zoom levels supported by this map source is [{@link #getMinZoom}.. {@link #getMaxZoom}].
@@ -61,11 +75,17 @@ public interface IfMapSource
 	public int getMinZoom();
 
 	/**
-	 * A tile layer name has to be unique.
+	 * Specifies the tile image type. For tiles rendered by Mapnik or Osmarenderer this is usually {@link TileImageType#PNG}.
 	 * 
-	 * @return Name of the tile layer
+	 * @return Tile image file type.
 	 */
-	public String getName();
+	public TileImageType getTileImageType();
+
+	public Color getBackgroundColor();
+
+	public MapSourceLoaderInfo getLoaderInfo();
+
+	public void setLoaderInfo(MapSourceLoaderInfo loaderInfo);
 
 	/**
 	 * Retrieves the data for the specified tile according to the specified load method as a byte array. If no data are available at the specified location, null
@@ -122,18 +142,5 @@ public interface IfMapSource
 	 */
 	public BufferedImage downloadTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException;
 
-	/**
-	 * Specifies the tile image type. For tiles rendered by Mapnik or Osmarenderer this is usually {@link TileImageType#PNG}.
-	 * 
-	 * @return Tile image file type
-	 */
-	public TileImageType getTileImageType();
-
-	// W #mapSpace public IfMapSpace getMapSpace();
-
-	public Color getBackgroundColor();
-
-	public MapSourceLoaderInfo getLoaderInfo();
-
-	public void setLoaderInfo(MapSourceLoaderInfo loaderInfo);
+	public void initialize();
 }

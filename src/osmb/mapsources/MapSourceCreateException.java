@@ -29,5 +29,4 @@ public class MapSourceCreateException extends Exception
 	{
 		super(message, cause);
 	}
-
 }

@@ -51,7 +51,7 @@ public class MapPolygon extends Map implements IfMap
 	{
 	}
 
-//W #mapSpace EastNorthCoordinate <-> GeoCoordinate
+	// W #mapSpace EastNorthCoordinate <-> GeoCoordinate
 	public static MapPolygon createTrackEnclosure(Layer layer, String name, IfMapSource mapSource, int zoom, GeoCoordinate[] trackPoints, int pixelDistance,
 	    TileImageParameters parameters)
 	{
@@ -158,10 +158,11 @@ public class MapPolygon extends Map implements IfMap
 
 	public MapPolygon(Layer layer, String name, IfMapSource mapSource, int zoom, Polygon polygon, TileImageParameters parameters)
 	{
-		super(layer, name, mapSource, zoom, null, null, parameters);
+		// super(layer, name, mapSource, zoom, null, null, parameters);
+		super(layer, mapSource, zoom, null, null, parameters);
 		this.polygon = polygon;
 		Rectangle bounds = polygon.getBounds();
-		int mapSourceTileSize = MP2MapSpace.getTileSize(); // #mapSpace  mapSource.getMapSpace().getTileSize();
+		int mapSourceTileSize = MP2MapSpace.getTileSize(); // #mapSpace mapSource.getMapSpace().getTileSize();
 		// Make sure the minimum tile coordinate starts/ends on the edge of a tile from the iMap source
 		int minx = MyMath.roundDownToNearest(bounds.x, mapSourceTileSize);
 		int miny = MyMath.roundDownToNearest(bounds.y, mapSourceTileSize);
@@ -182,7 +183,7 @@ public class MapPolygon extends Map implements IfMap
 
 	protected void internalCalculateTilesToDownload()
 	{
-		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace  mapSource.getMapSpace().getTileSize();
+		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace mapSource.getMapSpace().getTileSize();
 		double tileSizeD = tileSize;
 		int xMin = minPixelCoordinate.x;
 		int xMax = maxPixelCoordinate.x;
@@ -204,12 +205,16 @@ public class MapPolygon extends Map implements IfMap
 	@Override
 	public String getToolTip()
 	{
-		 // W #mapSpace IfMapSpace mapSpace = mapSource.getMapSpace();
-	//W #mapSpace EastNorthCoordinate <-> GeoCoordinate MP2Corner
+		// W #mapSpace IfMapSpace mapSpace = mapSource.getMapSpace();
+		// W #mapSpace EastNorthCoordinate <-> GeoCoordinate MP2Corner
 		@SuppressWarnings("unused") // /W #unused
-		GeoCoordinate tl = new MP2Corner(minPixelCoordinate.x, minPixelCoordinate.y, getZoom()).toGeoCoordinate();// W #mapSpace new EastNorthCoordinate(mapSpace, getZoom(), minPixelCoordinate.x, minPixelCoordinate.y);
+		GeoCoordinate tl = new MP2Corner(minPixelCoordinate.x, minPixelCoordinate.y, getZoom()).toGeoCoordinate();// W #mapSpace new EastNorthCoordinate(mapSpace,
+		                                                                                                          // getZoom(), minPixelCoordinate.x,
+		                                                                                                          // minPixelCoordinate.y);
 		@SuppressWarnings("unused") // /W #unused
-		GeoCoordinate br = new MP2Corner(maxPixelCoordinate.x, maxPixelCoordinate.y, getZoom()).toGeoCoordinate();// W #mapSpace new EastNorthCoordinate(mapSpace, getZoom(), maxPixelCoordinate.x, maxPixelCoordinate.y);
+		GeoCoordinate br = new MP2Corner(maxPixelCoordinate.x, maxPixelCoordinate.y, getZoom()).toGeoCoordinate();// W #mapSpace new EastNorthCoordinate(mapSpace,
+		                                                                                                          // getZoom(), maxPixelCoordinate.x,
+		                                                                                                          // maxPixelCoordinate.y);
 
 		StringWriter sw = new StringWriter(1024);
 		// sw.write("<html>");

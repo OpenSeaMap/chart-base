@@ -183,22 +183,22 @@ public class TileLoader
 			}
 			catch (ConnectException e)
 			{
-				log.warn("Downloading of " + mTile + " failed: " + e.getMessage());
+				log.error("Downloading of " + mTile + " failed: " + e.getMessage());
 				mTile.setErrorImage();
 			}
 			catch (DownloadFailedException e)
 			{
-				log.warn("Downloading of " + mTile + " failed: " + e.getMessage());
+				log.error("Downloading of " + mTile + " failed: " + e.getMessage());
 				mTile.setErrorImage();
 			}
 			catch (IOException e)
 			{
-				log.warn("Downloading of " + mTile + " failed: " + e.getMessage());
+				log.error("Downloading of " + mTile + " failed: " + e.getMessage());
 				mTile.setErrorImage();
 			}
 			catch (Exception e)
 			{
-				log.warn("Downloading of " + mTile + " failed", e);
+				log.error("Downloading of " + mTile + " failed", e);
 				mTile.setErrorImage();
 			}
 			listener.tileLoadingFinished(mTile, bLoadOK);
