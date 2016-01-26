@@ -137,10 +137,15 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	 * This makes an osm-internal chart number, which is worldwide unique
 	 * 
 	 * @param nZoom
+	 *          The maps zoom level.
 	 * @param nMinY
+	 *          The minimal y pixel index.
 	 * @param nMaxY
+	 *          The maximal y pixel index.
 	 * @param nMinX
+	 *          The minimal x pixel index.
 	 * @param nMaxX
+	 *          The maximal x pixel index.
 	 * @return A String containing the unique chart number.
 	 */
 	public static String makeMapNumber(int nZoom, int nMinY, int nMaxY, int nMinX, int nMaxX)
@@ -153,7 +158,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 
 	// instance data
 	/**
-	 * the osm internal name
+	 * The osm internal name This is "L" + the maps number.
 	 */
 	protected String name;
 	/**

@@ -37,7 +37,6 @@ import osmb.program.Logging;
 import osmb.program.tiles.TileImageParameters;
 import osmb.utilities.MyMath;
 import osmb.utilities.geo.GeoCoordinate;
-// W #mapSpace import osmb.utilities.geo.EastNorthCoordinate;
 
 // /W ? @XmlRootElement
 // /W #deprecated
@@ -62,10 +61,10 @@ public class MapPolygon extends Map implements IfMap
 			GeoCoordinate point1 = trackPoints[i - 1];
 			GeoCoordinate point2 = trackPoints[i];
 
-			int y1 = MP2MapSpace.cLatToY(point1.lat, zoom); // W #mapSpace mapSpace.cLatToY(point1.lat, zoom);
-			int y2 = MP2MapSpace.cLatToY(point2.lat, zoom); // W #mapSpace mapSpace.cLatToY(point2.lat, zoom);
-			int x1 = MP2MapSpace.cLonToX(point1.lon, zoom); // W #mapSpace mapSpace.cLonToX(point1.lon, zoom);
-			int x2 = MP2MapSpace.cLonToX(point2.lon, zoom); // W #mapSpace mapSpace.cLonToX(point2.lon, zoom);
+			int y1 = MP2MapSpace.cLatToYIndex(point1.lat, zoom);
+			int y2 = MP2MapSpace.cLatToYIndex(point2.lat, zoom);
+			int x1 = MP2MapSpace.cLonToXIndex(point1.lon, zoom);
+			int x2 = MP2MapSpace.cLonToXIndex(point2.lon, zoom);
 
 			Line2D.Double ln = new Line2D.Double(x1, y1, x2, y2);
 			double indent = pixelDistance; // distance from central line
