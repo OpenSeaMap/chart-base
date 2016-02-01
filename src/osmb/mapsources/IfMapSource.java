@@ -55,16 +55,18 @@ public interface IfMapSource
 	 */
 	// public int getID();
 
+	// W ? what is Bundle#getMaxZoomLevel?
 	/**
 	 * Specifies the maximum zoom value. The number of zoom levels supported by this map source is [{@link #getMinZoom}.. {@link #getMaxZoom}].
 	 * To use the zoom level it has to checked against {@link Bundle#getMaxZoomLevel}() and {@link MP2MapSpace#MAX_TECH_ZOOM}. <br>
 	 * The first one is the maximum reasonable to be used in the bundles output format and device, the latter is the maximum zoom level supported by osmbs
 	 * internal data structures.
 	 * 
-	 * @return maximum zoom value - currently (2015) <= 22 {@value MP2MapSpace#MAX_TECH_ZOOM}
+	 * @return maximum zoom value - currently (2015) <= {@link MP2MapSpace#MAX_TECH_ZOOM 22}
 	 */
 	public int getMaxZoom();
 
+	// W ? what is Bundle.getMinZoomLevel()?
 	/**
 	 * Specifies the minimum zoom value. The number of zoom levels supported by this map source is [{@link #getMinZoom}.. {@link #getMaxZoom}].
 	 * To use the zoom level it has to checked against Bundle.getMinZoomLevel() and IfMapSpace.MIN_TECH_ZOOM. The first one is the minimum reasonable to be used

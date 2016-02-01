@@ -48,7 +48,7 @@ public class DirectoryManager
 	public static File tileStoreDir;
 	public static File bundlesDir;
 
-	// private static Properties dirConfig = null; // /W #unused
+	// private static Properties dirConfig = null; // W #unused
 
 	static
 	{
@@ -62,9 +62,9 @@ public class DirectoryManager
 		toolsDir = new File(programDir, "tools");
 		userSettingsDir = programDir;
 
-		// /W standard directories
+		// W standard directories
 		catalogsDir = new File(userHomeDir, "catalogs");
-		mapSourcesDir = new File(programDir, "../OSeaMChartBase/mapsources"); // /W #???
+		mapSourcesDir = new File(programDir, "../OSeaMChartBase/mapsources"); // W #???
 		tileStoreDir = new File(userHomeDir, "tilestore");
 		bundlesDir = new File(userHomeDir, "bundles");
 	}
@@ -82,7 +82,7 @@ public class DirectoryManager
 	 * @return
 	 *         Returns the directory from which this java program is executed
 	 */
-	@SuppressWarnings("unused") // /W ACApp.getProgramDir() ...
+	@SuppressWarnings("unused") // W ACApp.getProgramDir() ...
 	private static File getProgramDir()
 	{
 		File f = null;

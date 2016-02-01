@@ -1,6 +1,6 @@
 package osmb.program;
 
-// /W ? import osmb.program.ACSettings.Directories;
+// W ? import osmb.program.ACSettings.Directories;
 import osmb.utilities.UnitSystem;
 
 public interface IfSettings
@@ -11,5 +11,5 @@ public interface IfSettings
 
 	public UnitSystem getUnitSystem();
 
-	// /W #??? public Directories getDirectories();
+	// W #??? public Directories getDirectories();
 }
