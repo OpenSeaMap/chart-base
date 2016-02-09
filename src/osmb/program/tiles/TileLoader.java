@@ -99,6 +99,7 @@ public class TileLoader
 		public void run()
 		{
 			log.trace(OSMBStrs.RStr("START"));
+			int sleepTime = 1;
 			boolean bLoadOK = false;
 			if (((mTile = mMTC.getTile(mMapSource, mTileX, mTileY, mZoom)) != null) && (mTile.getTileState() != TileState.TS_LOADING))
 			{
@@ -110,7 +111,24 @@ public class TileLoader
 				mTile = new Tile(mMapSource, mTileX, mTileY, mZoom);
 				log.debug("loading of " + mTile + " started");
 				if (!(bLoadOK = loadTileFromStore()))
-					bLoadOK = downloadAndUpdateTile();
+				{
+					while (!(bLoadOK = downloadAndUpdateTile()))
+					{
+						try
+						{
+							wait(sleepTime);
+							sleepTime *= 2;
+						}
+						catch (InterruptedException e)
+						{
+							log.debug("loading of " + mTile + " interrupted");
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+				else
+					log.debug(mTile + " loaded from store");
 			}
 			listener.tileLoadingFinished(mTile, bLoadOK);
 			log.debug("loading of " + mTile + " finished");
@@ -157,7 +175,7 @@ public class TileLoader
 			}
 			catch (Exception e)
 			{
-				log.error("Excepted to load " + mTile + " from tile store", e);
+				log.error("Exception while load " + mTile + " from tile store", e);
 			}
 			return bLoadOK;
 		}

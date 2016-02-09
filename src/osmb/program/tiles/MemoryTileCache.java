@@ -117,9 +117,12 @@ public class MemoryTileCache implements NotificationListener
 	@Override
 	public void handleNotification(Notification notification, Object handback)
 	{
-		log.trace("Memory notification: " + notification.toString());
 		if (!MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED.equals(notification.getType()))
+		{
+			log.trace("Memory notification: " + notification.toString());
 			return;
+		}
+		log.info("Memory notification: " + notification.toString());
 		synchronized (mruTiles)
 		{
 			int count_half = mruTiles.getElementCount() / 2;
@@ -190,7 +193,7 @@ public class MemoryTileCache implements NotificationListener
 			}
 			catch (Exception e)
 			{
-				log.warn("", e);
+				log.warn("boo ", e);
 			}
 		}
 	}
