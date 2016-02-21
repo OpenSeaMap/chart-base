@@ -28,7 +28,7 @@ import osmb.mapsources.IfMapSource;
 import osmb.mapsources.IfMapSource.LoadMethod;
 import osmb.program.JobDispatcher;
 import osmb.program.tiles.Tile.TileState;
-import osmb.program.tilestore.ACSiTileStore;
+import osmb.program.tilestore.ACTileStore;
 import osmb.program.tilestore.IfTileStoreEntry;
 import osmb.utilities.OSMBStrs;
 
@@ -56,9 +56,9 @@ public class TileLoader
 	 * 
 	 * @param source
 	 * @param tilex
-	 *          in tile coordinates
+	 *          in tile indices
 	 * @param tiley
-	 *          in tile coordinates
+	 *          in tile indices
 	 * @param zoom
 	 * @return A {@link Runnable} to execute by some thread pool
 	 */
@@ -82,6 +82,7 @@ public class TileLoader
 		Tile mTile;
 		// boolean fileTilePainted = false;
 		protected IfTileStoreEntry tileStoreEntry = null;
+		private Object mSem = new Object();
 
 		public TileAsyncLoadJob(IfMapSource source, int tilex, int tiley, int zoom)
 		{
@@ -99,7 +100,7 @@ public class TileLoader
 		public void run()
 		{
 			log.trace(OSMBStrs.RStr("START"));
-			int sleepTime = 1;
+			int sleepTime = 100;
 			boolean bLoadOK = false;
 			if (((mTile = mMTC.getTile(mMapSource, mTileX, mTileY, mZoom)) != null) && (mTile.getTileState() != TileState.TS_LOADING))
 			{
@@ -112,19 +113,29 @@ public class TileLoader
 				log.debug("loading of " + mTile + " started");
 				if (!(bLoadOK = loadTileFromStore()))
 				{
-					while (!(bLoadOK = downloadAndUpdateTile()))
+					synchronized (mSem)
 					{
-						try
+						while (!(bLoadOK = downloadAndUpdateTile()))
 						{
-							wait(sleepTime);
-							sleepTime *= 2;
+							try
+							{
+								log.warn("loading of " + mTile + ", sleep stime=" + sleepTime / 1000.0 + "s");
+								mSem.wait(sleepTime);
+								if (sleepTime < 120000)
+									sleepTime *= 2;
+							}
+							catch (InterruptedException e)
+							{
+								log.debug("loading of " + mTile + " interrupted");
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							catch (Exception e)
+							{
+								e.printStackTrace();
+							}
 						}
-						catch (InterruptedException e)
-						{
-							log.debug("loading of " + mTile + " interrupted");
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+						log.debug("loading of " + mTile + " finished with stime=" + sleepTime / 1000.0 + "s");
 					}
 				}
 				else
@@ -148,6 +159,7 @@ public class TileLoader
 			try
 			{
 				BufferedImage image = mMapSource.getTileImage(mZoom, mTileX, mTileY, LoadMethod.STORE);
+
 				if (image == null)
 				{
 					log.warn(mTile + " not in store -> use empty and load from online");
@@ -159,9 +171,9 @@ public class TileLoader
 					mTile.setImage(image);
 					mMTC.addTile(mTile);
 
-					tileStoreEntry = ACSiTileStore.getInstance().getTile(mTileX, mTileY, mZoom, mMapSource);
+					tileStoreEntry = ACTileStore.getInstance().getTile(mTileX, mTileY, mZoom, mMapSource);
 
-					if (ACSiTileStore.getInstance().isTileExpired(tileStoreEntry))
+					if (ACTileStore.getInstance().isTileExpired(tileStoreEntry))
 					{
 						mTile.setTileState(Tile.TileState.TS_EXPIRED);
 						log.warn("expired " + mTile + " in store -> use old and load from online");

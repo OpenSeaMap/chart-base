@@ -28,7 +28,7 @@ import osmb.mapsources.IfMapSourceListener;
 import osmb.mapsources.MP2MapSpace;
 import osmb.program.ACSettings;
 //W #mapSpace import osmb.program.map.IfMapSpace;
-import osmb.program.tilestore.ACSiTileStore;
+import osmb.program.tilestore.ACTileStore;
 import osmb.program.tilestore.IfTileStoreEntry;
 import osmb.utilities.OSMBStrs;
 import osmb.utilities.OSMBUtilities;
@@ -84,7 +84,7 @@ public class TileDownLoader
 		if (y > maxTileIndex)
 			throw new RuntimeException("Invalid tile index y=" + y + " for zoom " + zoom + ", MAX=" + maxTileIndex);
 
-		ACSiTileStore ts = ACSiTileStore.getInstance();
+		ACTileStore ts = ACTileStore.getInstance();
 		ACSettings s = ACSettings.getInstance();
 
 		IfTileStoreEntry tile = null;
@@ -215,7 +215,7 @@ public class TileDownLoader
 			throw new UnrecoverableDownloadException("The returned image is of unknown format");
 		if (useTileStore)
 		{
-			ACSiTileStore.getInstance().putTileData(data, x, y, zoom, mapSource, timeLastModified, timeExpires, eTag);
+			ACTileStore.getInstance().putTileData(data, x, y, zoom, mapSource, timeLastModified, timeExpires, eTag);
 		}
 		OSMBUtilities.checkForInterruption();
 		return data;
@@ -326,7 +326,7 @@ public class TileDownLoader
 			{
 				// update expiration date in tile store
 				tile.update(conn.getExpiration());
-				ACSiTileStore.getInstance().putTile(tile, mapSource);
+				ACTileStore.getInstance().putTile(tile, mapSource);
 			}
 			if (log.isTraceEnabled())
 				log.trace("Server responded: Data not modified: " + mapSource + " " + tile);
@@ -353,7 +353,7 @@ public class TileDownLoader
 				throw new UnrecoverableDownloadException("The returned image is of unknown format");
 			if (s.getTileStoreEnabled())
 			{
-				ACSiTileStore.getInstance().putTileData(data, x, y, zoom, mapSource, timeLastModified, timeExpires, eTag);
+				ACTileStore.getInstance().putTileData(data, x, y, zoom, mapSource, timeLastModified, timeExpires, eTag);
 			}
 			OSMBUtilities.checkForInterruption();
 			return data;
@@ -361,14 +361,14 @@ public class TileDownLoader
 	}
 
 	/**
-	 * @deprecated This is moved into the {@link ACSiTileStore}
+	 * @deprecated This is moved into the {@link ACTileStore}
 	 */
 	@Deprecated
 	public static boolean isTileExpired(IfTileStoreEntry tileStoreEntry)
 	{
 		if (tileStoreEntry == null)
 			return true;
-		return ACSiTileStore.getInstance().isTileExpired(tileStoreEntry);
+		return ACTileStore.getInstance().isTileExpired(tileStoreEntry);
 	}
 
 	/**

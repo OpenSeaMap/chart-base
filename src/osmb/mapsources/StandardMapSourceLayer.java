@@ -28,6 +28,7 @@ import javax.xml.bind.annotation.XmlTransient;
 //W #mapSpace import osmb.program.map.IfMapSpace;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
+import osmb.program.tilestore.ACTileStore;
 
 @XmlRootElement
 /**
@@ -136,4 +137,11 @@ public class StandardMapSourceLayer implements IfMapSource
 	{
 		// TODO Auto-generated method stub
 	}
+
+	@Override
+	public ACTileStore getTileStore()
+	{
+		return null;
+	}
+
 }

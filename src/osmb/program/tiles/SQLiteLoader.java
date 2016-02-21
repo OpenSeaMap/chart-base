@@ -46,7 +46,7 @@ public class SQLiteLoader
 		catch (Exception e)
 		{
 			JOptionPane.showMessageDialog(null, SQLiteLoader.getMsgSqliteMissing(), OSMBStrs.RStr("msg_environment_slqite_lib_missing_title"),
-					JOptionPane.ERROR_MESSAGE);
+			    JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
 	}
@@ -58,13 +58,13 @@ public class SQLiteLoader
 
 	public static synchronized void loadSQLite() throws SQLException
 	{
-		try
-		{
-			SQLiteLoader.loadSQLite(SQLITE_DRIVERNAME1);
-		}
-		catch (Exception e)
-		{
-		}
+		// try
+		// {
+		// SQLiteLoader.loadSQLite(SQLITE_DRIVERNAME1);
+		// }
+		// catch (Exception e)
+		// {
+		// }
 		SQLiteLoader.loadSQLite(SQLITE_DRIVERNAME2);
 	}
 
@@ -100,5 +100,15 @@ public class SQLiteLoader
 		{
 			log.error("Failed to close SQL connection: " + e.getMessage());
 		}
+	}
+
+	/**
+	 * This allows to check if SQLite is already loaded.
+	 * 
+	 * @return TRUE if SQLite library successfully loaded
+	 */
+	public static boolean isLoaded()
+	{
+		return SQLITE_LOADED;
 	}
 }

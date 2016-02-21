@@ -156,7 +156,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	/**
 	 * This actually creates a new catalog object and fills it with the content from the {@link #file}
 	 */
-	public static IfCatalog load(File file) throws JAXBException
+	public static Catalog load(File file) throws JAXBException
 	{
 		JAXBContext context = JAXBContext.newInstance(Catalog.class);
 		Unmarshaller um = context.createUnmarshaller();
@@ -277,14 +277,15 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 
 	public Catalog(Catalog catalog)
 	{
-		this.file = catalog.file;
-		this.name = catalog.name;
-		this.version = catalog.version;
-		this.layers = catalog.layers;
-
-		log.info("copy constructor catalog(catalog) called");
+		this.file = catalog.getFile();
+		this.name = catalog.getName();
+		this.version = catalog.getVersion();
+		// how to copy layers ?
+		this.layers = catalog.getLayers();
+		log.debug("copy constructor catalog(catalog) called");
 	}
 
+	@Deprecated
 	public Catalog(IfCatalog ifCatalog)
 	{
 		this.file = ifCatalog.getFile();
@@ -292,7 +293,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		this.version = ifCatalog.getVersion();
 		// how to copy layers ?
 		this.layers = ifCatalog.getLayers();
-		log.info("copy constructor catalog(catalog) called");
+		log.debug("copy constructor catalog(catalog) called");
 	}
 
 	@Override

@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 import osmb.program.tiles.TileDownLoader;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
-import osmb.program.tilestore.ACSiTileStore;
+import osmb.program.tilestore.ACTileStore;
 import osmb.program.tilestore.IfTileStoreEntry;
 
 /**
@@ -47,7 +47,6 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 	protected int maxZoom;
 	protected TileImageType tileType;
 	protected IfHttpMapSource.TileUpdate tileUpdate;
-	// protected IfMapSpace mapSpace = MercatorPower2MapSpace.INSTANCE_256; // W #mapSpace =
 	protected MapSourceLoaderInfo loaderInfo = null;
 
 	public ACHttpMapSource(String name, int minZoom, int maxZoom, TileImageType tileType)
@@ -152,7 +151,7 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 		if (loadMethod == LoadMethod.STORE)
 		{
 			log.debug("called with 'LoadMethod.STORE'");
-			IfTileStoreEntry entry = ACSiTileStore.getInstance().getTile(x, y, zoom, this);
+			IfTileStoreEntry entry = ACTileStore.getInstance().getTile(x, y, zoom, this);
 			if (entry == null)
 			{
 				log.error("no image data in tile store");
@@ -222,6 +221,9 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 		return name;
 	}
 
+	/**
+	 * @return The name to be used by the tile store.
+	 */
 	public String getStoreName()
 	{
 		return name;
@@ -287,5 +289,11 @@ public abstract class ACHttpMapSource implements IfHttpMapSource
 			return false;
 		IfMapSource other = (IfMapSource) obj;
 		return other.getName().equals(getName());
+	}
+
+	@Override
+	public ACTileStore getTileStore()
+	{
+		return null;
 	}
 }

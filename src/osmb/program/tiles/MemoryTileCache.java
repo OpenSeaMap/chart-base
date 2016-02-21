@@ -23,7 +23,7 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryNotificationInfo;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryUsage;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.management.Notification;
 import javax.management.NotificationBroadcaster;
@@ -43,17 +43,19 @@ import osmb.mapsources.IfMapSource;
  */
 public class MemoryTileCache implements NotificationListener
 {
-	protected final Logger log;
+	// static / class data
+	protected static final Logger log = Logger.getLogger(MemoryTileCache.class);
 
+	// instance data
 	/**
 	 * Default cache size in tiles. May be modified by constructor {@link #MemoryTileCache(int cacheSize)}.
 	 */
-	protected int mCacheSize = 2000;
+	protected int mCacheSize = 0;
 	// protected Hashtable<String, CacheEntry> mHT;
 	/**
 	 * hashtable holding the actual tile data.
 	 */
-	protected Hashtable<String, Tile> mHT;
+	protected ConcurrentHashMap<String, Tile> mHT = null;
 
 	/**
 	 * List of all tiles by their key in their most recently used order.
@@ -62,25 +64,7 @@ public class MemoryTileCache implements NotificationListener
 
 	public MemoryTileCache()
 	{
-		log = Logger.getLogger(this.getClass());
-		mCacheSize = 5000;
-		// mHT = new Hashtable<String, CacheEntry>(mCacheSize);
-		mHT = new Hashtable<String, Tile>(mCacheSize);
-		mruTiles = new CacheLinkedListElement();
-
-		MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
-		NotificationBroadcaster emitter = (NotificationBroadcaster) mbean;
-		emitter.addNotificationListener(this, null, null);
-		// Set-up each memory pool to notify if the free memory falls below 10%
-		for (MemoryPoolMXBean memPool : ManagementFactory.getMemoryPoolMXBeans())
-		{
-			if (memPool.isUsageThresholdSupported())
-			{
-				MemoryUsage memUsage = memPool.getUsage();
-				memPool.setUsageThreshold((long) (memUsage.getMax() * 0.95));
-			}
-		}
-		log.debug("mtc[" + mHT.size() + ", " + mCacheSize + "] created");
+		this(5000);
 	}
 
 	/**
@@ -90,10 +74,8 @@ public class MemoryTileCache implements NotificationListener
 	 */
 	public MemoryTileCache(int cacheSize)
 	{
-		log = Logger.getLogger(this.getClass());
 		mCacheSize = cacheSize;
-		// mHT = new Hashtable<String, CacheEntry>(mCacheSize);
-		mHT = new Hashtable<String, Tile>(mCacheSize);
+		mHT = new ConcurrentHashMap<String, Tile>(mCacheSize);
 		mruTiles = new CacheLinkedListElement();
 
 		MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
@@ -112,37 +94,40 @@ public class MemoryTileCache implements NotificationListener
 	}
 
 	/**
-	 * In case we are running out of memory we free half of the cached down to a minimum of 25 cached tiles.
+	 * In case we are running out of memory we free half of the cache, down to a minimum of 25 cached tiles.
+	 * We get lots of notifs about 'PS Old Gen' from GC...
 	 */
 	@Override
 	public void handleNotification(Notification notification, Object handback)
 	{
-		if (!MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED.equals(notification.getType()))
+		if ((!MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED.equals(notification.getType()))
+		    && (!MemoryNotificationInfo.MEMORY_COLLECTION_THRESHOLD_EXCEEDED.equals(notification.getType())))
 		{
 			log.trace("Memory notification: " + notification.toString());
 			return;
 		}
-		log.info("Memory notification: " + notification.toString());
-		synchronized (mruTiles)
-		{
-			int count_half = mruTiles.getElementCount() / 2;
-			count_half = Math.max(25, count_half);
-			if (mruTiles.getElementCount() <= count_half)
-				return;
-			log.warn("memory low - freeing cached tiles: " + mruTiles.getElementCount() + " -> " + count_half);
-			try
-			{
-				while (mruTiles.getElementCount() > count_half)
-				{
-					removeEntry(mruTiles.getLastElement());
-				}
-			}
-			catch (Exception e)
-			{
-				log.error("", e);
-			}
-		}
-		log.debug("mtc[" + mHT.size() + "] modified");
+		// MemoryNotificationInfo info = MemoryNotificationInfo.from((CompositeData) notification.getUserData());
+		// log.warn("Memory notification: " + notification.getMessage() + ", " + info.getPoolName());
+		// synchronized (mruTiles)
+		// {
+		// int count_half = mruTiles.getElementCount() / 2;
+		// count_half = Math.max(25, count_half);
+		// if (mruTiles.getElementCount() <= count_half)
+		// return;
+		// log.debug("memory low - freeing cached tiles: " + mruTiles.getElementCount() + " -> " + count_half);
+		// try
+		// {
+		// while (mruTiles.getElementCount() > count_half)
+		// {
+		// removeEntry(mruTiles.getLastElement());
+		// }
+		// }
+		// catch (Exception e)
+		// {
+		// log.error("", e);
+		// }
+		// }
+		// log.debug("mtc[" + mHT.size() + "] modified");
 	}
 
 	/**
@@ -316,6 +301,8 @@ public class MemoryTileCache implements NotificationListener
 			}
 			else
 			{
+				removeEntry(element);
+
 				element.next = firstElement;
 				firstElement.prev = element;
 				element.prev = null;

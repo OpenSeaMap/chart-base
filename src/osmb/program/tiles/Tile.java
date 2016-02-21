@@ -26,6 +26,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
 
 import javax.imageio.ImageIO;
 
@@ -67,34 +68,39 @@ public class Tile
 	};
 
 	protected IfMapSource mMapSource;
-	protected int mTileX;
-	protected int mTileY;
+	protected int mXTIdx;
+	protected int mYTIdx;
 	protected int mZoom;
 	protected BufferedImage mImage = LOADING_IMAGE;
 	protected String mKey;
 	protected TileState mTileState = TileState.TS_NEW;
+	protected Date mod;
+	protected Date exp;
+	protected String etag;
 
 	/**
-	 * Creates a tile with a 'loading' image.
+	 * Creates a tile with a 'loading' image and TS_NEW state.
 	 * 
 	 * @param mapSource
-	 * @param xtile
-	 * @param ytile
+	 * @param xTIdx
+	 *          tile x-index
+	 * @param yTIdx
+	 *          tile y-index
 	 * @param zoom
 	 */
-	public Tile(IfMapSource mapSource, int xtile, int ytile, int zoom)
+	public Tile(IfMapSource mapSource, int xTIdx, int yTIdx, int zoom)
 	{
 		super();
 		this.mMapSource = mapSource;
-		this.mTileX = xtile;
-		this.mTileY = ytile;
+		this.mXTIdx = xTIdx;
+		this.mYTIdx = yTIdx;
 		this.mZoom = zoom;
-		this.mKey = getTileKey(mapSource, xtile, ytile, zoom);
+		this.mKey = getTileKey(mapSource, xTIdx, yTIdx, zoom);
 	}
 
-	public Tile(IfMapSource source, int xtile, int ytile, int zoom, BufferedImage image)
+	public Tile(IfMapSource source, int xTIdx, int yTIdx, int zoom, BufferedImage image)
 	{
-		this(source, xtile, ytile, zoom);
+		this(source, xTIdx, yTIdx, zoom);
 		this.mImage = image;
 	}
 
@@ -117,8 +123,8 @@ public class Tile
 			if (zoomDiff < 3 && zoom_high <= mMapSource.getMaxZoom())
 			{
 				int factor = 1 << zoomDiff;
-				int xtile_high = mTileX << zoomDiff;
-				int ytile_high = mTileY << zoomDiff;
+				int xtile_high = mXTIdx << zoomDiff;
+				int ytile_high = mYTIdx << zoomDiff;
 				double scale = 1.0 / factor;
 				g.setTransform(AffineTransform.getScaleInstance(scale, scale));
 				int paintedTileCount = 0;
@@ -144,13 +150,13 @@ public class Tile
 			int zoom_low = mZoom - zoomDiff;
 			if (zoom_low >= mMapSource.getMinZoom())
 			{
-				int xtile_low = mTileX >> zoomDiff;
-				int ytile_low = mTileY >> zoomDiff;
+				int xtile_low = mXTIdx >> zoomDiff;
+				int ytile_low = mYTIdx >> zoomDiff;
 				int factor = (1 << zoomDiff);
 				double scale = factor;
 				AffineTransform at = new AffineTransform();
-				int translate_x = (mTileX % factor) * tileSize;
-				int translate_y = (mTileY % factor) * tileSize;
+				int translate_x = (mXTIdx % factor) * tileSize;
+				int translate_y = (mYTIdx % factor) * tileSize;
 				at.setTransform(scale, 0, 0, scale, -translate_x, -translate_y);
 				g.setTransform(at);
 				Tile tile = cache.getTile(mMapSource, xtile_low, ytile_low, zoom_low);
@@ -177,7 +183,7 @@ public class Tile
 	 */
 	public int getXtile()
 	{
-		return mTileX;
+		return mXTIdx;
 	}
 
 	/**
@@ -185,7 +191,7 @@ public class Tile
 	 */
 	public int getYtile()
 	{
-		return mTileY;
+		return mYTIdx;
 	}
 
 	/**
@@ -306,7 +312,7 @@ public class Tile
 	@Override
 	public String toString()
 	{
-		return "Tile (" + mZoom + "|" + mTileX + "|" + mTileY + ") from '" + mMapSource + "'";
+		return "Tile (" + mZoom + "|" + mXTIdx + "|" + mYTIdx + ") from '" + mMapSource + "'";
 	}
 
 	/**
@@ -319,7 +325,7 @@ public class Tile
 		if (!(obj instanceof Tile))
 			return false;
 		Tile tile = (Tile) obj;
-		return (mTileX == tile.mTileX) && (mTileY == tile.mTileY) && (mZoom == tile.mZoom);
+		return (mXTIdx == tile.mXTIdx) && (mYTIdx == tile.mYTIdx) && (mZoom == tile.mZoom);
 	}
 
 	@Override

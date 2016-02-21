@@ -26,6 +26,7 @@ import osmb.program.jaxb.MapSourceAdapter;
 // W #mapSpace import osmb.program.map.IfMapSpace;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
+import osmb.program.tilestore.ACTileStore;
 
 /**
  * These are the methods common for all types of map sources.
@@ -143,4 +144,6 @@ public interface IfMapSource
 	public BufferedImage downloadTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException;
 
 	public void initialize();
+
+	public ACTileStore getTileStore();
 }

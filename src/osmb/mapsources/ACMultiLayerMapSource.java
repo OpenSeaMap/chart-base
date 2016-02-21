@@ -35,7 +35,7 @@ import osmb.program.ACSettings;
 //W #mapSpace	import osmb.program.map.IfMapSpace;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
-import osmb.program.tilestore.ACSiTileStore;
+import osmb.program.tilestore.ACTileStore;
 
 public abstract class ACMultiLayerMapSource implements IfMapSource, Iterable<IfMapSource>
 {
@@ -133,6 +133,10 @@ public abstract class ACMultiLayerMapSource implements IfMapSource, Iterable<IfM
 		return name;
 	}
 
+	/**
+	 * @return The name to be used by the tile store. The layer of a MultiLayerMapSource are stored in separate tile stores.
+	 *         Each layer is a map source in itself, so use that map sources name.
+	 */
 	public String getStoreName()
 	{
 		return null;
@@ -215,7 +219,7 @@ public abstract class ACMultiLayerMapSource implements IfMapSource, Iterable<IfM
 				long timeLastModified = System.currentTimeMillis();
 				long timeExpires = timeLastModified + ACSettings.getTileDefaultExpirationTime();
 				log.debug("put composed tile:(" + zoom + "|" + x + "|" + y + ") into tile store");
-				ACSiTileStore.getInstance().putTileData(buf.toByteArray(), x, y, zoom, this, timeLastModified, timeExpires, "-");
+				ACTileStore.getInstance().putTileData(buf.toByteArray(), x, y, zoom, this, timeLastModified, timeExpires, "-");
 				return image;
 			}
 			else
@@ -276,4 +280,11 @@ public abstract class ACMultiLayerMapSource implements IfMapSource, Iterable<IfM
 			throw new RuntimeException("LoaderInfo already set");
 		this.loaderInfo = loaderInfo;
 	}
+
+	@Override
+	public ACTileStore getTileStore()
+	{
+		return null;
+	}
+
 }

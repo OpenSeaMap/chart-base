@@ -35,6 +35,7 @@ import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
+import java.nio.file.Path;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.sql.SQLException;
@@ -104,7 +105,7 @@ public class OSMBUtilities
 
 	public static BufferedImage createEmptyTileImage(IfMapSource mapSource)
 	{
-		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace  mapSource.getMapSpace().getTileSize();
+		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace mapSource.getMapSpace().getTileSize();
 		Color color = mapSource.getBackgroundColor();
 
 		int imageType;
@@ -515,6 +516,11 @@ public class OSMBUtilities
 			return;
 		if (!dir.mkdir())
 			throw new IOException("Failed to create directory \"" + dir.getAbsolutePath() + "\"");
+	}
+
+	public static void mkDirs(Path pPath) throws IOException
+	{
+		mkDirs(pPath.toFile());
 	}
 
 	public static void mkDirs(File dir) throws IOException

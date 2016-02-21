@@ -144,22 +144,22 @@ public interface IfMap extends IfCatalogObject, IfCapabilityDeletable
 	public long getTileCount();
 
 	/**
-	 * @return XMin in tile coordinates
+	 * @return XMin in tile indices
 	 */
 	public int getXMin();
 
 	/**
-	 * @return XMax in tile coordinates
+	 * @return XMax in tile indices
 	 */
 	public int getXMax();
 
 	/**
-	 * @return YMin in tile coordinates
+	 * @return YMin in tile indices
 	 */
 	public int getYMin();
 
 	/**
-	 * @return YMax in tile coordinates
+	 * @return YMax in tile indices
 	 */
 	public int getYMax();
 }

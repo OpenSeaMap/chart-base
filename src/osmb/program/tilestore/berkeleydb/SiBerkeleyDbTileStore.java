@@ -46,7 +46,7 @@ import com.sleepycat.persist.evolve.Renamer;
 import osmb.mapsources.IfMapSource;
 import osmb.program.ACSettings;
 import osmb.program.DelayedInterruptThread;
-import osmb.program.tilestore.ACSiTileStore;
+import osmb.program.tilestore.ACTileStore;
 import osmb.program.tilestore.IfTileStoreEntry;
 import osmb.program.tilestore.TileStoreException;
 import osmb.program.tilestore.TileStoreInfo;
@@ -59,7 +59,7 @@ import osmb.utilities.file.DirectoryFileFilter;
 /**
  * The database based tile store implementation. It still is a singleton.
  */
-public class SiBerkeleyDbTileStore extends ACSiTileStore
+public class SiBerkeleyDbTileStore extends ACTileStore
 {
 	/**
 	 * Max count of tile stores opened
@@ -123,15 +123,15 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 		try
 		{
 			// Get a file channel for the file
-			File file = new File(tileStoreDir, "lock");
-			if (!tileStoreDir.isDirectory())
+			File file = new File(mTileStoreDir, "lock");
+			if (!mTileStoreDir.isDirectory())
 				try
 				{
-					OSMBUtilities.mkDirs(tileStoreDir);
+					OSMBUtilities.mkDirs(mTileStoreDir);
 				}
 				catch (IOException e)
 				{
-					throw new TileStoreException("Unable to create tile store directory: \"" + tileStoreDir.getPath() + "\"");
+					throw new TileStoreException("Unable to create tile store directory: \"" + mTileStoreDir.getPath() + "\"");
 				}
 			FileChannel channel = new RandomAccessFile(file, "rw").getChannel();
 
@@ -516,13 +516,13 @@ public class SiBerkeleyDbTileStore extends ACSiTileStore
 	 */
 	protected File getStoreDir(String mapSourceName)
 	{
-		return new File(tileStoreDir, "db-" + mapSourceName);
+		return new File(mTileStoreDir, "db-" + mapSourceName);
 	}
 
 	@Override
 	public String[] getAllStoreNames()
 	{
-		File[] dirs = tileStoreDir.listFiles(new DirectoryFileFilter());
+		File[] dirs = mTileStoreDir.listFiles(new DirectoryFileFilter());
 		ArrayList<String> storeNames = new ArrayList<String>(dirs.length);
 		for (File d : dirs)
 		{

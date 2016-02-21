@@ -40,8 +40,9 @@ import osmb.program.tiles.TileDownLoader;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
 import osmb.program.tiles.UnrecoverableDownloadException;
-import osmb.program.tilestore.ACSiTileStore;
+import osmb.program.tilestore.ACTileStore;
 import osmb.program.tilestore.IfTileStoreEntry;
+import osmb.program.tilestore.TileStoreException;
 
 /**
  * Custom tile store provider, configurable via settings.xml.
@@ -88,6 +89,7 @@ public class CustomMapSource implements IfHttpMapSource
 	// protected boolean ignoreContentMismatch = false;
 
 	private MapSourceLoaderInfo loaderInfo = null;
+	protected ACTileStore mTileStore = null;
 
 	/**
 	 * Constructor without parameters - required by JAXB
@@ -100,6 +102,15 @@ public class CustomMapSource implements IfHttpMapSource
 	{
 		this.name = name;
 		this.url = url;
+		try
+		{
+			this.mTileStore.prepareTileStore(this);
+		}
+		catch (TileStoreException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -176,14 +187,14 @@ public class CustomMapSource implements IfHttpMapSource
 		}
 		else if (loadMethod == LoadMethod.STORE)
 		{
-			IfTileStoreEntry entry = ACSiTileStore.getInstance().getTile(x, y, zoom, this);
+			IfTileStoreEntry entry = ACTileStore.getInstance().getTile(x, y, zoom, this);
 			if (entry == null)
 				return null;
 			byte[] data = entry.getData();
-			if (Thread.currentThread() instanceof IfMapSourceListener)
-			{
-				((IfMapSourceListener) Thread.currentThread()).tileDownloaded(data.length);
-			}
+			// if (Thread.currentThread() instanceof IfMapSourceListener)
+			// {
+			// ((IfMapSourceListener) Thread.currentThread()).tileDownloaded(data.length);
+			// }
 			return data;
 		}
 		// if (ignoreErrors)
@@ -288,5 +299,11 @@ public class CustomMapSource implements IfHttpMapSource
 	@Override
 	public void initialize()
 	{
+	}
+
+	@Override
+	public ACTileStore getTileStore()
+	{
+		return null;
 	}
 }

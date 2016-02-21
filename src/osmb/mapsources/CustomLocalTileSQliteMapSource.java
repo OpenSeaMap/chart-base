@@ -43,6 +43,7 @@ import osmb.program.jaxb.ColorAdapter;
 import osmb.program.tiles.SQLiteLoader;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
+import osmb.program.tilestore.ACTileStore;
 import osmb.utilities.OSMBStrs;
 import osmb.utilities.OSMBUtilities;
 
@@ -372,4 +373,11 @@ public class CustomLocalTileSQliteMapSource implements IfFileBasedMapSource
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public ACTileStore getTileStore()
+	{
+		return null;
+	}
+
 }
