@@ -37,8 +37,7 @@ public abstract class ACSettings implements IfSettings
 		return log = Logger.getLogger(ACSettings.class);
 	}
 
-	// /W getter/setter ??? <->
-	// / => //W? @XmlElement(name = "directories") protected Directories cfgDirectories = new Directories();
+	// W #??? getter/setter <-> @XmlElement(name = "directories") protected Directories cfgDirectories = new Directories();
 	public static class Directories
 	{
 		// standard directories applied in DirectoryManager.static
@@ -88,7 +87,7 @@ public abstract class ACSettings implements IfSettings
 		return (SETTINGS_LAST_MODIFIED != lastModified);
 	}
 
-	// /W ? xml-Element? static?
+	// W #??? xml-Element <-> static
 	public static long getTileDefaultExpirationTime()
 	{
 		return cfgTileDefaultExpirationTime;
@@ -105,7 +104,7 @@ public abstract class ACSettings implements IfSettings
 	/**
 	 * Version of this settings file
 	 */
-	// @XmlElement(defaultValue = "") // /W  cfgVersion <-> version?
+	// W #??? @XmlElement(defaultValue = "") cfgVersion <-> version?
 	protected String cfgVersion;
 	/**
 	 * user agent used for connections to tile servers
@@ -128,7 +127,7 @@ public abstract class ACSettings implements IfSettings
 	 */
 	@XmlElement(name = "wgsGrid")
 	protected final WgsGridSettings cfgWgsGrid = new WgsGridSettings();
-	protected transient UnitSystem cfgUnitSystem = UnitSystem.Metric; // /W ? transient <-> XmlElement ? s.u.
+	protected transient UnitSystem cfgUnitSystem = UnitSystem.Metric; // W ? transient <-> XmlElement ? s.u.
 	protected String cfgLocaleLanguage = Locale.getDefault().getLanguage();
 	protected String cfgLocaleCountry = Locale.getDefault().getCountry();
 	/**
@@ -205,7 +204,7 @@ public abstract class ACSettings implements IfSettings
 
 	@Override
 	@XmlElement
-	// /W ? transient <-> XmlElement ? s.o.
+	// W #??? transient <-> XmlElement ? s.o.
 	public UnitSystem getUnitSystem()
 	{
 		return cfgUnitSystem;
@@ -229,7 +228,7 @@ public abstract class ACSettings implements IfSettings
 		this.cfgTileSize = tileSize;
 	}
 
-	// #??? @XmlTransient // /W #---
+	// W #??? @XmlTransient // W #---
 	public TileImageFormat getTileImageFormat()
 	{
 		return cfgTileImageFormat;
@@ -240,20 +239,20 @@ public abstract class ACSettings implements IfSettings
 		this.cfgTileImageFormat = tileImageFormat;
 	}
 
-	// /W see => @XmlElement(name = "directories") at: protected Directories cfgDirectories = new Directories();
-	// // /W unused
+	// W see => @XmlElement(name = "directories") at: protected Directories cfgDirectories = new Directories();
+	// // W unused
 	// public Directories getDirectories()
 	// {
 	// return cfgDirectories;
 	// }
 	//
-	// // /W unused (how to?)
+	// // W unused (how to?)
 	// public void setDirectories(Directories cfgDirectories)
 	// {
 	// this.cfgDirectories = cfgDirectories;
 	// }
 
-	// /W not a directory adjustable by user -> is determined in DirectoryManager
+	// W not a directory adjustable by user -> is determined in DirectoryManager
 	public File getMapSourcesDirectory()
 	{
 		File mapSourcesDir;
@@ -273,7 +272,6 @@ public abstract class ACSettings implements IfSettings
 		return tileStoreDir;
 	}
 
-	// /W
 	public void setTileStoreDirectory(File tileStoreDir)
 	{
 		cfgDirectories.tileStoreDirectory = tileStoreDir.toString();
@@ -291,13 +289,11 @@ public abstract class ACSettings implements IfSettings
 		return catalogsDir;
 	}
 
-	// /W
 	public void setCatalogsDirectory(File catalogsDir)
 	{
 		cfgDirectories.catalogsDirectory = catalogsDir.toString();
 	}
 
-	// /W
 	@XmlTransient
 	public File getChartBundleOutputDirectory()
 	{
@@ -310,7 +306,6 @@ public abstract class ACSettings implements IfSettings
 		return bundlesDir;
 	}
 
-	// /W
 	public void setChartBundleOutputDirectory(File bundlesDir)
 	{
 		cfgDirectories.bundleOutputDirectory = bundlesDir.toString();

@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import javax.xml.bind.annotation.XmlElement;
-// /W ? import javax.xml.bind.annotation.XmlRootElement;
+// W ? import javax.xml.bind.annotation.XmlRootElement;
 
 import osmb.mapsources.ACMapSource;
 import osmb.mapsources.MP2Corner;
@@ -38,8 +38,8 @@ import osmb.program.tiles.TileImageParameters;
 import osmb.utilities.MyMath;
 import osmb.utilities.geo.GeoCoordinate;
 
-// /W ? @XmlRootElement
-// /W #deprecated
+// W ? @XmlRootElement
+// W #deprecated
 public class MapPolygon extends Map implements IfMap
 {
 	@XmlElement
@@ -54,7 +54,6 @@ public class MapPolygon extends Map implements IfMap
 	public static MapPolygon createTrackEnclosure(Layer layer, String name, ACMapSource mapSource, int zoom, GeoCoordinate[] trackPoints, int pixelDistance,
 	    TileImageParameters parameters)
 	{
-		// W #mapSpace IfMapSpace mapSpace = mapSource.getMapSpace();
 		Area area = new Area();
 		for (int i = 1; i < trackPoints.length; i++)
 		{
@@ -139,7 +138,6 @@ public class MapPolygon extends Map implements IfMap
 	{
 		Polygon oldPolygon = map.getPolygon();
 		int oldZoom = map.getZoom();
-		// W #mapSpace IfMapSpace mapSpace = map.getMapSource().getMapSpace();
 		int[] xPoints = new int[oldPolygon.npoints];
 		int[] yPoints = new int[oldPolygon.npoints];
 		Point p = new Point();
@@ -161,7 +159,7 @@ public class MapPolygon extends Map implements IfMap
 		super(layer, mapSource, zoom, null, null, parameters);
 		this.polygon = polygon;
 		Rectangle bounds = polygon.getBounds();
-		int mapSourceTileSize = MP2MapSpace.getTileSize(); // #mapSpace mapSource.getMapSpace().getTileSize();
+		int mapSourceTileSize = MP2MapSpace.getTileSize();
 		// Make sure the minimum tile coordinate starts/ends on the edge of a tile from the iMap source
 		int minx = MyMath.roundDownToNearest(bounds.x, mapSourceTileSize);
 		int miny = MyMath.roundDownToNearest(bounds.y, mapSourceTileSize);
@@ -182,7 +180,7 @@ public class MapPolygon extends Map implements IfMap
 
 	protected void internalCalculateTilesToDownload()
 	{
-		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace mapSource.getMapSpace().getTileSize();
+		int tileSize = MP2MapSpace.getTileSize();
 		double tileSizeD = tileSize;
 		int xMin = minPixelCoordinate.x;
 		int xMax = maxPixelCoordinate.x;
@@ -204,13 +202,11 @@ public class MapPolygon extends Map implements IfMap
 	@Override
 	public String getToolTip()
 	{
-		// W #mapSpace IfMapSpace mapSpace = mapSource.getMapSpace();
-		// W #mapSpace EastNorthCoordinate <-> GeoCoordinate MP2Corner
-		@SuppressWarnings("unused") // /W #unused
+		@SuppressWarnings("unused") // W #unused
 		GeoCoordinate tl = new MP2Corner(minPixelCoordinate.x, minPixelCoordinate.y, getZoom()).toGeoCoordinate();// W #mapSpace new EastNorthCoordinate(mapSpace,
 		                                                                                                          // getZoom(), minPixelCoordinate.x,
 		                                                                                                          // minPixelCoordinate.y);
-		@SuppressWarnings("unused") // /W #unused
+		@SuppressWarnings("unused") // W #unused
 		GeoCoordinate br = new MP2Corner(maxPixelCoordinate.x, maxPixelCoordinate.y, getZoom()).toGeoCoordinate();// W #mapSpace new EastNorthCoordinate(mapSpace,
 		                                                                                                          // getZoom(), maxPixelCoordinate.x,
 		                                                                                                          // maxPixelCoordinate.y);

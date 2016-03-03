@@ -37,43 +37,43 @@ public class GeoCoordinate
 		lat = Double.NaN;
 		lon = Double.NaN;
 	}
-	
+
 	public GeoCoordinate(double lat, double lon)
 	{
 		this.lat = lat;
 		this.lon = lon;
 	}
-	
+
 	public GeoCoordinate(MP2Corner mcc)
 	{
 		mcc.toGeoCoordinate();
 	}
-	
-	// W #mapSpace ??? only used in unused!!! AddGpxTrackPolygonMap 
+
+	// W #mapSpace ??? only used in unused!!! AddGpxTrackPolygonMap
 	public PixelAddress toPixelCoordinate(int zoom)
 	{
 		return new PixelAddress(MP2MapSpace.cLonToXIndex(lon, zoom), MP2MapSpace.cLatToYIndex(lat, zoom), zoom);
 	}
 
-	// W  ??? where used
+	// W ??? where used
 	@Override
 	public String toString()
 	{
 		return OSMBUtilities.prettyPrintLatLon(lat, true) + " " + OSMBUtilities.prettyPrintLatLon(lon, false);
 	}
-	
+
 	/**
 	 * This creates a string from the geographic coordinate.<br>
 	 * 
+	 * Used to write in lat, lon to xml-file osmcb-catalog-name.xml.
+	 * 
 	 * @return
-	 *          the created string: "latitude, longitude" with formated coordinates.
+	 *         the created string: "latitude, longitude" with formated coordinates.
 	 */
 	public String toCatalog()
 	{
-		// return "" + lat + ", " + lon; // /W
+		// return "" + lat + ", " + lon; // W
 		return String.format(null, "%.8f, %.8f", new Object[]
 		{ lat, lon });
 	}
-	
-	
 }

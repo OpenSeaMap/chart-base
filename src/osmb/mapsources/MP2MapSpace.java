@@ -20,6 +20,7 @@ import java.awt.Point;
 
 import org.apache.log4j.Logger;
 
+// W TODO revise class comment
 /**
  * Mercator projection (globe <-> map space) with a map space width and height of {@value #TECH_TILESIZE} * 2<sup>zoom</sup> pixel.<br>
  * 
@@ -335,10 +336,11 @@ public class MP2MapSpace
 		int checkedZoom = Math.max(MIN_TECH_ZOOM, Math.min(zoom, MAX_TECH_ZOOM));
 		y = Math.max(0, Math.min(y, getSizeInPixel(checkedZoom) - 1));
 		return (cYToLatitude(y, checkedZoom) + cYToLatitude(y + 1, checkedZoom)) / 2;
+		// W not exact! exact: return cYToLatitude(2 * y + 1, checkedZoom + 1); // but getSizeInPixel_UC(23) = 2³¹ > Integer.MAX_VALUE = 2³¹ - 1
 	}
 
 	/**
-	 * Converts longitude to the horizontal pixel index x depending on zoom level.<br>
+	 * Converts longitude to the horizontal index x of the pixel, that includes the longitudinal coordinate, depending on zoom level.<br>
 	 * 
 	 * @param lon
 	 *          The longitude in degrees. ( restricted by -180d (W) <= lon < 180d (E) } )
@@ -355,7 +357,7 @@ public class MP2MapSpace
 	}
 
 	/**
-	 * Converts latitude to the vertical pixel index y depending on zoom level.<br>
+	 * Converts latitude to the vertical index y of the pixel, that includes the latitudinal coordinate, depending on zoom level.<br>
 	 * 
 	 * @param lat
 	 *          The Latitude in degrees. ( restricted by {@link #MIN_LAT} < lat <= {@link #MAX_LAT} )
@@ -398,6 +400,7 @@ public class MP2MapSpace
 		return deltaLongitudeRadian * cos_lat;
 	}
 
+	// W TODO split changeZoom
 	/**
 	 * Changes coordinates by shifting intput values depending on new zoom level.<br>
 	 * 
@@ -425,13 +428,17 @@ public class MP2MapSpace
 		return changeZoom(new MP2Corner(pixelCoordinate.x, pixelCoordinate.y, oldZoom), newZoom);
 	}
 
-	@Deprecated
 	/**
+	 * Deprecated method because there are no limitations.<br>
+	 * 
+	 * Use {@link #cXToLonLeftBorder(x, zoom)}, {@link #cXToLonRightBorder(x, zoom)} or {@link #cXToLonPixelCenter(x, zoom)} instead of this.
+	 * Calculates, if x and zoom are in range, horizontal pixel index x to longitude of the left border of the pixel.<br>
 	 * 
 	 * @param x
 	 * @param zoom
 	 * @return
 	 */
+	@Deprecated
 	public static double cXToLon(int x, int zoom) // old rules: no limitations
 	{
 		int sizeInPixel_UC = getSizeInPixel_UC(zoom);
@@ -450,13 +457,17 @@ public class MP2MapSpace
 		return cXToLongitude(x, zoom);
 	}
 
-	@Deprecated
 	/**
+	 * Deprecated method because there are no limitations.<br>
+	 * 
+	 * Use {@link #cYToLatUpperBorder(y, zoom)}, {@link #cYToLatLowerBorder(y, zoom)} or {@link #cYToLatPixelCenter(y, zoom)} instead of this.
+	 * Calculates, if y and zoom are in range, vertical pixel index y to latitude of the upper border of the pixel.<br>
 	 * 
 	 * @param y
 	 * @param zoom
 	 * @return
 	 */
+	@Deprecated
 	public static double cYToLat(int y, int zoom) // old rules: no limitations, returns lat in { ~ -90 ... ~ 90 }
 	{
 		int sizeInPixel_UC = getSizeInPixel_UC(zoom);
@@ -475,13 +486,19 @@ public class MP2MapSpace
 		return cYToLatitude(y, zoom);
 	}
 
-	@Deprecated
 	/**
-	 * 
+	 * Deprecated method because there are varying limitations .<br>
+	 *
+	 * Use {@link #cLonToXIndex(x, zoom)} instead of this.
+	 * Converts, if x and zoom are in range, longitude to the horizontal index x of the pixel, that includes the longitudinal coordinate, depending on zoom
+	 level.
+	 * <br>
+	 *
 	 * @param lon
 	 * @param zoom
 	 * @return
 	 */
+	 @Deprecated
 	public static int cLonToX(double lon, int zoom) // old rules: no limitations to west, limitation to east (~ 180d), ignoring easternmost border
 	{
 		int x = cLongitudeToXIndex(lon, zoom);
@@ -498,20 +515,24 @@ public class MP2MapSpace
 		return x;
 	}
 
-	@Deprecated
 	/**
-	 * 
+	 * Deprecated method because there is no zoom limitation .<br>
+	 *
+	 * Use {@link #cLatToYIndex(y, zoom)} instead of this.
+	 * Converts, if zoom is in range, latitude to the vertical index y of the pixel, that includes the latitudinal coordinate depending on zoom level.<br>
+	 *
 	 * @param lat
 	 * @param zoom
 	 * @return
 	 */
+	 @Deprecated
 	public static int cLatToY(double lat, int zoom) // old rules: input restricted to [MIN_LAT, MAX_LAT] (-> limitations to north, limitation to south),
 	                                                // additional ignoring southernmost border
 	{
 		int sizeInPixel_UC = getSizeInPixel_UC(zoom);
 		if (zoom < 0 || zoom > 22)
 			log.error("DEPRECATED METHOD - OUT OF RANGE_NEW: called with zoom = " + zoom);
-		if (lat < MIN_LAT || lat >= MAX_LAT)
+		if (lat < MIN_LAT || lat > MAX_LAT)
 		{
 			log.error("DEPRECATED METHOD - called with latitude = " + lat + " OUT OF RANGE -> input restricted to [MIN_LAT, MAX_LAT]");
 			lat = Math.max(MIN_LAT, Math.min(MAX_LAT, lat)); // to prevent log(0), div(0), ...

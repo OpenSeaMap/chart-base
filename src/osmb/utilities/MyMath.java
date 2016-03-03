@@ -16,19 +16,21 @@
  ******************************************************************************/
 package osmb.utilities;
 
-public class MyMath {
+public class MyMath
+{
 
 	/**
 	 * 
 	 * Rounds down to the nearest multiple of <code>toNearest</code>
 	 * 
 	 * @param value
-	 *            positive value
+	 *          positive value
 	 * @param toNearest
-	 *            positive value
+	 *          positive value
 	 * @return
 	 */
-	public static int roundDownToNearest(int value, int toNearest) {
+	public static int roundDownToNearest(int value, int toNearest)
+	{
 		int remainder = value % toNearest;
 		value -= remainder;
 		return value;
@@ -39,12 +41,13 @@ public class MyMath {
 	 * Rounds up to the nearest multiple of <code>toNearest</code>
 	 * 
 	 * @param value
-	 *            positive value
+	 *          positive value
 	 * @param toNearest
-	 *            positive value
+	 *          positive value
 	 * @return
 	 */
-	public static int roundUpToNearest(int value, int toNearest) {
+	public static int roundUpToNearest(int value, int toNearest)
+	{
 		int remainder = value % toNearest;
 		if (remainder == 0)
 			return value;
@@ -57,7 +60,8 @@ public class MyMath {
 	 * @param value
 	 * @return
 	 */
-	public static int ceil(double value) {
+	public static int ceil(double value)
+	{
 		return (int) Math.ceil(value);
 	}
 
@@ -69,12 +73,13 @@ public class MyMath {
 	 * </p>
 	 * 
 	 * @param value
-	 *            positive value
+	 *          positive value
 	 * @param divisor
-	 *            positive value
+	 *          positive value
 	 * @return
 	 */
-	public static int divCeil(int value, int divisor) {
+	public static int divCeil(int value, int divisor)
+	{
 		int result = value / divisor;
 		int remainder = value % divisor;
 		if (remainder != 0)
@@ -90,12 +95,13 @@ public class MyMath {
 	 * </p>
 	 * 
 	 * @param value
-	 *            positive value
+	 *          positive value
 	 * @param divisor
-	 *            positive value
+	 *          positive value
 	 * @return
 	 */
-	public static long divCeil(long value, long divisor) {
+	public static long divCeil(long value, long divisor)
+	{
 		long result = value / divisor;
 		if (value % divisor != 0)
 			result++;
@@ -110,12 +116,13 @@ public class MyMath {
 	 * </p>
 	 * 
 	 * @param value
-	 *            positive value
+	 *          positive value
 	 * @param divisor
-	 *            positive value
+	 *          positive value
 	 * @return
 	 */
-	public static int divRound(int value, int divisor) {
+	public static int divRound(int value, int divisor)
+	{
 		int result = value / divisor;
 		int remainder = value % divisor;
 		if (remainder > (divisor >> 1))
@@ -131,12 +138,13 @@ public class MyMath {
 	 * </p>
 	 * 
 	 * @param value
-	 *            positive value
+	 *          positive value
 	 * @param divisor
-	 *            positive value
+	 *          positive value
 	 * @return
 	 */
-	public static long divRound(long value, long divisor) {
+	public static long divRound(long value, long divisor)
+	{
 		long result = value / divisor;
 		long remainder = value % divisor;
 		if (remainder > (divisor >> 1))
@@ -166,7 +174,8 @@ public class MyMath {
 	 * @param val
 	 * @return array containing the rounded value
 	 */
-	public static double prettyRound(double val) {
+	public static double prettyRound(double val)
+	{
 		if (val < 1.0)
 			return Math.ceil(val);
 		int l10 = (int) Math.pow(10, Math.floor(Math.log10(val)));

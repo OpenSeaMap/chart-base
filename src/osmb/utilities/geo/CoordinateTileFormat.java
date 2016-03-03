@@ -23,8 +23,6 @@ import java.text.ParsePosition;
 import org.apache.log4j.Logger;
 
 import osmb.mapsources.MP2MapSpace;
-// W #mapSpace import osmb.mapsources.mapspace.MercatorPower2MapSpace;
-// W #mapSpace import osmb.program.map.IfMapSpace;
 
 public class CoordinateTileFormat extends NumberFormat
 {
@@ -33,33 +31,31 @@ public class CoordinateTileFormat extends NumberFormat
 	protected static Logger log = Logger.getLogger(CoordinateTileFormat.class);
 
 	private final boolean isLongitude;
-	// /W #selCoord MainFrame.getMainGUI().previewMap.getGridZoom() (0 to 18) || osmcd.gui.mapview.JMapViewer.MAX_ZOOM (22)
-	private static int nActZoom; 
+	// W #selCoord #??? MainFrame.getMainGUI().previewMap.getGridZoom() (0 to 18)
+	private static int nActZoom;
 
 	public CoordinateTileFormat(boolean isLongitude)
 	{
 		this.isLongitude = isLongitude;
 	}
 
-	// /W #selCoord
+	// W #selCoord
 	public static void setActZoom(int zoom)
 	{
 		nActZoom = zoom;
 	}
-	
+
 	@Override
 	public StringBuffer format(double number, StringBuffer toAppendTo, FieldPosition pos)
 	{
-// W #mapSpace
-//		IfMapSpace mapSpace = MercatorPower2MapSpace.INSTANCE_256; // W #mapSpace =
-		// int zoom = 1;  // /W #selCoord zoom -> nActZoom
+		// int zoom = 1; // W #selCoord zoom -> nActZoom
 		int tileNum = 0;
 		if (isLongitude)
-			tileNum = MP2MapSpace.cLonToX(number, nActZoom); // W #mapSpace mapSpace.cLonToX(number, nActZoom);
+			tileNum = MP2MapSpace.cLonToXIndex(number, nActZoom);
 		else
-			tileNum = MP2MapSpace.cLatToY(number, nActZoom); // W #mapSpace mapSpace.cLatToY(number, nActZoom);
-		toAppendTo.append(String.format("%d / z%d ", tileNum / MP2MapSpace.getTileSize(), nActZoom)); // W #mapSpace ("%d / z%d ", tileNum / mapSpace.getTileSize(), nActZoom));
-		// /W #selCoord test: toAppendTo.append(String.format("%d / z%d ", tileNum, nActZoom));
+			tileNum = MP2MapSpace.cLatToYIndex(number, nActZoom);
+		toAppendTo.append(String.format("%d / z%d ", tileNum / MP2MapSpace.getTileSize(), nActZoom));
+		// W #selCoord test: toAppendTo.append(String.format("%d / z%d ", tileNum, nActZoom));
 		return toAppendTo;
 	}
 
@@ -72,8 +68,6 @@ public class CoordinateTileFormat extends NumberFormat
 	@Override
 	public Number parse(String source, ParsePosition parsePosition)
 	{
-// W #mapSpace
-//		IfMapSpace mapSpace = MercatorPower2MapSpace.INSTANCE_256; // W #mapSpace =
 		try
 		{
 			String[] tokens = source.trim().split("/");
@@ -97,12 +91,12 @@ public class CoordinateTileFormat extends NumberFormat
 				if ((s.indexOf('.') < 0) && (s.indexOf(',') < 0))
 				{
 					tileNum = Integer.parseInt(s);
-					tileNum *= MP2MapSpace.getTileSize(); // W #mapSpace mapSpace.getTileSize();
+					tileNum *= MP2MapSpace.getTileSize();
 				}
 				else
 				{
 					double num = Double.parseDouble(s);
-					tileNum = (int) (num * MP2MapSpace.getTileSize()); // W #mapSpace mapSpace.getTileSize());
+					tileNum = (int) (num * MP2MapSpace.getTileSize());
 				}
 			}
 			parsePosition.setIndex(source.length());

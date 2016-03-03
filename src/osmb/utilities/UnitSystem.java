@@ -18,8 +18,8 @@ package osmb.utilities;
 
 public enum UnitSystem
 {
-	Metric(6367.5d, 1000, 2.54d, "km", "m", "cm"), // /W ? 3963.192 miles * 1.609344 km / mile = 6378.139 km
-	// /W ! The earth is modeled commonly as a sphere flattened 0.336% along its axis. This makes the Equator 0.16% longer than a
+	Metric(6367.5d, 1000, 2.54d, "km", "m", "cm"), // W ? 3963.192 miles * 1.609344 km / mile = 6378.139 km
+	// W ! The earth is modeled commonly as a sphere flattened 0.336% along its axis. This makes the Equator 0.16% longer than a
 	// meridian (a great circle passing through the two poles) https://en.wikipedia.org/wiki/Equator -> Metric: meridian, Imperial: Equator
 	Imperial(3963.192d, 5280, 1d, "mi", "ft", "in"); // 1 mile = 1760 yards * 3 feet / yard = 5280 feet
 
