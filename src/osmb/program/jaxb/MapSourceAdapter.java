@@ -18,20 +18,20 @@ package osmb.program.jaxb;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
-import osmb.mapsources.ACMapSourcesManager;
-import osmb.mapsources.IfMapSource;
+import osmb.mapsources.ACMapSource;
+import osmb.mapsources.SiACMapSourcesManager;
 
-public class MapSourceAdapter extends XmlAdapter<String, IfMapSource>
+public class MapSourceAdapter extends XmlAdapter<String, ACMapSource>
 {
 	@Override
-	public String marshal(IfMapSource mapSource) throws Exception
+	public String marshal(ACMapSource mapSource) throws Exception
 	{
 		return mapSource.getName();
 	}
 
 	@Override
-	public IfMapSource unmarshal(String name) throws Exception
+	public ACMapSource unmarshal(String name) throws Exception
 	{
-		return ACMapSourcesManager.getInstance().getSourceByName(name);
+		return SiACMapSourcesManager.getInstance().getSourceByName(name);
 	}
 }

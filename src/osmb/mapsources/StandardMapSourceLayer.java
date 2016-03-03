@@ -18,15 +18,12 @@ package osmb.mapsources;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-//W #mapSpace import osmb.program.map.IfMapSpace;
-import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
 import osmb.program.tilestore.ACTileStore;
 
@@ -34,21 +31,21 @@ import osmb.program.tilestore.ACTileStore;
 /**
  * Wraps an already existing map source so that it can be loaded by name in a custom multi-layer map source
  */
-public class StandardMapSourceLayer implements IfMapSource
+public class StandardMapSourceLayer extends ACMapSource
 {
-	protected IfMapSource mapSource = null;
+	protected ACMapSource mapSource = null;
 
 	@XmlElement(name = "name")
 	protected String mapSourceName;
 
-	public IfMapSource getMapSource()
+	public ACMapSource getMapSource()
 	{
 		return mapSource;
 	}
 
 	protected void afterUnmarshal(Unmarshaller u, Object parent)
 	{
-		mapSource = ACMapSourcesManager.getInstance().getSourceByName(mapSourceName);
+		mapSource = SiACMapSourcesManager.getInstance().getSourceByName(mapSourceName);
 		if (mapSource == null)
 			throw new RuntimeException("Invalid map source name used: " + mapSourceName);
 	}
@@ -72,21 +69,15 @@ public class StandardMapSourceLayer implements IfMapSource
 	}
 
 	@Override
-	public byte[] getTileData(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException
+	public byte[] loadTileData(TileAddress tAddr)
 	{
-		return mapSource.getTileData(zoom, x, y, loadMethod);
+		return mapSource.loadTileData(tAddr);
 	}
 
 	@Override
-	public BufferedImage getTileImage(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException
+	public BufferedImage loadTileImage(TileAddress tAddr)
 	{
-		return mapSource.getTileImage(zoom, x, y, loadMethod);
-	}
-
-	@Override
-	public BufferedImage downloadTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
-	{
-		return mapSource.downloadTileImage(zoom, x, y);
+		return mapSource.loadTileImage(tAddr);
 	}
 
 	@Override

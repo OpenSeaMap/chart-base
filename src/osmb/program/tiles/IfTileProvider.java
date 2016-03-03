@@ -17,9 +17,8 @@
 package osmb.program.tiles;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 
-import osmb.mapsources.IfMapSource;
+import osmb.mapsources.TileAddress;
 
 /**
  * A TileProvider provides image tiles, i.e. 256x256 (IfMapSpace.TECH_TILESIZE) pixel squares, from a specified map source.
@@ -30,9 +29,9 @@ import osmb.mapsources.IfMapSource;
  */
 public interface IfTileProvider
 {
-	public byte[] getTileData(int x, int y) throws IOException;
+	public byte[] loadTileData(TileAddress tAddr);
 
-	public BufferedImage getTileImage(int x, int y) throws IOException;
+	public BufferedImage loadTileImage(TileAddress tAddr);
 
-	public IfMapSource getMapSource();
+	public Tile loadTile(TileAddress tAddr);
 }

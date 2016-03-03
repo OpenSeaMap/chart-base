@@ -144,11 +144,10 @@ public class CustomLocalImageFileMapSource implements IfFileBasedMapSource
 		}
 	}
 
-	@Override
-	public byte[] getTileData(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException
+	public byte[] getTileData(int zoom, int x, int y) throws IOException, TileException, InterruptedException
 	{
 		ByteArrayOutputStream buf = new ByteArrayOutputStream(16000);
-		BufferedImage image = getTileImage(zoom, x, y, loadMethod);
+		BufferedImage image = getTileImage(zoom, x, y);
 		if (image == null)
 			return null;
 		ImageIO.write(image, tileImageType.getFileExt(), buf);
@@ -167,8 +166,7 @@ public class CustomLocalImageFileMapSource implements IfFileBasedMapSource
 		return value > 0 ? (int) Math.ceil(value) : (int) Math.floor(value);
 	}
 
-	@Override
-	public BufferedImage getTileImage(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException
+	public BufferedImage getTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
 	{
 		if (!initialized)
 			initialize();
@@ -259,69 +257,34 @@ public class CustomLocalImageFileMapSource implements IfFileBasedMapSource
 		return image;
 	}
 
-	@Override
-	public TileImageType getTileImageType()
-	{
-		return tileImageType;
-	}
-
-	@Override
-	public int getMaxZoom()
-	{
-		return maxZoom;
-	}
-
-	@Override
-	public int getMinZoom()
-	{
-		return minZoom;
-	}
-
-	@Override
-	public String getName()
-	{
-		return name;
-	}
-
-	@Override
-	public String toString()
-	{
-		return name;
-	}
-
 	// #mapSpace
 	// public IfMapSpace getMapSpace()
 	// {
 	// return mapSpace;
 	// }
 
-	@Override
 	public Color getBackgroundColor()
 	{
 		return backgroundColor;
 	}
 
-	@Override
 	@XmlTransient
 	public MapSourceLoaderInfo getLoaderInfo()
 	{
 		return loaderInfo;
 	}
 
-	@Override
 	public void setLoaderInfo(MapSourceLoaderInfo loaderInfo)
 	{
 		this.loaderInfo = loaderInfo;
 	}
 
-	@Override
 	public BufferedImage downloadTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
 	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public ACTileStore getTileStore()
 	{
 		return null;

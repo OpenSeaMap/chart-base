@@ -14,12 +14,13 @@ import java.sql.Timestamp;
 
 import org.apache.log4j.Logger;
 
-import osmb.mapsources.IfMapSource;
+import osmb.mapsources.ACMapSource;
+import osmb.mapsources.TileAddress;
 import osmb.program.ACSettings;
 import osmb.program.tiles.SQLiteLoader;
 import osmb.program.tiles.Tile;
 import osmb.program.tilestore.ACTileStore;
-import osmb.program.tilestore.IfTileStoreEntry;
+import osmb.program.tilestore.IfStoredTile;
 import osmb.program.tilestore.TileStoreException;
 import osmb.program.tilestore.TileStoreInfo;
 import osmb.utilities.OSMBUtilities;
@@ -72,6 +73,8 @@ public class SQLiteDbTileStore extends ACTileStore
 	private static final String CLEAR_IMAGES = "DELETE * FROM images;";
 	private static final String IMAGE_IMAGES = "SELECT image FROM images WHERE (i_id=?)";
 	private static final String NIID_IMAGES = "SELECT max(i_id) FROM images";
+	// 'magic' tiles ids come from Tile
+
 	// private static final String TCNT_TILES = "SELECT DISTINCT cnt(id_s) FROM tiles ORDER BY id_s DESC LIMIT 1;";
 
 	// SQLite access samples:
@@ -94,6 +97,19 @@ public class SQLiteDbTileStore extends ACTileStore
 	 */
 	protected static Connection sTSConn = null;
 
+	public static synchronized void initialize()
+	{
+		// testing of SQLite tile store
+		try
+		{
+			initializeCommonDB();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
 	/**
 	 * @return A String array with all tile stores loaded at the moment.
 	 */
@@ -108,11 +124,23 @@ public class SQLiteDbTileStore extends ACTileStore
 	 * @param mapSource
 	 * @return TRUE if the tile store for the specified map source is already loaded and ok.
 	 */
-	public static boolean isStoreValid(IfMapSource mapSource)
+	public static boolean isStoreValid(ACMapSource mapSource)
 	{
 		boolean bOk = false;
 		// TODO Auto-generated method stub
 		return bOk;
+	}
+
+	/**
+	 * Returns <code>true</code> if the tile store of the specified {@link ACMapSource} exists.
+	 * 
+	 * @param mapSource
+	 * @return
+	 */
+	public static boolean storeExists(ACMapSource mapSource)
+	{
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	/**
@@ -180,7 +208,7 @@ public class SQLiteDbTileStore extends ACTileStore
 	protected Connection mConn = null;
 	protected PreparedStatement mPrepStmt = null;
 	protected Path mTileStoreDB = null;
-	protected IfMapSource mMapSource = null;
+	protected ACMapSource mMapSource = null;
 	protected int mMS_ID = 0;
 
 	/**
@@ -209,27 +237,25 @@ public class SQLiteDbTileStore extends ACTileStore
 		}
 	}
 
-	@Override
-	public void putTileData(byte[] tileData, int x, int y, int zoom, IfMapSource mapSource) throws IOException
+	public void putTileData(byte[] tileData, int x, int y, int zoom) throws IOException
 	{
 		long md = System.currentTimeMillis();
 		long exp = md + ACSettings.getTileDefaultExpirationTime();
-		putTileData(tileData, x, y, zoom, mapSource, md, exp, "");
+		putTileData(tileData, x, y, zoom, md, exp, "");
 	}
 
-	@Override
 	/**
 	 * 
 	 */
 	// public void putTileData(byte[] tileData, int x, int y, int z, IfMapSource mapSource, long timeLastModified, long timeExpires, String eTag)
 	// throws IOException
-	public void putTileData(byte[] tileData, int x, int y, int z, IfMapSource mapSource, long md, long exp, String eTag) throws IOException
+	public void putTileData(byte[] tileData, int x, int y, int z, long md, long exp, String eTag) throws IOException
 	{
 		try
 		{
 			if (mConn == null)
 			{
-				prepareTileStore(mapSource);
+				prepareTileStore(mMapSource);
 			}
 			if (mConn != null)
 			{
@@ -239,22 +265,8 @@ public class SQLiteDbTileStore extends ACTileStore
 				ResultSet rs = mConn.prepareStatement(NIID_IMAGES).executeQuery();
 				if (rs.next())
 					nNextImg_ID = rs.getInt(1) + 1;
-				// write the tile info
-				mPrepStmt = mConn.prepareStatement(INSERT_TILES);
-				mPrepStmt.setInt(1, z);
-				mPrepStmt.setInt(2, x);
-				mPrepStmt.setInt(3, y);
-				mPrepStmt.setTimestamp(4, new Timestamp(md));
-				mPrepStmt.setTimestamp(5, new Timestamp(exp));
-				mPrepStmt.setString(6, eTag);
-				mPrepStmt.setInt(7, nNextImg_ID);
-				mPrepStmt.addBatch();
-				mPrepStmt.executeBatch();
-				// write the image data
-				mPrepStmt = mConn.prepareStatement(INSERT_IMAGES);
-				mPrepStmt.setInt(1, nNextImg_ID);
-				mPrepStmt.setBytes(2, tileData);
-				mPrepStmt.executeBatch();
+				writeTileData(nNextImg_ID, tileData);
+				writeTileInfo(x, y, z, md, exp, eTag, nNextImg_ID);
 				mConn.prepareStatement(COMMIT_TA).executeUpdate();
 			}
 		}
@@ -267,36 +279,74 @@ public class SQLiteDbTileStore extends ACTileStore
 		}
 	}
 
-	@Override
-	public void putTile(Tile tile, IfMapSource mapSource)
+	protected void writeTileInfo(int x, int y, int z, long md, long exp, String eTag, int nNextImg_ID) throws SQLException
 	{
-		switch (tile.getTileState())
+		// write the tile info
+		mPrepStmt = mConn.prepareStatement(INSERT_TILES);
+		mPrepStmt.setInt(1, z);
+		mPrepStmt.setInt(2, x);
+		mPrepStmt.setInt(3, y);
+		mPrepStmt.setTimestamp(4, new Timestamp(md));
+		mPrepStmt.setTimestamp(5, new Timestamp(exp));
+		mPrepStmt.setString(6, eTag);
+		mPrepStmt.setInt(7, nNextImg_ID);
+		mPrepStmt.addBatch();
+		mPrepStmt.executeBatch();
+	}
+
+	protected void writeTileData(int nNextImg_ID, byte[] tileData) throws SQLException
+	{
+		mPrepStmt = mConn.prepareStatement(INSERT_IMAGES);
+		mPrepStmt.setInt(1, nNextImg_ID);
+		mPrepStmt.setBytes(2, tileData);
+		mPrepStmt.executeBatch();
+	}
+
+	public void putTile(Tile tile)
+	{
+		try
 		{
-			case TS_LOADED:
-				break;
-			case TS_ERROR:
-				break;
-			default:
-				break;
+			mConn.prepareStatement(BEGIN_TA).executeUpdate();
+			switch (tile.getTileState())
+			{
+				case TS_LOADED:
+					// find next free image id
+					int nNextImg_ID = 100;
+					ResultSet rs = mConn.prepareStatement(NIID_IMAGES).executeQuery();
+					if (rs.next())
+						nNextImg_ID = rs.getInt(1) + 1;
+					// writeTileData(nNextImg_ID, tile.getImage().);
+					writeTileInfo(tile.getXtile(), tile.getYtile(), tile.getZoom(), tile.getMod().getTime(), tile.getExp().getTime(), tile.getEtag(), nNextImg_ID);
+					break;
+				case TS_ERROR:
+					writeTileInfo(tile.getXtile(), tile.getYtile(), tile.getZoom(), tile.getMod().getTime(), tile.getExp().getTime(), tile.getEtag(), Tile.ERROR_TILE_ID);
+					break;
+				default:
+					break;
+			}
+			mConn.prepareStatement(COMMIT_TA).executeUpdate();
+		}
+		catch (SQLException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
-	@Override
-	public IfTileStoreEntry getTile(int x, int y, int zoom, IfMapSource mapSource)
+	public IfStoredTile getTileEntry(int x, int y, int zoom)
 	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
-	public boolean contains(int x, int y, int zoom, IfMapSource mapSource)
+	public boolean contains(int x, int y, int zoom)
 	{
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public void prepareTileStore(IfMapSource mapSource) throws TileStoreException
+	public void prepareTileStore(ACMapSource mapSource) throws TileStoreException
 	{
 		try
 		{
@@ -359,50 +409,21 @@ public class SQLiteDbTileStore extends ACTileStore
 		return null;
 	}
 
-	@Override
-	public BufferedImage getCacheCoverage(IfMapSource mapSource, int zoom, Point tileNumMin, Point tileNumMax) throws InterruptedException
+	public BufferedImage getCacheCoverage(int zoom, Point tileNumMin, Point tileNumMax) throws InterruptedException
 	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public void putTile(IfTileStoreEntry tile, IfMapSource mapSource)
-	{
-		// TODO Auto-generated method stub
-	}
-
-	/**
-	 * INSERT or REPLACE INTO tiles (z,x,y,md,exp,etag,image) VALUES (?,?,?,?,?,?,?)
-	 * 
-	 * @param tile
-	 */
-	public void putTile(Tile tile)
-	{
-		try
-		{
-			mPrepStmt = mConn.prepareStatement(INSERT_TILES);
-			mPrepStmt.setInt(1, tile.getZoom());
-			mPrepStmt.setInt(2, tile.getXtile());
-			mPrepStmt.setInt(3, tile.getYtile());
-			mPrepStmt.executeUpdate();
-		}
-		catch (SQLException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	@Override
-	public IfTileStoreEntry createNewEntry(int x, int y, int zoom, byte[] data, long timeLastModified, long timeExpires, String eTag)
+	public IfStoredTile createNewEntry(int x, int y, int zoom, byte[] data, long timeLastModified, long timeExpires, String eTag)
 	{
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public IfTileStoreEntry createNewEmptyEntry(int x, int y, int zoom)
+	public IfStoredTile createNewEmptyEntry(int x, int y, int zoom)
 	{
 		// TODO Auto-generated method stub
 		return null;
@@ -415,15 +436,6 @@ public class SQLiteDbTileStore extends ACTileStore
 	public String[] getAllStoreNames()
 	{
 		return getStoresList();
-	}
-
-	/**
-	 * Member method exists for compatibility only. Use class method {@link #isStoreValid(IfMapSource)}
-	 */
-	@Override
-	public boolean storeExists(IfMapSource mapSource)
-	{
-		return isStoreValid(mapSource);
 	}
 
 	/**
@@ -451,6 +463,70 @@ public class SQLiteDbTileStore extends ACTileStore
 				e.printStackTrace();
 			}
 		}
+	}
+
+	@Override
+	public void putTileData(byte[] tileData, int x, int y, int zoom, ACMapSource mapSource) throws IOException
+	{
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void putTileData(byte[] tileData, TileAddress tAddr, ACMapSource mapSource) throws IOException
+	{
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void putTileData(byte[] tileData, int x, int y, int zoom, ACMapSource mapSource, long timeLastModified, long timeExpires, String eTag)
+	    throws IOException
+	{
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void putTile(IfStoredTile tile, ACMapSource mapSource)
+	{
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public IfStoredTile getTileEntry(int x, int y, int zoom, ACMapSource mapSource)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Tile getTile(TileAddress tAddr, ACMapSource mapSource)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean contains(int x, int y, int zoom, ACMapSource mapSource)
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean contains(TileAddress tAddr, ACMapSource mapSource)
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public BufferedImage getCacheCoverage(ACMapSource mapSource, int zoom, Point tileNumMin, Point tileNumMax) throws InterruptedException
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

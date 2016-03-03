@@ -30,8 +30,9 @@ import java.util.Date;
 
 import javax.imageio.ImageIO;
 
-import osmb.mapsources.IfMapSource;
+import osmb.mapsources.ACMapSource;
 import osmb.mapsources.MP2MapSpace;
+import osmb.mapsources.TileAddress;
 import osmb.utilities.OSMBUtilities;
 
 /**
@@ -42,6 +43,18 @@ import osmb.utilities.OSMBUtilities;
  */
 public class Tile
 {
+	// some static tiles
+	public static final int ERROR_TILE_ID = 0; // red border and cross tile
+	public static final int LOADING_TILE_ID = 1; // hourglass tile
+	public static final int EXPIRED_TILE_ID = 2; // marker for expired tile
+	public static final int EMPTY_TILE_ID = 10; // all transparent tile
+	public static final int WHITE_TILE_ID = 11; // all white tile
+	public static final int BLACK_TILE_ID = 12; // all black tile
+	public static final int SEA_TILE_ID = 50; // plain sea, all (181,208,208)
+	public static final int CCSALOGO_TILE_ID = 98; // ccsa logo for map corner
+	public static final int OSMLOGO_TILE_ID = 99; // osm logo for map corner
+	public static final int LAST_SPECIAL_TILE_ID = 99;
+
 	public static BufferedImage LOADING_IMAGE;
 	public static BufferedImage ERROR_IMAGE;
 
@@ -67,16 +80,17 @@ public class Tile
 		TS_NEW, TS_LOADING, TS_LOADED, TS_ERROR, TS_EXPIRED
 	};
 
-	protected IfMapSource mMapSource;
-	protected int mXTIdx;
-	protected int mYTIdx;
-	protected int mZoom;
+	protected ACMapSource mMapSource = null;
+	protected int mXTIdx = 0;
+	protected int mYTIdx = 0;
+	protected int mZoom = 0;
+	protected TileAddress mTA = null;
 	protected BufferedImage mImage = LOADING_IMAGE;
-	protected String mKey;
 	protected TileState mTileState = TileState.TS_NEW;
-	protected Date mod;
-	protected Date exp;
-	protected String etag;
+	protected Date mod = null;
+	protected Date exp = null;
+	protected String etag = "";
+	protected String mKey = "";
 
 	/**
 	 * Creates a tile with a 'loading' image and TS_NEW state.
@@ -88,7 +102,7 @@ public class Tile
 	 *          tile y-index
 	 * @param zoom
 	 */
-	public Tile(IfMapSource mapSource, int xTIdx, int yTIdx, int zoom)
+	public Tile(ACMapSource mapSource, int xTIdx, int yTIdx, int zoom)
 	{
 		super();
 		this.mMapSource = mapSource;
@@ -98,17 +112,22 @@ public class Tile
 		this.mKey = getTileKey(mapSource, xTIdx, yTIdx, zoom);
 	}
 
-	public Tile(IfMapSource source, int xTIdx, int yTIdx, int zoom, BufferedImage image)
+	public Tile(ACMapSource source, int xTIdx, int yTIdx, int zoom, BufferedImage image)
 	{
 		this(source, xTIdx, yTIdx, zoom);
 		this.mImage = image;
+	}
+
+	public Tile(ACMapSource mapSource, TileAddress tAddr)
+	{
+		this(mapSource, tAddr.getX(), tAddr.getY(), tAddr.getZoom());
 	}
 
 	/**
 	 * Tries to get tiles of a lower or higher zoom level (one or two level difference) from cache and use it as a
 	 * placeholder until the tile has been loaded.
 	 */
-	// This does not belong into here. It has to be moved upward in the hierarchy. The Tile should not know anything about the TileStore/Cache
+	// This does not belong into here. It has to be moved into the MemoryTileCache. The Tile should not know anything about the TileStore/Cache
 	public void loadPlaceholderFromCache(MemoryTileCache cache)
 	{
 		int tileSize = MP2MapSpace.getTileSize();
@@ -173,7 +192,7 @@ public class Tile
 	/**
 	 * @return The map source of this tile.
 	 */
-	public IfMapSource getSource()
+	public ACMapSource getSource()
 	{
 		return mMapSource;
 	}
@@ -203,11 +222,70 @@ public class Tile
 	}
 
 	/**
+	 * @return the modification date
+	 */
+	public Date getMod()
+	{
+		return mod;
+	}
+
+	/**
+	 * @param mod
+	 *          the mod to set
+	 */
+	public void setMod(Date mod)
+	{
+		this.mod = mod;
+	}
+
+	/**
+	 * @return the expiration date
+	 */
+	public Date getExp()
+	{
+		return exp;
+	}
+
+	/**
+	 * @param exp
+	 *          the exp to set
+	 */
+	public void setExp(Date exp)
+	{
+		this.exp = exp;
+	}
+
+	/**
+	 * @return the etag entry
+	 */
+	public String getEtag()
+	{
+		return etag;
+	}
+
+	/**
+	 * @param etag
+	 *          the etag to set
+	 */
+	public void setEtag(String etag)
+	{
+		this.etag = etag;
+	}
+
+	/**
 	 * @return The image for this tile.
 	 */
 	public BufferedImage getImage()
 	{
 		return mImage;
+	}
+
+	/**
+	 * @return The image for this tile.
+	 */
+	public Byte[] getImageData()
+	{
+		return null;
 	}
 
 	/**
@@ -345,7 +423,7 @@ public class Tile
 	 * @param zoom
 	 * @return The key as a concatenation of zoom, xtile, ytile and source *
 	 */
-	public static String getTileKey(IfMapSource source, int xtile, int ytile, int zoom)
+	public static String getTileKey(ACMapSource source, int xtile, int ytile, int zoom)
 	{
 		return zoom + "/" + xtile + "/" + ytile + "@" + source.getName();
 	}

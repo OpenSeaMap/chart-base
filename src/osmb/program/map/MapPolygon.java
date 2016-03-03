@@ -30,7 +30,7 @@ import java.util.Arrays;
 import javax.xml.bind.annotation.XmlElement;
 // /W ? import javax.xml.bind.annotation.XmlRootElement;
 
-import osmb.mapsources.IfMapSource;
+import osmb.mapsources.ACMapSource;
 import osmb.mapsources.MP2Corner;
 import osmb.mapsources.MP2MapSpace;
 import osmb.program.Logging;
@@ -51,7 +51,7 @@ public class MapPolygon extends Map implements IfMap
 	}
 
 	// W #mapSpace EastNorthCoordinate <-> GeoCoordinate
-	public static MapPolygon createTrackEnclosure(Layer layer, String name, IfMapSource mapSource, int zoom, GeoCoordinate[] trackPoints, int pixelDistance,
+	public static MapPolygon createTrackEnclosure(Layer layer, String name, ACMapSource mapSource, int zoom, GeoCoordinate[] trackPoints, int pixelDistance,
 	    TileImageParameters parameters)
 	{
 		// W #mapSpace IfMapSpace mapSpace = mapSource.getMapSpace();
@@ -155,7 +155,7 @@ public class MapPolygon extends Map implements IfMap
 		return new MapPolygon(layer, name, map.getMapSource(), newZoom, newPolygon, map.getParameters());
 	}
 
-	public MapPolygon(Layer layer, String name, IfMapSource mapSource, int zoom, Polygon polygon, TileImageParameters parameters)
+	public MapPolygon(Layer layer, String name, ACMapSource mapSource, int zoom, Polygon polygon, TileImageParameters parameters)
 	{
 		// super(layer, name, mapSource, zoom, null, null, parameters);
 		super(layer, mapSource, zoom, null, null, parameters);

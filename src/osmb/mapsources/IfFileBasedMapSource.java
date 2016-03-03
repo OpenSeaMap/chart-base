@@ -20,7 +20,7 @@ package osmb.mapsources;
  * Marker interface for file based map sources (map sources that use tiles present in the file system and therefore do
  * not stress online tile servers.
  */
-public interface IfFileBasedMapSource extends IfMapSource
+public interface IfFileBasedMapSource
 {
 	public void reinitialize();
 

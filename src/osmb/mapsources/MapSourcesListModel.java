@@ -23,21 +23,19 @@ import java.util.Vector;
 
 import javax.swing.AbstractListModel;
 
-import osmb.mapsources.IfMapSource;
-
 // W class copied from osmcb.program, used to manage enabled/disabled mapsources in osmcd.gui.settings.SettingsGUI.java
 @SuppressWarnings("serial")
-public class MapSourcesListModel extends AbstractListModel<IfMapSource>
+public class MapSourcesListModel extends AbstractListModel<ACMapSource>
 {
-	ArrayList<IfMapSource> mapSources;
+	ArrayList<ACMapSource> mapSources;
 
-	public MapSourcesListModel(Vector<IfMapSource> source)
+	public MapSourcesListModel(Vector<ACMapSource> source)
 	{
-		this.mapSources = new ArrayList<IfMapSource>(source);
+		this.mapSources = new ArrayList<ACMapSource>(source);
 	}
 
 	@Override
-	public IfMapSource getElementAt(int index)
+	public ACMapSource getElementAt(int index)
 	{
 		return mapSources.get(index);
 	}
@@ -48,28 +46,28 @@ public class MapSourcesListModel extends AbstractListModel<IfMapSource>
 		return mapSources.size();
 	}
 
-	public Vector<IfMapSource> getVector()
+	public Vector<ACMapSource> getVector()
 	{
-		return new Vector<IfMapSource>(mapSources);
+		return new Vector<ACMapSource>(mapSources);
 	}
 
-	public IfMapSource removeElement(int index)
+	public ACMapSource removeElement(int index)
 	{
 		fireIntervalRemoved(this, index, index);
 		return mapSources.remove(index);
 	}
 
-	public void addElement(IfMapSource element)
+	public void addElement(ACMapSource element)
 	{
 		mapSources.add(element);
-		fireIntervalAdded((Object) this, mapSources.size(), mapSources.size());
+		fireIntervalAdded(this, mapSources.size(), mapSources.size());
 	}
 
 	public boolean moveUp(int index)
 	{
 		if (index < 1)
 			return false;
-		IfMapSource ms = mapSources.remove(index - 1);
+		ACMapSource ms = mapSources.remove(index - 1);
 		mapSources.add(index, ms);
 		fireContentsChanged(this, index - 1, index);
 		return true;
@@ -79,7 +77,7 @@ public class MapSourcesListModel extends AbstractListModel<IfMapSource>
 	{
 		if (index + 1 >= mapSources.size())
 			return false;
-		IfMapSource ms = mapSources.remove(index + 1);
+		ACMapSource ms = mapSources.remove(index + 1);
 		mapSources.add(index, ms);
 		fireContentsChanged(this, index, index + 1);
 		return true;
@@ -87,10 +85,11 @@ public class MapSourcesListModel extends AbstractListModel<IfMapSource>
 
 	public void sort()
 	{
-		Collections.sort(mapSources, new Comparator<IfMapSource>()
+		Collections.sort(mapSources, new Comparator<ACMapSource>()
 		{
 
-			public int compare(IfMapSource o1, IfMapSource o2)
+			@Override
+			public int compare(ACMapSource o1, ACMapSource o2)
 			{
 				return o1.toString().compareTo(o2.toString());
 			}

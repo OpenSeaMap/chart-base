@@ -43,11 +43,13 @@ import com.sleepycat.persist.StoreConfig;
 import com.sleepycat.persist.evolve.Mutations;
 import com.sleepycat.persist.evolve.Renamer;
 
-import osmb.mapsources.IfMapSource;
+import osmb.mapsources.ACMapSource;
+import osmb.mapsources.TileAddress;
 import osmb.program.ACSettings;
 import osmb.program.DelayedInterruptThread;
+import osmb.program.tiles.Tile;
 import osmb.program.tilestore.ACTileStore;
-import osmb.program.tilestore.IfTileStoreEntry;
+import osmb.program.tilestore.IfStoredTile;
 import osmb.program.tilestore.TileStoreException;
 import osmb.program.tilestore.TileStoreInfo;
 import osmb.program.tilestore.berkeleydb.TileDbEntry.TileDbKey;
@@ -65,6 +67,22 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 	 * Max count of tile stores opened
 	 */
 	private static final int MAX_CONCURRENT_ENVIRONMENTS = 5;
+
+	public static SiBerkeleyDbTileStore getInstance()
+	{
+		if (INSTANCE == null)
+			try
+			{
+				INSTANCE = new SiBerkeleyDbTileStore();
+			}
+			catch (TileStoreException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		return (SiBerkeleyDbTileStore) INSTANCE;
+	}
+
 	private EnvironmentConfig envConfig;
 	/**
 	 * Map holding the database for each map source.
@@ -118,6 +136,20 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 		Runtime.getRuntime().addShutdownHook(new ShutdownThread(true));
 	}
 
+	public static synchronized void initialize()
+	{
+		if (INSTANCE != null)
+			return;
+		try
+		{
+			INSTANCE = new SiBerkeleyDbTileStore();
+		}
+		catch (TileStoreException e)
+		{
+			System.exit(1);
+		}
+	}
+
 	protected void acquireTileStoreLock() throws TileStoreException
 	{
 		try
@@ -158,13 +190,13 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 	}
 
 	@Override
-	public IfTileStoreEntry createNewEntry(int x, int y, int zoom, byte[] data, long timeLastModified, long timeExpires, String eTag)
+	public IfStoredTile createNewEntry(int x, int y, int zoom, byte[] data, long timeLastModified, long timeExpires, String eTag)
 	{
 		return new TileDbEntry(x, y, zoom, data, timeLastModified, timeExpires, eTag);
 	}
 
 	@Override
-	public IfTileStoreEntry createNewEmptyEntry(int x, int y, int zoom)
+	public IfStoredTile createNewEmptyEntry(int x, int y, int zoom)
 	{
 		long time = System.currentTimeMillis();
 		long timeExpires = time + ACSettings.getTileDefaultExpirationTime();
@@ -179,7 +211,7 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 	 * @return
 	 * @throws DatabaseException
 	 */
-	private TileDatabase getTileDatabase(IfMapSource mapSource) throws DatabaseException
+	private TileDatabase getTileDatabase(ACMapSource mapSource) throws DatabaseException
 	{
 		TileDatabase db;
 		if (tileDbMap == null)
@@ -261,13 +293,13 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 	}
 
 	@Override
-	public void putTileData(byte[] tileData, int x, int y, int zoom, IfMapSource mapSource) throws IOException
+	public void putTileData(byte[] tileData, int x, int y, int zoom, ACMapSource mapSource) throws IOException
 	{
 		this.putTileData(tileData, x, y, zoom, mapSource, -1, -1, null);
 	}
 
 	@Override
-	public void putTileData(byte[] tileData, int x, int y, int zoom, IfMapSource mapSource, long timeLastModified, long timeExpires, String eTag)
+	public void putTileData(byte[] tileData, int x, int y, int zoom, ACMapSource mapSource, long timeLastModified, long timeExpires, String eTag)
 	    throws IOException
 	{
 		TileDbEntry tile = new TileDbEntry(x, y, zoom, tileData, timeLastModified, timeExpires, eTag);
@@ -289,7 +321,7 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 	}
 
 	@Override
-	public void putTile(IfTileStoreEntry tile, IfMapSource mapSource)
+	public void putTile(IfStoredTile tile, ACMapSource mapSource)
 	{
 		TileDatabase db = null;
 		try
@@ -308,7 +340,7 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 	}
 
 	@Override
-	public IfTileStoreEntry getTile(int x, int y, int zoom, IfMapSource mapSource)
+	public IfStoredTile getTileEntry(int x, int y, int zoom, ACMapSource mapSource)
 	{
 		TileDatabase db = null;
 		try
@@ -316,7 +348,7 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 			db = getTileDatabase(mapSource);
 			if (db == null)
 				return null;
-			IfTileStoreEntry tile = db.get(new TileDbKey(x, y, zoom));
+			IfStoredTile tile = db.get(new TileDbKey(x, y, zoom));
 			if (log.isTraceEnabled())
 			{
 				if (tile == null)
@@ -336,7 +368,7 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 	}
 
 	@Override
-	public boolean contains(int x, int y, int zoom, IfMapSource mapSource)
+	public boolean contains(int x, int y, int zoom, ACMapSource mapSource)
 	{
 		try
 		{
@@ -350,7 +382,7 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 	}
 
 	@Override
-	public void prepareTileStore(IfMapSource mapSource)
+	public void prepareTileStore(ACMapSource mapSource)
 	{
 		try
 		{
@@ -433,7 +465,7 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 	}
 
 	@Override
-	public BufferedImage getCacheCoverage(IfMapSource mapSource, int zoom, Point tileNumMin, Point tileNumMax) throws InterruptedException
+	public BufferedImage getCacheCoverage(ACMapSource mapSource, int zoom, Point tileNumMin, Point tileNumMax) throws InterruptedException
 	{
 		TileDatabase db;
 		try
@@ -492,8 +524,7 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 	 * @param mapSource
 	 * @return
 	 */
-	@Override
-	public boolean storeExists(IfMapSource mapSource)
+	public boolean storeExists(ACMapSource mapSource)
 	{
 		File tileStore = getStoreDir(mapSource);
 		return (tileStore.isDirectory()) && (tileStore.exists());
@@ -505,7 +536,7 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 	 * @param mapSource
 	 * @return
 	 */
-	protected File getStoreDir(IfMapSource mapSource)
+	protected File getStoreDir(ACMapSource mapSource)
 	{
 		return getStoreDir(mapSource.getName());
 	}
@@ -801,4 +832,26 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 			super.finalize();
 		}
 	}
+
+	@Override
+	public void putTileData(byte[] tileData, TileAddress tAddr, ACMapSource mapSource) throws IOException
+	{
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public Tile getTile(TileAddress tAddr, ACMapSource mapSource)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean contains(TileAddress tAddr, ACMapSource mapSource)
+	{
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

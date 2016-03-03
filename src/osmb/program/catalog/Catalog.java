@@ -154,7 +154,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	}
 
 	/**
-	 * This actually creates a new catalog object and fills it with the content from the {@link #file}
+	 * This actually creates a new catalog object and fills it with the content from the {@link #File}
 	 */
 	public static Catalog load(File file) throws JAXBException
 	{
@@ -260,7 +260,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	/**
 	 * Load a catalog by it's name
 	 * 
-	 * @param name
+	 * @param mName
 	 */
 	// W #deprecated?
 	public Catalog(String catalogName)
@@ -268,7 +268,6 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		this(new File(ACSettings.getInstance().getCatalogsDirectory(), getCatalogFileName(catalogName)), catalogName);
 	}
 
-	// W #deprecated?
 	protected Catalog(File file, String name)
 	{
 		this.file = file;
@@ -277,23 +276,21 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 
 	public Catalog(Catalog catalog)
 	{
-		this.file = catalog.getFile();
-		this.name = catalog.getName();
+		this(catalog.getFile(), catalog.getName());
 		this.version = catalog.getVersion();
 		// how to copy layers ?
 		this.layers = catalog.getLayers();
-		log.debug("copy constructor catalog(catalog) called");
+		log.debug("copy constructor catalog(Catalog c) called");
 	}
 
 	@Deprecated
 	public Catalog(IfCatalog ifCatalog)
 	{
-		this.file = ifCatalog.getFile();
-		this.name = ifCatalog.getName();
+		this(ifCatalog.getFile(), ifCatalog.getName());
 		this.version = ifCatalog.getVersion();
 		// how to copy layers ?
 		this.layers = ifCatalog.getLayers();
-		log.debug("copy constructor catalog(catalog) called");
+		log.debug("copy constructor catalog(IfCatalog c) called");
 	}
 
 	@Override

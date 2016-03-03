@@ -19,7 +19,7 @@ package osmb.program.map;
 import java.awt.Dimension;
 import java.awt.Point;
 
-import osmb.mapsources.IfMapSource;
+import osmb.mapsources.ACMapSource;
 import osmb.program.catalog.IfCapabilityDeletable;
 import osmb.program.catalog.IfCatalogObject;
 import osmb.program.tiles.IfTileFilter;
@@ -38,7 +38,7 @@ public interface IfMap extends IfCatalogObject, IfCapabilityDeletable
 	 * 
 	 * @return The map source where this map is taken from.
 	 */
-	public IfMapSource getMapSource();
+	public ACMapSource getMapSource();
 
 	/**
 	 * A map is of exactly one zoom level. This is the zoom level of the layer to which this map belongs.

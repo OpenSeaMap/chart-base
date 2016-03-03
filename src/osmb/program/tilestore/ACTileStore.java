@@ -23,11 +23,11 @@ import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
-import osmb.mapsources.IfMapSource;
+import osmb.mapsources.ACMapSource;
+import osmb.mapsources.TileAddress;
 import osmb.program.ACSettings;
 import osmb.program.tiles.Tile;
 import osmb.program.tilestore.berkeleydb.SiBerkeleyDbTileStore;
-import osmb.program.tilestore.sqlitedb.SQLiteDbTileStore;
 
 /**
  * abstract class
@@ -44,27 +44,15 @@ public abstract class ACTileStore
 
 	public static synchronized void initialize()
 	{
-		if (INSTANCE != null)
-			return;
-		try
-		{
-			INSTANCE = new SiBerkeleyDbTileStore();
-		}
-		catch (TileStoreException e)
-		{
-			System.exit(1);
-		}
-		// testing of SQLite tile store
-		try
-		{
-			// SQLiteDbTileStore ttt = new SQLiteDbTileStore();
-			// ttt.initializeCommonDB();
-			SQLiteDbTileStore.initializeCommonDB();
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
+		// // testing of SQLite tile store
+		// try
+		// {
+		// SQLiteDbTileStore.initializeCommonDB();
+		// }
+		// catch (Exception e)
+		// {
+		// e.printStackTrace();
+		// }
 	}
 
 	public static ACTileStore getInstance()
@@ -94,7 +82,9 @@ public abstract class ACTileStore
 	 * @param mapSource
 	 * @throws IOException
 	 */
-	public abstract void putTileData(byte[] tileData, int x, int y, int zoom, IfMapSource mapSource) throws IOException;
+	public abstract void putTileData(byte[] tileData, int x, int y, int zoom, ACMapSource mapSource) throws IOException;
+
+	public abstract void putTileData(byte[] tileData, TileAddress tAddr, ACMapSource mapSource) throws IOException;
 
 	/**
 	 * This writes one tile into the tile store for the specified {@link IfMapSource}.
@@ -109,12 +99,12 @@ public abstract class ACTileStore
 	 * @param eTag
 	 * @throws IOException
 	 */
-	public abstract void putTileData(byte[] tileData, int x, int y, int zoom, IfMapSource mapSource, long timeLastModified, long timeExpires, String eTag)
+	public abstract void putTileData(byte[] tileData, int x, int y, int zoom, ACMapSource mapSource, long timeLastModified, long timeExpires, String eTag)
 	    throws IOException;
 
-	public abstract void putTile(IfTileStoreEntry tile, IfMapSource mapSource);
+	public abstract void putTile(IfStoredTile tile, ACMapSource mapSource);
 
-	public void putTile(Tile tile, IfMapSource mapSource)
+	public void putTile(Tile tile, ACMapSource mapSource)
 	{
 		if (this instanceof SiBerkeleyDbTileStore)
 		{
@@ -131,7 +121,9 @@ public abstract class ACTileStore
 	 * @param mapSource
 	 * @return
 	 */
-	public abstract IfTileStoreEntry getTile(int x, int y, int zoom, IfMapSource mapSource);
+	public abstract IfStoredTile getTileEntry(int x, int y, int zoom, ACMapSource mapSource);
+
+	public abstract Tile getTile(TileAddress tAddr, ACMapSource mapSource);
 
 	/**
 	 * This checks if a requested tile exists in the tilestore for a specified {@link IfMapSource}.
@@ -142,14 +134,16 @@ public abstract class ACTileStore
 	 * @param mapSource
 	 * @return
 	 */
-	public abstract boolean contains(int x, int y, int zoom, IfMapSource mapSource);
+	public abstract boolean contains(int x, int y, int zoom, ACMapSource mapSource);
+
+	public abstract boolean contains(TileAddress tAddr, ACMapSource mapSource);
 
 	/**
 	 * 
-	 * @param mapSource
+	 * @param acMapSource
 	 * @throws TileStoreException
 	 */
-	public abstract void prepareTileStore(IfMapSource mapSource) throws TileStoreException;
+	public abstract void prepareTileStore(ACMapSource acMapSource) throws TileStoreException;
 
 	/**
 	 * 
@@ -162,14 +156,6 @@ public abstract class ACTileStore
 	 * @return
 	 */
 	public abstract String[] getAllStoreNames();
-
-	/**
-	 * Returns <code>true</code> if the tile store directory of the specified {@link IfMapSource} exists.
-	 * 
-	 * @param mapSource
-	 * @return
-	 */
-	public abstract boolean storeExists(IfMapSource mapSource);
 
 	/**
 	 * 
@@ -189,14 +175,14 @@ public abstract class ACTileStore
 	 * @return
 	 * @throws InterruptedException
 	 */
-	public abstract BufferedImage getCacheCoverage(IfMapSource mapSource, int zoom, Point tileNumMin, Point tileNumMax) throws InterruptedException;
+	public abstract BufferedImage getCacheCoverage(ACMapSource mapSource, int zoom, Point tileNumMin, Point tileNumMax) throws InterruptedException;
 
 	public abstract void closeAll();
 
-	public abstract IfTileStoreEntry createNewEntry(int x, int y, int zoom, byte[] data, long timeLastModified, long timeExpires, String eTag);
+	public abstract IfStoredTile createNewEntry(int x, int y, int zoom, byte[] data, long timeLastModified, long timeExpires, String eTag);
 
 	/**
-	 * Creates a new empty {@link IfTileStoreEntry} that represents a missing tile in a sparse map source. This we should use twice: For empty tiles in OpenSeaMap
+	 * Creates a new empty {@link IfStoredTile} that represents a missing tile in a sparse map source. This we should use twice: For empty tiles in OpenSeaMap
 	 * AND for 'empty' sea tiles in the BaseMap.
 	 * We still have to find a way to detect these...
 	 * 
@@ -205,9 +191,9 @@ public abstract class ACTileStore
 	 * @param zoom
 	 * @return
 	 */
-	public abstract IfTileStoreEntry createNewEmptyEntry(int x, int y, int zoom);
+	public abstract IfStoredTile createNewEmptyEntry(int x, int y, int zoom);
 
-	public boolean isTileExpired(IfTileStoreEntry tileStoreEntry)
+	public boolean isTileExpired(IfStoredTile tileStoreEntry)
 	{
 		ACSettings settings = ACSettings.getInstance();
 		if (tileStoreEntry == null)

@@ -16,7 +16,6 @@
  ******************************************************************************/
 package osmb.mapsources;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,9 +28,7 @@ import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlList;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
-import osmb.program.jaxb.ColorAdapter;
 import osmb.program.tiles.TileImageType;
 
 /**
@@ -40,63 +37,56 @@ import osmb.program.tiles.TileImageType;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.PROPERTY)
 @XmlSeeAlso(
-{ CustomMapSource.class })
+{ CustomOnlineMapSource.class })
 public class CustomMultiLayerMapSource extends ACMultiLayerMapSource
 {
 	@XmlElementWrapper(name = "layers")
+	// @XmlElements(
+	// { @XmlElement(name = "customOnlineMapSource", type = CustomOnlineMapSource.class), @XmlElement(name = "mapSource", type = StandardMapSourceLayer.class),
+	// @XmlElement(name = "localTileSQLite", type = CustomLocalTileSQliteMapSource.class),
+	// @XmlElement(name = "localTileFiles", type = CustomLocalTileFilesMapSource.class),
+	// @XmlElement(name = "localTileZip", type = CustomLocalTileZipMapSource.class),
+	// @XmlElement(name = "localImageFile", type = CustomLocalImageFileMapSource.class) })
 	@XmlElements(
-	{ @XmlElement(name = "customMapSource", type = CustomMapSource.class), @XmlElement(name = "customWmsMapSource", type = CustomWmsMapSource.class),
-			@XmlElement(name = "mapSource", type = StandardMapSourceLayer.class), @XmlElement(name = "localTileSQLite", type = CustomLocalTileSQliteMapSource.class),
-			@XmlElement(name = "localTileFiles", type = CustomLocalTileFilesMapSource.class),
-			@XmlElement(name = "localTileZip", type = CustomLocalTileZipMapSource.class),
-			@XmlElement(name = "localImageFile", type = CustomLocalImageFileMapSource.class) })
-	protected List<CustomMapSource> layers = new ArrayList<CustomMapSource>();
+	{ @XmlElement(name = "customMapSource", type = CustomOnlineMapSource.class) })
+	protected List<CustomOnlineMapSource> layers = new ArrayList<CustomOnlineMapSource>();
 
 	@XmlList()
 	protected List<Float> layersAlpha = new ArrayList<Float>();
 
-	@XmlElement(defaultValue = "#000000")
-	@XmlJavaTypeAdapter(ColorAdapter.class)
-	protected Color backgroundColor = Color.BLACK;
-
 	public CustomMultiLayerMapSource()
 	{
 		super();
-		mapSources = new IfMapSource[0];
+		mapSources = new ACMapSource[0];
 	}
 
 	public TileImageType getTileType()
 	{
-		return tileType;
+		return mTileType;
 	}
 
 	public void setTileType(TileImageType tileType)
 	{
-		this.tileType = tileType;
+		this.mTileType = tileType;
 	}
 
 	protected void afterUnmarshal(Unmarshaller u, Object parent)
 	{
-		mapSources = new IfMapSource[layers.size()];
+		mapSources = new ACMapSource[layers.size()];
 		layers.toArray(mapSources);
-		initializeValues();
+		// initializeValues();
+		initialize();
 	}
 
 	@XmlElement(name = "name")
 	public String getMLName()
 	{
-		return name;
+		return mName;
 	}
 
 	public void setMLName(String name)
 	{
-		this.name = name;
-	}
-
-	@Override
-	public Color getBackgroundColor()
-	{
-		return backgroundColor;
+		this.mName = name;
 	}
 
 	@Override
@@ -104,7 +94,7 @@ public class CustomMultiLayerMapSource extends ACMultiLayerMapSource
 	{
 		if (layersAlpha.size() <= layerIndex)
 			return 1.0f;
-
-		return layersAlpha.get(layerIndex);
+		else
+			return layersAlpha.get(layerIndex);
 	}
 }

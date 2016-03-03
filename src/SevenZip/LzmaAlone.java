@@ -152,7 +152,6 @@ public class LzmaAlone
 		        + "  -eos:   write End Of Stream marker\n");
 	}
 
-	// @SuppressWarnings("resource") // W removes 16 warnings ???
 	public static void main(String[] args) throws Exception
 	{
 		System.out.println("\nLZMA (Java) 4.61  2008-11-23\n");

@@ -55,7 +55,7 @@ import osmb.utilities.OSMBUtilities;
  * 
  */
 @XmlRootElement(name = "localTileSQLite")
-public class CustomLocalTileSQliteMapSource implements IfFileBasedMapSource
+public class CustomLocalTileSQliteMapSource extends ACMapSource implements IfFileBasedMapSource
 {
 	private static Logger log = Logger.getLogger(CustomLocalTileSQliteMapSource.class);
 
@@ -242,7 +242,7 @@ public class CustomLocalTileSQliteMapSource implements IfFileBasedMapSource
 	}
 
 	@Override
-	public byte[] getTileData(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException
+	public byte[] getTileData(int zoom, int x, int y) throws IOException, TileException, InterruptedException
 	{
 		if (!initialized)
 			initialize();
@@ -290,9 +290,9 @@ public class CustomLocalTileSQliteMapSource implements IfFileBasedMapSource
 	}
 
 	@Override
-	public BufferedImage getTileImage(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException
+	public BufferedImage getTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
 	{
-		byte[] data = getTileData(zoom, x, y, loadMethod);
+		byte[] data = getTileData(zoom, x, y);
 		if (data == null)
 			return null;
 		return ImageIO.read(new ByteArrayInputStream(data));
@@ -335,7 +335,6 @@ public class CustomLocalTileSQliteMapSource implements IfFileBasedMapSource
 	// return mapSpace;
 	// }
 
-	@Override
 	public Color getBackgroundColor()
 	{
 		return backgroundColor;
@@ -367,7 +366,6 @@ public class CustomLocalTileSQliteMapSource implements IfFileBasedMapSource
 		conn = null;
 	}
 
-	@Override
 	public BufferedImage downloadTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
 	{
 		// TODO Auto-generated method stub

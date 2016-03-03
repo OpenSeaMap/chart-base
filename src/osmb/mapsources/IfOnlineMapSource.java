@@ -19,7 +19,7 @@ package osmb.mapsources;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
-public interface IfHttpMapSource extends IfMapSource
+public interface IfOnlineMapSource
 {
 	/**
 	 * Specifies the different mechanisms for detecting updated tiles respectively only download newer tiles than those stored locally.
@@ -59,5 +59,7 @@ public interface IfHttpMapSource extends IfMapSource
 	 *          tile number on y-axis for the specified <code>zoom</code> level
 	 * @return the initialized urlConnection for downloading the specified tile image
 	 */
-	public HttpURLConnection getTileUrlConnection(int zoom, int tilex, int tiley) throws IOException;
+	public HttpURLConnection getTileUrlConnection(TileAddress tAddr) throws IOException;
+
+	public String getTileUrl(TileAddress tAddr);
 }

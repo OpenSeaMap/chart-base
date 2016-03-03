@@ -22,7 +22,7 @@ import java.util.LinkedList;
 import javax.swing.tree.TreeNode;
 
 import osmb.exceptions.InvalidNameException;
-import osmb.mapsources.IfMapSource;
+import osmb.mapsources.ACMapSource;
 import osmb.program.catalog.IfCapabilityDeletable;
 import osmb.program.catalog.IfCatalog;
 import osmb.program.catalog.IfCatalogObject;
@@ -44,12 +44,12 @@ public interface IfLayer extends IfCatalogObject, Iterable<IfMap>, IfCapabilityD
 	int getZoomLvl();
 
 	void setZoomLvl(int nZoomLvl);
-	
-//W #mapSpace ??? EastNorthCoordinate <-> GeoCoordinate
-// unused!!!
-//	void addMapsAutocut(String mapNameBase, IfMapSource mapSource, EastNorthCoordinate minCoordinate, EastNorthCoordinate maxCoordinate, int zoom,
-//	    TileImageParameters parameters, int maxMapSize) throws InvalidNameException;
 
-	void addMapsAutocut(String mapNameBase, IfMapSource mapSource, Point minPixelCoordinate, Point maxPixelCoordinate, int zoom, TileImageParameters parameters,
+	// W #mapSpace ??? EastNorthCoordinate <-> GeoCoordinate
+	// unused!!!
+	// void addMapsAutocut(String mapNameBase, IfMapSource mapSource, EastNorthCoordinate minCoordinate, EastNorthCoordinate maxCoordinate, int zoom,
+	// TileImageParameters parameters, int maxMapSize) throws InvalidNameException;
+
+	void addMapsAutocut(String mapNameBase, ACMapSource mapSource, Point minPixelCoordinate, Point maxPixelCoordinate, int zoom, TileImageParameters parameters,
 	    int maxMapSize, int overlapTiles) throws InvalidNameException;
 }

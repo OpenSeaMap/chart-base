@@ -16,10 +16,10 @@
  ******************************************************************************/
 package osmb.program.tiles;
 
-import osmb.mapsources.IfMapSource;
+import osmb.mapsources.ACMapSource;
 
 /**
- * Basic interface that allows to filter tiles based on their position and zoom level in the map.
+ * Basic interface that allows to filter tiles based on their position and zoom level in the map. To be used with non-rectangular maps.
  */
 public interface IfTileFilter
 {
@@ -30,10 +30,11 @@ public interface IfTileFilter
 	 * @param y
 	 * @param zoom
 	 * @param mapSource
-	 * @return <ul>
+	 * @return
+	 *         <ul>
 	 *         <li><code>true</code>: tile did pass the filter and should be included</li>
 	 *         <li><code>false</code>:tile did not pass the filter and should be excluded</li>
 	 *         </ul>
 	 */
-	public boolean testTile(int x, int y, int zoom, IfMapSource mapSource);
+	public boolean testTile(int x, int y, int zoom, ACMapSource mapSource);
 }

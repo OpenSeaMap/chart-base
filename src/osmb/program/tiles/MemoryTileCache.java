@@ -16,6 +16,10 @@
  ******************************************************************************/
 package osmb.program.tiles;
 
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+
 //License: GPL. Copyright 2008 by Jan Peter Stotz
 
 import java.lang.management.ManagementFactory;
@@ -23,7 +27,9 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryNotificationInfo;
 import java.lang.management.MemoryPoolMXBean;
 import java.lang.management.MemoryUsage;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.management.Notification;
 import javax.management.NotificationBroadcaster;
@@ -31,7 +37,10 @@ import javax.management.NotificationListener;
 
 import org.apache.log4j.Logger;
 
-import osmb.mapsources.IfMapSource;
+import osmb.mapsources.ACMapSource;
+import osmb.mapsources.MP2MapSpace;
+import osmb.mapsources.TileAddress;
+import osmb.program.tiles.Tile.TileState;
 
 /**
  * {@link TileImageCache} implementation that stores all {@link Tile} objects in memory up to a certain limit ( {@link #getCacheSize()}). If the limit is
@@ -53,14 +62,10 @@ public class MemoryTileCache implements NotificationListener
 	protected int mCacheSize = 0;
 	// protected Hashtable<String, CacheEntry> mHT;
 	/**
-	 * hashtable holding the actual tile data.
+	 * LinkedHashMap holding the actual tile data.
 	 */
-	protected ConcurrentHashMap<String, Tile> mHT = null;
-
-	/**
-	 * List of all tiles by their key in their most recently used order.
-	 */
-	protected CacheLinkedListElement mruTiles;
+	// protected ConcurrentHashMap<String, Tile> mHM = null;
+	protected Map<String, Tile> mHM = null;
 
 	public MemoryTileCache()
 	{
@@ -75,8 +80,8 @@ public class MemoryTileCache implements NotificationListener
 	public MemoryTileCache(int cacheSize)
 	{
 		mCacheSize = cacheSize;
-		mHT = new ConcurrentHashMap<String, Tile>(mCacheSize);
-		mruTiles = new CacheLinkedListElement();
+		mHM = Collections.synchronizedMap(new LinkedHashMap<String, Tile>(mCacheSize / 10, 0.75f, true));
+		// mruTiles = new CacheLinkedListElement();
 
 		MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
 		NotificationBroadcaster emitter = (NotificationBroadcaster) mbean;
@@ -90,7 +95,7 @@ public class MemoryTileCache implements NotificationListener
 				memPool.setUsageThreshold((long) (memUsage.getMax() * 0.95));
 			}
 		}
-		log.debug("mtc[" + mHT.size() + ", " + mCacheSize + "] created");
+		log.debug("mtc[" + mHM.size() + ", " + mCacheSize + "] created");
 	}
 
 	/**
@@ -130,18 +135,24 @@ public class MemoryTileCache implements NotificationListener
 		// log.debug("mtc[" + mHT.size() + "] modified");
 	}
 
+	protected boolean removeEldestEntry(Map.Entry<String, Tile> eldest)
+	{
+		return (mHM.size() > mCacheSize);
+	}
+
 	/**
 	 * This adds a tile to the cache and removes any old entries for this tile from it.
 	 */
 	public void addTile(Tile tile)
 	{
-		CacheEntry entry = createCacheEntry(tile);
+		// CacheEntry entry = createCacheEntry(tile);
 		// mHT.put(tile.getKey(), entry);
-		mHT.put(tile.getKey(), tile);
-		mruTiles.addFirst(entry);
-		if (mHT.size() > mCacheSize)
-			removeOldEntries();
-		log.debug("mtc[" + mHT.size() + "] modified");
+		mHM.put(tile.getKey(), tile);
+		// mruTiles.addFirst(entry);
+		// if (mHM.size() > mCacheSize)
+		// // removeOldEntries();
+		// mHM.removeEldestEntry(null);
+		log.debug("mtc[" + mHM.size() + "] modified");
 	}
 
 	/**
@@ -157,59 +168,87 @@ public class MemoryTileCache implements NotificationListener
 	 *          Zoom level
 	 * @return The tile or null if the tile is not in the cache.
 	 */
-	public Tile getTile(IfMapSource source, int x, int y, int z)
+	public Tile getTile(ACMapSource source, int x, int y, int z)
 	{
-		return mHT.get(Tile.getTileKey(source, x, y, z));
+		return mHM.get(Tile.getTileKey(source, x, y, z));
+	}
+
+	public Tile getTile(ACMapSource mapSource, TileAddress tAddr)
+	{
+		return mHM.get(Tile.getTileKey(mapSource, tAddr.getX(), tAddr.getY(), tAddr.getZoom()));
 	}
 
 	/**
-	 * Removes the least recently used tiles
+	 * Tries to get tiles of a lower or higher zoom level (one or two level difference) from cache and use it as a
+	 * placeholder until the tile has been loaded.
 	 */
-	protected void removeOldEntries()
+	// This does belong here. It has been moved from Tile to here. The Tile should not know anything about the TileStore/Cache structures.
+	public Tile loadPlaceholderFromCache(Tile tile)
 	{
-		synchronized (mruTiles)
+		Tile phTile = tile;
+		int tileSize = MP2MapSpace.getTileSize();
+		BufferedImage tmpImage = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g = (Graphics2D) tmpImage.getGraphics();
+		// g.drawImage(image, 0, 0, null);
+		for (int zoomDiff = 1; zoomDiff < 5; zoomDiff++)
 		{
-			try
+			// first we check if there are already the 2^x tiles
+			// of a higher detail level
+			int zoom_high = tile.mZoom + zoomDiff;
+			if (zoomDiff < 3 && zoom_high <= tile.getSource().getMaxZoom())
 			{
-				while (mruTiles.getElementCount() > mCacheSize)
+				int factor = 1 << zoomDiff;
+				int xtile_high = tile.getXtile() << zoomDiff;
+				int ytile_high = tile.getYtile() << zoomDiff;
+				double scale = 1.0 / factor;
+				g.setTransform(AffineTransform.getScaleInstance(scale, scale));
+				int paintedTileCount = 0;
+				for (int x = 0; x < factor; x++)
 				{
-					removeEntry(mruTiles.getLastElement());
+					for (int y = 0; y < factor; y++)
+					{
+						Tile tmpTile = getTile(tile.getSource(), xtile_high + x, ytile_high + y, zoom_high);
+						if (tmpTile != null && tmpTile.mTileState == TileState.TS_LOADED)
+						{
+							paintedTileCount++;
+							tmpTile.paint(g, x * tileSize, y * tileSize);
+						}
+					}
+				}
+				if (paintedTileCount == factor * factor)
+				{
+					tile.setImage(tmpImage);
 				}
 			}
-			catch (Exception e)
+			else
 			{
-				log.warn("boo ", e);
+				int zoom_low = tile.mZoom - zoomDiff;
+				if (zoom_low >= tile.getSource().getMinZoom())
+				{
+					int xtile_low = tile.getXtile() >> zoomDiff;
+					int ytile_low = tile.getYtile() >> zoomDiff;
+					int factor = (1 << zoomDiff);
+					double scale = factor;
+					AffineTransform at = new AffineTransform();
+					int translate_x = (tile.getXtile() % factor) * tileSize;
+					int translate_y = (tile.getYtile() % factor) * tileSize;
+					at.setTransform(scale, 0, 0, scale, -translate_x, -translate_y);
+					g.setTransform(at);
+					Tile tmpTile = getTile(tile.getSource(), xtile_low, ytile_low, zoom_low);
+					if (tmpTile != null && tmpTile.mTileState == TileState.TS_LOADED)
+					{
+						tmpTile.paint(g, 0, 0);
+					}
+				}
+				tile.setImage(tmpImage);
 			}
 		}
-	}
-
-	protected void removeEntry(CacheEntry entry)
-	{
-		mHT.remove(entry.tileID);
-		mruTiles.removeEntry(entry);
-		log.debug("mtc[" + mHT.size() + "] modified");
-	}
-
-	protected CacheEntry createCacheEntry(Tile tile)
-	{
-		return new CacheEntry(tile);
-	}
-
-	/**
-	 * Clears the cache deleting all tiles from memory
-	 */
-	public void clear()
-	{
-		synchronized (mruTiles)
-		{
-			mHT.clear();
-			mruTiles.clear();
-		}
+		return tile;
 	}
 
 	public int getTileCount()
 	{
-		return mHT.size();
+		return mHM.size();
 	}
 
 	public int getCacheSize()
@@ -226,8 +265,6 @@ public class MemoryTileCache implements NotificationListener
 	public void setCacheSize(int cacheSize)
 	{
 		this.mCacheSize = cacheSize;
-		if (mHT.size() > cacheSize)
-			removeOldEntries();
 	}
 
 	/**
@@ -358,5 +395,13 @@ public class MemoryTileCache implements NotificationListener
 		{
 			return firstElement;
 		}
+	}
+
+	/**
+	 * This completely removes all tiles from the mtc by clearing the underlying HashMap.
+	 */
+	public void clear()
+	{
+		mHM.clear();
 	}
 }

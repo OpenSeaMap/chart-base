@@ -60,7 +60,7 @@ import javax.swing.JComponent;
 import org.apache.log4j.Logger;
 
 import osmb.exceptions.OSMBOutOfMemoryException;
-import osmb.mapsources.IfMapSource;
+import osmb.mapsources.ACMapSource;
 import osmb.mapsources.MP2MapSpace;
 import osmb.program.ACApp;
 import osmb.program.Logging;
@@ -103,9 +103,9 @@ public class OSMBUtilities
 		return true;
 	}
 
-	public static BufferedImage createEmptyTileImage(IfMapSource mapSource)
+	public static BufferedImage createEmptyTileImage(ACMapSource mapSource)
 	{
-		int tileSize = MP2MapSpace.getTileSize(); // #mapSpace mapSource.getMapSpace().getTileSize();
+		int tileSize = MP2MapSpace.getTileSize();
 		Color color = mapSource.getBackgroundColor();
 
 		int imageType;
@@ -174,7 +174,7 @@ public class OSMBUtilities
 		return -1;
 	}
 
-	public static byte[] createEmptyTileData(IfMapSource mapSource)
+	public static byte[] createEmptyTileData(ACMapSource mapSource)
 	{
 		BufferedImage emptyImage = createEmptyTileImage(mapSource);
 		ByteArrayOutputStream buf = new ByteArrayOutputStream(4096);

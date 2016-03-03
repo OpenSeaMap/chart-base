@@ -16,8 +16,7 @@
  ******************************************************************************/
 package osmb.mapsources;
 
-
 public interface IfWrappedMapSource
 {
-	public IfMapSource getMapSource() throws MapSourceCreateException;
+	public ACMapSource getMapSource() throws MapSourceCreateException;
 }

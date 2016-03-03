@@ -19,17 +19,14 @@ package osmb.program.tiles;
 //License: GPL. Copyright 2008 by Jan Peter Stotz
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.net.ConnectException;
 
 import org.apache.log4j.Logger;
 
-import osmb.mapsources.IfMapSource;
-import osmb.mapsources.IfMapSource.LoadMethod;
+import osmb.mapsources.ACMapSource;
+import osmb.mapsources.TileAddress;
 import osmb.program.JobDispatcher;
 import osmb.program.tiles.Tile.TileState;
-import osmb.program.tilestore.ACTileStore;
-import osmb.program.tilestore.IfTileStoreEntry;
+import osmb.program.tilestore.IfStoredTile;
 import osmb.utilities.OSMBStrs;
 
 /**
@@ -38,7 +35,7 @@ import osmb.utilities.OSMBStrs;
  */
 public class TileLoader
 {
-	private static final Logger log = Logger.getLogger(TileLoader.class);
+	private static Logger log = Logger.getLogger(TileLoader.class);
 
 	protected IfTileLoaderListener listener = null;
 	protected MemoryTileCache mMTC = null;
@@ -51,20 +48,21 @@ public class TileLoader
 	}
 
 	/**
-	 * Creates a {@link Runnable} to download one tile from the specified map source. It informs the listener by calling tileLoadingFinished(tile, true) that the
-	 * download is finished. The listener is responsible to store the downloaded data into a tile store.
+	 * Creates a {@link Runnable} to load one tile from the specified map source. It informs the listener by calling tileLoadingFinished(tile, true) that the
+	 * loading is finished. It tries to load the tile in sequence from MemoryTileCache, from TileStore and last from the online MapSource.
+	 * If the tile is downloaded, it is automatically updated, or inserted if it did not yet exist, in the TileStore.
 	 * 
 	 * @param source
-	 * @param tilex
+	 * @param tileXIdx
 	 *          in tile indices
-	 * @param tiley
+	 * @param tileYIdx
 	 *          in tile indices
 	 * @param zoom
 	 * @return A {@link Runnable} to execute by some thread pool
 	 */
-	public Runnable createTileLoaderJob(final IfMapSource source, final int tileX, final int tileY, final int zoom)
+	public Runnable createTileLoaderJob(final ACMapSource source, final int tileXIdx, final int tileYIdx, final int zoom)
 	{
-		return new TileAsyncLoadJob(source, tileX, tileY, zoom);
+		return new TileAsyncLoadJob(source, new TileAddress(tileXIdx, tileYIdx, zoom));
 	}
 
 	/**
@@ -77,20 +75,20 @@ public class TileLoader
 	 */
 	protected class TileAsyncLoadJob implements Runnable
 	{
-		final int mTileX, mTileY, mZoom;
-		final IfMapSource mMapSource;
-		Tile mTile;
+		// final int mTileXIdx, mTileYIdx, mZoom;
+		final TileAddress mTAddr;
+		final ACMapSource mMapSource;
+		Tile mTile = null;
 		// boolean fileTilePainted = false;
-		protected IfTileStoreEntry tileStoreEntry = null;
+		protected IfStoredTile tileStoreEntry = null;
 		private Object mSem = new Object();
 
-		public TileAsyncLoadJob(IfMapSource source, int tilex, int tiley, int zoom)
+		// public TileAsyncLoadJob(IfMapSource source, int tileXIdx, int tileYIdx, int zoom)
+		public TileAsyncLoadJob(ACMapSource source, TileAddress tAddr)
 		{
 			super();
 			this.mMapSource = source;
-			this.mTileX = tilex;
-			this.mTileY = tiley;
-			this.mZoom = zoom;
+			mTAddr = tAddr;
 		}
 
 		/**
@@ -102,25 +100,25 @@ public class TileLoader
 			log.trace(OSMBStrs.RStr("START"));
 			int sleepTime = 100;
 			boolean bLoadOK = false;
-			if (((mTile = mMTC.getTile(mMapSource, mTileX, mTileY, mZoom)) != null) && (mTile.getTileState() != TileState.TS_LOADING))
+			if (((mTile = mMTC.getTile(mMapSource, mTAddr)) != null) && (mTile.getTileState() != TileState.TS_LOADING))
 			{
 				bLoadOK = true;
 				log.debug("use " + mTile + " from mtc");
 			}
 			else
 			{
-				mTile = new Tile(mMapSource, mTileX, mTileY, mZoom);
+				mTile = new Tile(mMapSource, mTAddr);
 				log.debug("loading of " + mTile + " started");
 				if (!(bLoadOK = loadTileFromStore()))
 				{
-					synchronized (mSem)
+					synchronized (mTile)
 					{
 						while (!(bLoadOK = downloadAndUpdateTile()))
 						{
 							try
 							{
 								log.warn("loading of " + mTile + ", sleep stime=" + sleepTime / 1000.0 + "s");
-								mSem.wait(sleepTime);
+								mTile.wait(sleepTime);
 								if (sleepTime < 120000)
 									sleepTime *= 2;
 							}
@@ -158,32 +156,9 @@ public class TileLoader
 			boolean bLoadOK = false;
 			try
 			{
-				BufferedImage image = mMapSource.getTileImage(mZoom, mTileX, mTileY, LoadMethod.STORE);
-
-				if (image == null)
-				{
-					log.warn(mTile + " not in store -> use empty and load from online");
-					mTile.setErrorImage();
-				}
-				else
-				{
-					mTile.setTileState(Tile.TileState.TS_LOADED);
-					mTile.setImage(image);
-					mMTC.addTile(mTile);
-
-					tileStoreEntry = ACTileStore.getInstance().getTile(mTileX, mTileY, mZoom, mMapSource);
-
-					if (ACTileStore.getInstance().isTileExpired(tileStoreEntry))
-					{
-						mTile.setTileState(Tile.TileState.TS_EXPIRED);
-						log.warn("expired " + mTile + " in store -> use old and load from online");
-					}
-					else
-					{
-						bLoadOK = true;
-						log.debug(mTile + " loaded from store");
-					}
-				}
+				Tile tmpTile = null;
+				if ((tmpTile = mMapSource.getTileStore().getTile(mTAddr, mMapSource)) != null)
+					mTile = tmpTile;
 			}
 			catch (Exception e)
 			{
@@ -201,8 +176,7 @@ public class TileLoader
 			boolean bLoadOK = false;
 			try
 			{
-				// BufferedImage image = mMapSource.getTileImage(mZoom, mTileX, mTileY, LoadMethod.SOURCE);
-				BufferedImage image = mMapSource.downloadTileImage(mZoom, mTileX, mTileY);
+				BufferedImage image = mMapSource.loadTileImage(mTAddr);
 				if (image != null)
 				{
 					mTile.setImage(image);
@@ -210,21 +184,6 @@ public class TileLoader
 					bLoadOK = true;
 					log.debug("tile " + mTile + " loaded from online map source");
 				}
-			}
-			catch (ConnectException e)
-			{
-				log.error("Downloading of " + mTile + " failed: " + e.getMessage());
-				mTile.setErrorImage();
-			}
-			catch (DownloadFailedException e)
-			{
-				log.error("Downloading of " + mTile + " failed: " + e.getMessage());
-				mTile.setErrorImage();
-			}
-			catch (IOException e)
-			{
-				log.error("Downloading of " + mTile + " failed: " + e.getMessage());
-				mTile.setErrorImage();
 			}
 			catch (Exception e)
 			{

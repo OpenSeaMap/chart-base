@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.log4j.Logger;
 
@@ -37,47 +36,34 @@ import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
 import osmb.program.tilestore.ACTileStore;
 
-public abstract class ACMultiLayerMapSource implements IfMapSource, Iterable<IfMapSource>
+public abstract class ACMultiLayerMapSource extends ACMapSource implements Iterable<ACMapSource>
 {
-	protected Logger log;
-
-	protected String name = "";
-	protected TileImageType tileType = TileImageType.PNG;
-	protected IfMapSource[] mapSources;
-
-	private int maxZoom;
-	private int minZoom;
-	// W #mapSpace private IfMapSpace mapSpace;
-	protected MapSourceLoaderInfo loaderInfo = null;
-
-	public ACMultiLayerMapSource(String name, TileImageType tileImageType)
-	{
-		this();
-		this.name = name;
-		this.tileType = tileImageType;
-	}
+	protected ACMapSource[] mapSources;
 
 	protected ACMultiLayerMapSource()
 	{
+		super();
+	}
+
+	public ACMultiLayerMapSource(String name, TileImageType tileImageType)
+	{
+		super();
 		log = Logger.getLogger(this.getClass());
+		this.mName = name;
+		this.mTileType = tileImageType;
 	}
 
 	protected void initializeValues()
 	{
 		log.trace("START");
 		@SuppressWarnings("unused") // W #unused
-		IfMapSource refMapSource = mapSources[0];
-		// W #mapSpace
-		// mapSpace = refMapSource.getMapSpace();
-		maxZoom = MP2MapSpace.MAX_TECH_ZOOM; // 18; // W MAX_TECH_ZOOM
-		minZoom = MP2MapSpace.MIN_TECH_ZOOM; // 0;
-		for (IfMapSource ms : mapSources)
+		ACMapSource refMapSource = mapSources[0];
+		mMaxZoom = MP2MapSpace.MAX_TECH_ZOOM; // 18; // W MAX_TECH_ZOOM
+		mMinZoom = MP2MapSpace.MIN_TECH_ZOOM; // 0;
+		for (ACMapSource ms : mapSources)
 		{
-			maxZoom = Math.min(maxZoom, ms.getMaxZoom());
-			minZoom = Math.max(minZoom, ms.getMinZoom());
-			// W #mapSpace
-			// if (!ms.getMapSpace().equals(mapSpace))
-			// throw new RuntimeException("Different map spaces used in multi-layer map source");
+			mMaxZoom = Math.min(mMaxZoom, ms.getMaxZoom());
+			mMinZoom = Math.max(mMinZoom, ms.getMinZoom());
 		}
 	}
 
@@ -85,19 +71,10 @@ public abstract class ACMultiLayerMapSource implements IfMapSource, Iterable<IfM
 	public void initialize()
 	{
 		log.trace("START");
-		@SuppressWarnings("unused") // W #unused
-		IfMapSource refMapSource = mapSources[0];
-		maxZoom = MP2MapSpace.MAX_TECH_ZOOM;
-		minZoom = MP2MapSpace.MIN_TECH_ZOOM;
-		for (IfMapSource ms : mapSources)
-		{
-			ms.initialize();
-			maxZoom = Math.min(maxZoom, ms.getMaxZoom());
-			minZoom = Math.max(minZoom, ms.getMinZoom());
-		}
+		initializeValues();
 	}
 
-	public IfMapSource[] getLayerMapSources()
+	public ACMapSource[] getLayerMapSources()
 	{
 		return mapSources;
 	}
@@ -108,29 +85,22 @@ public abstract class ACMultiLayerMapSource implements IfMapSource, Iterable<IfM
 		return Color.BLACK;
 	}
 
-	// W #mapSpace
-	// @Override
-	// public IfMapSpace getMapSpace()
-	// {
-	// return mapSpace;
-	// }
-
 	@Override
 	public int getMaxZoom()
 	{
-		return maxZoom;
+		return mMaxZoom;
 	}
 
 	@Override
 	public int getMinZoom()
 	{
-		return minZoom;
+		return mMinZoom;
 	}
 
 	@Override
 	public String getName()
 	{
-		return name;
+		return mName;
 	}
 
 	/**
@@ -146,17 +116,17 @@ public abstract class ACMultiLayerMapSource implements IfMapSource, Iterable<IfM
 	 * This loads the image data via {@link #getTileImage}() and converts them by {@link ImageIO.write}() into a byte array.
 	 */
 	@Override
-	public byte[] getTileData(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, InterruptedException, TileException
+	public byte[] getTileData(int zoom, int x, int y) throws IOException, InterruptedException, TileException
 	{
 		log.trace("START");
 		ByteArrayOutputStream buf = new ByteArrayOutputStream(16000);
-		BufferedImage image = getTileImage(zoom, x, y, loadMethod);
+		BufferedImage image = getTileImage(zoom, x, y);
 		if (image == null)
 		{
 			log.debug("tile not found:(" + zoom + "|" + x + "|" + y + ")");
 			return null;
 		}
-		ImageIO.write(image, tileType.getFileExt(), buf);
+		ImageIO.write(image, mTileType.getFileExt(), buf);
 		log.debug("tile written:(" + zoom + "|" + x + "|" + y + ")");
 		return buf.toByteArray();
 	}
@@ -166,7 +136,7 @@ public abstract class ACMultiLayerMapSource implements IfMapSource, Iterable<IfM
 	 * When all layer images are loaded, they were combined via Graphics2D.drawImage().
 	 */
 	@Override
-	public BufferedImage getTileImage(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, InterruptedException, TileException
+	public BufferedImage getTileImage(int zoom, int x, int y) throws IOException, InterruptedException, TileException
 	{
 		log.trace("START");
 		BufferedImage image = null;
@@ -177,8 +147,8 @@ public abstract class ACMultiLayerMapSource implements IfMapSource, Iterable<IfM
 			int maxSize = MP2MapSpace.getTileSize();
 			for (int i = 0; i < mapSources.length; i++)
 			{
-				IfMapSource layerMapSource = mapSources[i];
-				BufferedImage layerImage = layerMapSource.getTileImage(zoom, x, y, loadMethod);
+				ACMapSource layerMapSource = mapSources[i];
+				BufferedImage layerImage = layerMapSource.getTileImage(zoom, x, y);
 				if (layerImage != null)
 				{
 					log.debug("Multi layer loaded: '" + layerMapSource + "' (" + zoom + "|" + x + "|" + y + ") into Layer=" + i);
@@ -214,7 +184,7 @@ public abstract class ACMultiLayerMapSource implements IfMapSource, Iterable<IfM
 				}
 
 				ByteArrayOutputStream buf = new ByteArrayOutputStream(32000);
-				ImageIO.write(image, tileType.getFileExt(), buf);
+				ImageIO.write(image, mTileType.getFileExt(), buf);
 				log.trace("tile written:(" + zoom + "|" + x + "|" + y + ")");
 				long timeLastModified = System.currentTimeMillis();
 				long timeExpires = timeLastModified + ACSettings.getTileDefaultExpirationTime();
@@ -236,10 +206,9 @@ public abstract class ACMultiLayerMapSource implements IfMapSource, Iterable<IfM
 		}
 	}
 
-	@Override
 	public BufferedImage downloadTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
 	{
-		return getTileImage(zoom, x, y, LoadMethod.SOURCE);
+		return getTileImage(zoom, x, y);
 	}
 
 	protected float getLayerAlpha(int layerIndex)
@@ -248,43 +217,9 @@ public abstract class ACMultiLayerMapSource implements IfMapSource, Iterable<IfM
 	}
 
 	@Override
-	public TileImageType getTileImageType()
-	{
-		return tileType;
-	}
-
-	@Override
-	public String toString()
-	{
-		return getName();
-	}
-
-	@Override
-	public Iterator<IfMapSource> iterator()
+	public Iterator<ACMapSource> iterator()
 	{
 		return Arrays.asList(mapSources).iterator();
-	}
-
-	@Override
-	@XmlTransient
-	public MapSourceLoaderInfo getLoaderInfo()
-	{
-		return loaderInfo;
-	}
-
-	@Override
-	public void setLoaderInfo(MapSourceLoaderInfo loaderInfo)
-	{
-		log.trace("START");
-		if (this.loaderInfo != null)
-			throw new RuntimeException("LoaderInfo already set");
-		this.loaderInfo = loaderInfo;
-	}
-
-	@Override
-	public ACTileStore getTileStore()
-	{
-		return null;
 	}
 
 }

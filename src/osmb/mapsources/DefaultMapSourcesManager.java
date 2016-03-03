@@ -25,30 +25,27 @@ import java.util.Vector;
 
 import javax.swing.JOptionPane;
 
-import org.apache.log4j.Logger;
-
 import osmb.mapsources.loader.CustomMapSourceLoader;
 import osmb.program.ACSettings;
 import osmb.utilities.OSMBStrs;
 
-public class DefaultMapSourcesManager extends ACMapSourcesManager
+public class DefaultMapSourcesManager extends SiACMapSourcesManager
 {
-	@SuppressWarnings("unused") // W #unused
-	private Logger log = Logger.getLogger(DefaultMapSourcesManager.class);
 
 	/**
 	 * All map sources visible to the user, independent of it is enabled or disabled
 	 */
-	private LinkedHashMap<String, IfMapSource> allMapSources = new LinkedHashMap<String, IfMapSource>(50);
+	private LinkedHashMap<String, ACMapSource> allMapSources = new LinkedHashMap<String, ACMapSource>(50);
 
 	/**
 	 * All means all map sources visible to the user plus all layers of multi-layer map sources
 	 */
-	private HashMap<String, IfMapSource> allAvailableMapSources = new HashMap<String, IfMapSource>(50);
+	private HashMap<String, ACMapSource> allAvailableMapSources = new HashMap<String, ACMapSource>(50);
 
 	public DefaultMapSourcesManager()
 	{
 		// Check for user specific configuration of mapsources directory
+		log.trace("constructor called");
 	}
 
 	/**
@@ -64,7 +61,7 @@ public class DefaultMapSourcesManager extends ACMapSourcesManager
 			if (!mapSourcesDir.isDirectory())
 			{
 				JOptionPane.showMessageDialog(null, String.format(OSMBStrs.RStr("msg_environment_mapsrc_dir_not_exist"), mapSourcesDir.getAbsolutePath()),
-						OSMBStrs.RStr("Error"), JOptionPane.ERROR_MESSAGE);
+				    OSMBStrs.RStr("Error"), JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 			try
@@ -111,18 +108,18 @@ public class DefaultMapSourcesManager extends ACMapSourcesManager
 	// }
 
 	@Override
-	public void addMapSource(IfMapSource mapSource)
+	public void addMapSource(ACMapSource mapSource)
 	{
 		if (mapSource instanceof StandardMapSourceLayer)
 			mapSource = ((StandardMapSourceLayer) mapSource).getMapSource();
 		allAvailableMapSources.put(mapSource.getName(), mapSource);
 		if (mapSource instanceof ACMultiLayerMapSource)
 		{
-			for (IfMapSource lms: ((ACMultiLayerMapSource) mapSource))
+			for (ACMapSource lms : ((ACMultiLayerMapSource) mapSource))
 			{
 				if (lms instanceof StandardMapSourceLayer)
 					lms = ((StandardMapSourceLayer) lms).getMapSource();
-				IfMapSource old = allAvailableMapSources.put(lms.getName(), lms);
+				ACMapSource old = allAvailableMapSources.put(lms.getName(), lms);
 				if (old != null)
 				{
 					allAvailableMapSources.put(old.getName(), old);
@@ -140,43 +137,37 @@ public class DefaultMapSourcesManager extends ACMapSourcesManager
 		((DefaultMapSourcesManager) INSTANCE).loadMapSources();
 	}
 
-	public static void initializeEclipseMapPacksOnly()
+	@Override
+	public Vector<ACMapSource> getAllAvailableMapSources()
 	{
-		INSTANCE = new DefaultMapSourcesManager();
-		// ((DefaultMapSourcesManager) INSTANCE).loadMapPacksEclipseMode();
+		return new Vector<ACMapSource>(allMapSources.values());
 	}
 
 	@Override
-	public Vector<IfMapSource> getAllAvailableMapSources()
+	public Vector<ACMapSource> getAllMapSources()
 	{
-		return new Vector<IfMapSource>(allMapSources.values());
+		return new Vector<ACMapSource>(allMapSources.values());
 	}
 
 	@Override
-	public Vector<IfMapSource> getAllMapSources()
+	public Vector<ACMapSource> getAllLayerMapSources()
 	{
-		return new Vector<IfMapSource>(allMapSources.values());
-	}
-
-	@Override
-	public Vector<IfMapSource> getAllLayerMapSources()
-	{
-		Vector<IfMapSource> all = getAllMapSources();
-		TreeSet<IfMapSource> uniqueSources = new TreeSet<IfMapSource>(new Comparator<IfMapSource>()
+		Vector<ACMapSource> all = getAllMapSources();
+		TreeSet<ACMapSource> uniqueSources = new TreeSet<ACMapSource>(new Comparator<ACMapSource>()
 		{
 
 			@Override
-			public int compare(IfMapSource o1, IfMapSource o2)
+			public int compare(ACMapSource o1, ACMapSource o2)
 			{
 				return o1.getName().compareTo(o2.getName());
 			}
 
 		});
-		for (IfMapSource ms: all)
+		for (ACMapSource ms : all)
 		{
 			if (ms instanceof ACMultiLayerMapSource)
 			{
-				for (IfMapSource lms: ((ACMultiLayerMapSource) ms))
+				for (ACMapSource lms : ((ACMultiLayerMapSource) ms))
 				{
 					uniqueSources.add(lms);
 				}
@@ -184,21 +175,21 @@ public class DefaultMapSourcesManager extends ACMapSourcesManager
 			else
 				uniqueSources.add(ms);
 		}
-		Vector<IfMapSource> result = new Vector<IfMapSource>(uniqueSources);
+		Vector<ACMapSource> result = new Vector<ACMapSource>(uniqueSources);
 		return result;
 	}
 
 	@Override
-	public Vector<IfMapSource> getEnabledOrderedMapSources()
+	public Vector<ACMapSource> getEnabledOrderedMapSources()
 	{
-		Vector<IfMapSource> mapSources = new Vector<IfMapSource>(allMapSources.size());
+		Vector<ACMapSource> mapSources = new Vector<ACMapSource>(allMapSources.size());
 
 		Vector<String> enabledMapSources = ACSettings.getInstance().mapSourcesEnabled;
 		TreeSet<String> notEnabledMapSources = new TreeSet<String>(allMapSources.keySet());
 		notEnabledMapSources.removeAll(enabledMapSources);
-		for (String mapSourceName: enabledMapSources)
+		for (String mapSourceName : enabledMapSources)
 		{
-			IfMapSource ms = getSourceByName(mapSourceName);
+			ACMapSource ms = getSourceByName(mapSourceName);
 			if (ms != null)
 			{
 				mapSources.add(ms);
@@ -206,9 +197,9 @@ public class DefaultMapSourcesManager extends ACMapSourcesManager
 		}
 		// remove all disabled map sources so we get those that are neither enabled nor disabled
 		notEnabledMapSources.removeAll(ACSettings.getInstance().mapSourcesDisabled);
-		for (String mapSourceName: notEnabledMapSources)
+		for (String mapSourceName : notEnabledMapSources)
 		{
-			IfMapSource ms = getSourceByName(mapSourceName);
+			ACMapSource ms = getSourceByName(mapSourceName);
 			if (ms != null)
 			{
 				mapSources.add(ms);
@@ -220,13 +211,13 @@ public class DefaultMapSourcesManager extends ACMapSourcesManager
 	}
 
 	@Override
-	public Vector<IfMapSource> getDisabledMapSources()
+	public Vector<ACMapSource> getDisabledMapSources()
 	{
 		Vector<String> disabledMapSources = ACSettings.getInstance().mapSourcesDisabled;
-		Vector<IfMapSource> mapSources = new Vector<IfMapSource>(0);
-		for (String mapSourceName: disabledMapSources)
+		Vector<ACMapSource> mapSources = new Vector<ACMapSource>(0);
+		for (String mapSourceName : disabledMapSources)
 		{
-			IfMapSource ms = getSourceByName(mapSourceName);
+			ACMapSource ms = getSourceByName(mapSourceName);
 			if (ms != null)
 			{
 				mapSources.add(ms);
@@ -236,9 +227,9 @@ public class DefaultMapSourcesManager extends ACMapSourcesManager
 	}
 
 	@Override
-	public IfMapSource getDefaultMapSource()
+	public ACMapSource getDefaultMapSource()
 	{
-		IfMapSource ms = getSourceByName("AH OpenSeaMap - Mapnik"); // W #??? DEFAULT;
+		ACMapSource ms = getSourceByName("AH OpenSeaMap - Mapnik"); // W #??? DEFAULT;
 		if (ms != null)
 			return ms;
 		// Fallback: return first
@@ -246,7 +237,7 @@ public class DefaultMapSourcesManager extends ACMapSourcesManager
 	}
 
 	@Override
-	public IfMapSource getSourceByName(String name)
+	public ACMapSource getSourceByName(String name)
 	{
 		return allAvailableMapSources.get(name);
 	}

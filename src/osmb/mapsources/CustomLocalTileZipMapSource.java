@@ -16,7 +16,6 @@
  ******************************************************************************/
 package osmb.mapsources;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -33,24 +32,20 @@ import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.apache.log4j.Logger;
 
 //W #mapSpace import osmb.mapsources.IfMapSource.LoadMethod;
 //W #mapSpace import osmb.mapsources.mapspace.MapSpaceFactory;
 import osmb.program.Logging;
-import osmb.program.jaxb.ColorAdapter;
 //W #mapSpace import osmb.program.map.IfMapSpace;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
-import osmb.program.tilestore.ACTileStore;
 import osmb.utilities.OSMBStrs;
 import osmb.utilities.OSMBUtilities;
 
 @XmlRootElement(name = "localTileZip")
-public class CustomLocalTileZipMapSource implements IfFileBasedMapSource
+public class CustomLocalTileZipMapSource extends CustomLocalMapSource implements IfFileBasedMapSource
 {
 	private static final Logger log = Logger.getLogger(CustomLocalTileZipMapSource.class);
 
@@ -67,10 +62,6 @@ public class CustomLocalTileZipMapSource implements IfFileBasedMapSource
 	@XmlElement(nillable = false, defaultValue = "CustomLocal")
 	private String name = "Custom";
 
-	private int minZoom = 0;
-
-	private int maxZoom = 18;
-
 	@XmlElement(name = "zipFile", required = true)
 	private File[] zipFiles = new File[] {};
 
@@ -81,10 +72,6 @@ public class CustomLocalTileZipMapSource implements IfFileBasedMapSource
 	private boolean invertYCoordinate = false;
 
 	private LinkedList<ZipFile> zips = new LinkedList<ZipFile>();
-
-	@XmlElement(defaultValue = "#000000")
-	@XmlJavaTypeAdapter(ColorAdapter.class)
-	private Color backgroundColor = Color.BLACK;
 
 	public CustomLocalTileZipMapSource()
 	{
@@ -177,9 +164,6 @@ public class CustomLocalTileZipMapSource implements IfFileBasedMapSource
 				}
 			}
 		}
-		minZoom = min;
-		maxZoom = max;
-
 		Enumeration<? extends ZipEntry> entries = zips.get(0).entries();
 		String syntax = "%d/%d/%d";
 		while (entries.hasMoreElements())
@@ -244,122 +228,66 @@ public class CustomLocalTileZipMapSource implements IfFileBasedMapSource
 				max = Math.max(max, z);
 			}
 		}
-		minZoom = min;
-		maxZoom = max;
 	}
 
 	@Override
-	public byte[] getTileData(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException
+	public byte[] loadTileData(TileAddress tAddr)
 	{
+		String fileName = "----";
 		if (!initialized)
 			initialize();
 		if (fileSyntax == null)
 			return null;
 		if (log.isTraceEnabled())
-			log.trace(String.format("Loading tile z=%d x=%d y=%d", zoom, x, y));
+			log.trace(String.format("Loading tile %s", tAddr));
 
-		if (invertYCoordinate)
-			y = ((1 << zoom) - y - 1);
-		ZipEntry entry = null;
-		String fileName;
-		switch (sourceType)
+		try
 		{
-			case DIR_ZOOM_X_Y:
-				fileName = String.format(fileSyntax, zoom, x, y);
-				break;
-			case DIR_ZOOM_Y_X:
-				fileName = String.format(fileSyntax, zoom, y, x);
-				break;
-			case QUADKEY:
-				fileName = String.format(fileSyntax, MapSourceTools.encodeQuadTree(zoom, x, y));
-				break;
-			default:
-				throw new RuntimeException("Invalid source type");
-		}
-		for (ZipFile zip : zips)
-		{
-			entry = zip.getEntry(fileName);
-			if (entry != null)
+			// if (invertYCoordinate)
+			// y = ((1 << zoom) - y - 1);
+			ZipEntry entry = null;
+			switch (sourceType)
 			{
-				InputStream in = zip.getInputStream(entry);
-				byte[] data = OSMBUtilities.getInputBytes(in);
-				in.close();
-				return data;
+				case DIR_ZOOM_X_Y:
+					fileName = String.format(fileSyntax, tAddr);
+					break;
+				case DIR_ZOOM_Y_X:
+					fileName = String.format(fileSyntax, tAddr);
+					break;
+				case QUADKEY:
+					fileName = String.format(fileSyntax, MapSourceTools.encodeQuadTree(tAddr));
+					break;
+				default:
+					throw new RuntimeException("Invalid source type");
 			}
+			for (ZipFile zip : zips)
+			{
+				entry = zip.getEntry(fileName);
+				if (entry != null)
+				{
+					InputStream in;
+					in = zip.getInputStream(entry);
+					byte[] data = OSMBUtilities.getInputBytes(in);
+					in.close();
+					return data;
+				}
+			}
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		log.debug("Map tile file not found in zip files: " + fileName);
 		return null;
 	}
 
 	@Override
-	public BufferedImage getTileImage(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException
+	public BufferedImage getTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
 	{
-		byte[] data = getTileData(zoom, x, y, loadMethod);
+		byte[] data = getTileData(zoom, x, y);
 		if (data == null)
 			return null;
 		return ImageIO.read(new ByteArrayInputStream(data));
 	}
-
-	@Override
-	public TileImageType getTileImageType()
-	{
-		return tileImageType;
-	}
-
-	@Override
-	public int getMaxZoom()
-	{
-		return maxZoom;
-	}
-
-	@Override
-	public int getMinZoom()
-	{
-		return minZoom;
-	}
-
-	@Override
-	public String getName()
-	{
-		return name;
-	}
-
-	@Override
-	public String toString()
-	{
-		return name;
-	}
-
-	@Override
-	public Color getBackgroundColor()
-	{
-		return backgroundColor;
-	}
-
-	@Override
-	@XmlTransient
-	public MapSourceLoaderInfo getLoaderInfo()
-	{
-		return loaderInfo;
-	}
-
-	@Override
-	public void setLoaderInfo(MapSourceLoaderInfo loaderInfo)
-	{
-		this.loaderInfo = loaderInfo;
-	}
-
-	@Override
-	public BufferedImage downloadTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
-	{
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public ACTileStore getTileStore()
-	{
-		return null;
-	}
-
 }

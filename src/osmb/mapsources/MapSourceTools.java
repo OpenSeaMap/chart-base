@@ -35,16 +35,19 @@ public class MapSourceTools
 	 * @return quadtree encoded tile number
 	 * 
 	 */
-	public static String encodeQuadTree(int zoom, int tilex, int tiley)
+	// public static String encodeQuadTree(int zoom, int tilex, int tiley)
+	public static String encodeQuadTree(TileAddress tAddr)
 	{
-		char[] tileNum = new char[zoom];
-		for (int i = zoom - 1; i >= 0; i--)
+		char[] tileNum = new char[tAddr.getZoom()];
+		int x = tAddr.getX();
+		int y = tAddr.getY();
+		for (int i = tAddr.getZoom() - 1; i >= 0; i--)
 		{
 			// Binary encoding using ones for tilex and twos for tiley. If a bit is set in tilex and tiley we get a three.
-			int num = (tilex % 2) | ((tiley % 2) << 1);
+			int num = (x % 2) | ((y % 2) << 1);
 			tileNum[i] = NUM_CHAR[num];
-			tilex >>= 1;
-			tiley >>= 1;
+			x >>= 1;
+			y >>= 1;
 		}
 		return new String(tileNum);
 	}
@@ -61,7 +64,7 @@ public class MapSourceTools
 	 *          vertical tile number
 	 * @return <code>double[] {lon_min: west, lat_min: south, lon_max: east, lat_max: north}</code>
 	 */
-	public static double[] calculateLatLon(IfMapSource mapSource, int zoom, int tilex, int tiley)
+	public static double[] calculateLatLon(int zoom, int tilex, int tiley)
 	{
 		int tileSize = MP2MapSpace.getTileSize();
 		double[] result = new double[4];
@@ -74,27 +77,27 @@ public class MapSourceTools
 		return result;
 	}
 
-	public static String formatMapUrl(String mapUrl, int zoom, int tilex, int tiley)
+	public static String formatMapUrl(String mapUrl, TileAddress tAddr)
 	{
 		String tmp = mapUrl;
-		tmp = tmp.replace("{$x}", Integer.toString(tilex));
-		tmp = tmp.replace("{$y}", Integer.toString(tiley));
-		tmp = tmp.replace("{$z}", Integer.toString(zoom));
-		tmp = tmp.replace("{$q}", MapSourceTools.encodeQuadTree(zoom, tilex, tiley));
+		tmp = tmp.replace("{$x}", Integer.toString(tAddr.getX()));
+		tmp = tmp.replace("{$y}", Integer.toString(tAddr.getY()));
+		tmp = tmp.replace("{$z}", Integer.toString(tAddr.getZoom()));
+		tmp = tmp.replace("{$q}", MapSourceTools.encodeQuadTree(tAddr));
 		return tmp;
 	}
 
-	public static String formatMapUrl(String mapUrl, int serverNum, int zoom, int tilex, int tiley)
+	public static String formatMapUrl(String mapUrl, int serverNum, TileAddress tAddr)
 	{
 		String tmp = mapUrl;
 		tmp = tmp.replace("{$servernum}", Integer.toString(serverNum));
-		return formatMapUrl(tmp, zoom, tilex, tiley);
+		return formatMapUrl(tmp, tAddr);
 	}
 
-	public static String formatMapUrl(String mapUrl, String serverPart, int zoom, int tilex, int tiley)
+	public static String formatMapUrl(String mapUrl, String serverPart, TileAddress tAddr)
 	{
 		String tmp = mapUrl;
 		tmp = tmp.replace("{$serverpart}", serverPart);
-		return formatMapUrl(tmp, zoom, tilex, tiley);
+		return formatMapUrl(tmp, tAddr);
 	}
 }

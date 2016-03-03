@@ -18,7 +18,6 @@ package osmb.mapsources;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
@@ -27,7 +26,6 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -49,7 +47,7 @@ import osmb.utilities.OSMBUtilities;
 //import osmcd.gui.mapview.PreviewMap;
 //W #mapSpace MP2MapSpace EastNorthCoordinate <-> GeoCoordinate MP2Corner <-> MercatorPixelCoordinate
 @XmlRootElement(name = "localTileFiles")
-public class CustomLocalTileFilesMapSource implements IfFileBasedMapSource
+public class CustomLocalTileFilesMapSource extends ACMapSource implements IfFileBasedMapSource
 {
 	private static final Logger log = Logger.getLogger(CustomLocalTileFilesMapSource.class);
 
@@ -75,7 +73,7 @@ public class CustomLocalTileFilesMapSource implements IfFileBasedMapSource
 	private File sourceFolder = null;
 
 	@XmlElement()
-	private CustomMapSourceType sourceType = CustomMapSourceType.DIR_ZOOM_X_Y;
+	private CustomLocalMapSource.CustomMapSourceType sourceType = CustomLocalMapSource.CustomMapSourceType.DIR_ZOOM_X_Y;
 
 	@XmlElement(defaultValue = "false")
 	private boolean invertYCoordinate = false;
@@ -229,28 +227,28 @@ public class CustomLocalTileFilesMapSource implements IfFileBasedMapSource
 	}
 
 	@Override
-	public byte[] getTileData(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException
+	public byte[] loadTileData(TileAddress tAddr)
 	{
 		if (!initialized)
 			initialize();
 		if (fileSyntax == null)
 			return null;
 		if (log.isTraceEnabled())
-			log.trace(String.format("Loading tile z=%d x=%d y=%d", zoom, x, y));
+			log.trace(String.format("Loading tile '&s'", tAddr));
 
-		if (invertYCoordinate)
-			y = ((1 << zoom) - y - 1);
+		// if (invertYCoordinate)
+		// y = ((1 << tAddr.getZoom()) - tAddr.getY() - 1);
 		String fileName;
 		switch (sourceType)
 		{
 			case DIR_ZOOM_X_Y:
-				fileName = String.format(fileSyntax, zoom, x, y);
+				fileName = String.format(fileSyntax, tAddr.getZoom(), tAddr.getX(), tAddr.getY());
 				break;
 			case DIR_ZOOM_Y_X:
-				fileName = String.format(fileSyntax, zoom, y, x);
+				fileName = String.format(fileSyntax, tAddr.getZoom(), tAddr.getY(), tAddr.getX());
 				break;
 			case QUADKEY:
-				fileName = String.format(fileSyntax, MapSourceTools.encodeQuadTree(zoom, x, y));
+				fileName = String.format(fileSyntax, MapSourceTools.encodeQuadTree(tAddr));
 				break;
 			default:
 				throw new RuntimeException("Invalid source type");
@@ -262,18 +260,16 @@ public class CustomLocalTileFilesMapSource implements IfFileBasedMapSource
 		}
 		catch (FileNotFoundException e)
 		{
-			log.debug("Map tile file not found: " + file.getAbsolutePath());
+			log.warn("Map tile file not found: " + file.getAbsolutePath());
 			return null;
 		}
-	}
-
-	@Override
-	public BufferedImage getTileImage(int zoom, int x, int y, LoadMethod loadMethod) throws IOException, TileException, InterruptedException
-	{
-		byte[] data = getTileData(zoom, x, y, loadMethod);
-		if (data == null)
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			log.warn("Map tile file exception: " + file.getAbsolutePath());
 			return null;
-		return ImageIO.read(new ByteArrayInputStream(data));
+		}
 	}
 
 	@Override
@@ -345,7 +341,6 @@ public class CustomLocalTileFilesMapSource implements IfFileBasedMapSource
 		}
 	}
 
-	@Override
 	public BufferedImage downloadTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
 	{
 		// TODO Auto-generated method stub

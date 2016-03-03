@@ -23,13 +23,15 @@ import java.net.ProtocolException;
 
 import org.apache.log4j.Logger;
 
-import osmb.mapsources.IfHttpMapSource;
+import osmb.mapsources.ACOnlineMapSource;
 import osmb.mapsources.IfMapSourceListener;
+import osmb.mapsources.IfOnlineMapSource;
 import osmb.mapsources.MP2MapSpace;
+import osmb.mapsources.TileAddress;
 import osmb.program.ACSettings;
 //W #mapSpace import osmb.program.map.IfMapSpace;
 import osmb.program.tilestore.ACTileStore;
-import osmb.program.tilestore.IfTileStoreEntry;
+import osmb.program.tilestore.IfStoredTile;
 import osmb.utilities.OSMBStrs;
 import osmb.utilities.OSMBUtilities;
 
@@ -49,8 +51,7 @@ import osmb.utilities.OSMBUtilities;
 public class TileDownLoader
 {
 	private static Logger log = Logger.getLogger(TileDownLoader.class);
-	@SuppressWarnings("unused") // W #unused
-	private static ACSettings settings = ACSettings.getInstance();
+	// private static ACSettings settings = ACSettings.getInstance();
 
 	public static String ACCEPT = "text/html, image/png, image/jpeg, image/gif, */*;q=0.1";
 
@@ -63,8 +64,7 @@ public class TileDownLoader
 	}
 
 	/**
-	 * Tries to get the data from the tile store.
-	 * If this is not successful, it loads the tile from the online map source by {@link #downloadTileAndUpdateStore}().
+	 * This loads the tile from the online map source by {@link #downloadTileAndUpdateStore}().
 	 * 
 	 * @param x
 	 * @param y
@@ -75,58 +75,19 @@ public class TileDownLoader
 	 * @throws InterruptedException
 	 * @throws UnrecoverableDownloadException
 	 */
-	public static byte[] getTileData(int x, int y, int zoom, IfHttpMapSource mapSource) throws IOException, InterruptedException, UnrecoverableDownloadException
+	public static byte[] loadTileData(TileAddress tAddr, ACOnlineMapSource mapSource) throws IOException, InterruptedException, UnrecoverableDownloadException
 	{
 		log.trace(OSMBStrs.RStr("START"));
-		int maxTileIndex = MP2MapSpace.getSizeInPixel(zoom) / MP2MapSpace.getTileSize();
-		if (x > maxTileIndex)
-			throw new RuntimeException("Invalid tile index x=" + x + " for zoom " + zoom + ", MAX=" + maxTileIndex);
-		if (y > maxTileIndex)
-			throw new RuntimeException("Invalid tile index y=" + y + " for zoom " + zoom + ", MAX=" + maxTileIndex);
+		int maxTileIndex = MP2MapSpace.getSizeInPixel(tAddr.getZoom()) / MP2MapSpace.getTileSize();
+		if (tAddr.getX() > maxTileIndex)
+			throw new RuntimeException("Invalid tile index x=" + tAddr.getX() + " for zoom " + tAddr.getZoom() + ", MAX=" + maxTileIndex);
+		if (tAddr.getY() > maxTileIndex)
+			throw new RuntimeException("Invalid tile index y=" + tAddr.getY() + " for zoom " + tAddr.getZoom() + ", MAX=" + maxTileIndex);
 
-		ACTileStore ts = ACTileStore.getInstance();
-		ACSettings s = ACSettings.getInstance();
-
-		IfTileStoreEntry tile = null;
-		if (s.getTileStoreEnabled())
-		{
-			// Copy the file from the persistent tile store instead of downloading it from internet.
-			tile = ts.getTile(x, y, zoom, mapSource);
-			boolean expired = ts.isTileExpired(tile);
-			if (tile != null)
-			{
-				if (expired)
-				{
-					log.warn("Expired: " + mapSource.getName() + " " + tile);
-				}
-				else
-				{
-					log.trace("Tile of map source " + mapSource.getName() + " used from tilestore");
-					byte[] data = tile.getData();
-					notifyCachedTileUsed(data.length);
-					return data;
-				}
-			}
-		}
 		byte[] data = null;
-		if (tile == null)
 		{
-			data = downloadTileAndUpdateStore(x, y, zoom, mapSource);
+			data = downloadTileAndUpdateStore(tAddr, mapSource);
 			notifyTileDownloaded(data.length);
-		}
-		else
-		{
-			byte[] updatedData = updateStoredTile(tile, mapSource);
-			if (updatedData != null)
-			{
-				data = updatedData;
-				notifyTileDownloaded(data.length);
-			}
-			else
-			{
-				data = tile.getData();
-				notifyCachedTileUsed(data.length);
-			}
 		}
 		return data;
 	}
@@ -139,31 +100,13 @@ public class TileDownLoader
 		}
 	}
 
+	@Deprecated
 	private static void notifyCachedTileUsed(int size)
 	{
 		if (Thread.currentThread() instanceof IfMapSourceListener)
 		{
 			((IfMapSourceListener) Thread.currentThread()).tileLoadedFromCache(size);
 		}
-	}
-
-	/**
-	 * Download the tile from the web server and updates the tile store if the tile could be successfully retrieved.
-	 * 
-	 * @param x
-	 * @param y
-	 * @param zoom
-	 * @param mapSource
-	 * @return The tile image as byte[] or null if no image available.
-	 * @throws UnrecoverableDownloadException
-	 * @throws IOException
-	 * @throws InterruptedException
-	 */
-	public static byte[] downloadTileAndUpdateStore(int x, int y, int zoom, IfHttpMapSource mapSource)
-	    throws UnrecoverableDownloadException, IOException, InterruptedException
-	{
-		log.trace(OSMBStrs.RStr("START"));
-		return downloadTileAndUpdateStore(x, y, zoom, mapSource, ACSettings.getInstance().getTileStoreEnabled());
 	}
 
 	/**
@@ -178,46 +121,52 @@ public class TileDownLoader
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public static byte[] downloadTileAndUpdateStore(int x, int y, int zoom, IfHttpMapSource mapSource, boolean useTileStore)
-	    throws UnrecoverableDownloadException, IOException, InterruptedException
+	public static byte[] downloadTileAndUpdateStore(TileAddress tAddr, ACOnlineMapSource mapSource)
 	{
-		log.trace(OSMBStrs.RStr("START"));
-		if (zoom < 0)
-			throw new UnrecoverableDownloadException("Negative zoom!");
-		HttpURLConnection conn = mapSource.getTileUrlConnection(zoom, x, y);
-		if (conn == null)
-			throw new UnrecoverableDownloadException("Tile x=" + x + " y=" + y + " zoom=" + zoom + " is not a valid tile in map source " + mapSource);
-
-		log.trace("Downloading " + conn.getURL());
-
-		prepareConnection(conn);
-		conn.connect();
-
-		int code = conn.getResponseCode();
-		byte[] data = loadBodyDataInBuffer(conn);
-
-		if (code != HttpURLConnection.HTTP_OK)
+		byte[] data = null;
+		try
 		{
-			log.error("loadBodyDataInBuffer() failed:" + code);
-			throw new DownloadFailedException(conn, code);
+			log.trace(OSMBStrs.RStr("START"));
+			if (tAddr.getZoom() < 0)
+				throw new UnrecoverableDownloadException("Negative zoom!");
+			HttpURLConnection conn = mapSource.getTileUrlConnection(tAddr);
+			if (conn == null)
+				throw new UnrecoverableDownloadException(
+				    "Tile x=" + tAddr.getX() + " y=" + tAddr.getY() + " zoom=" + tAddr.getZoom() + " is not a valid tile in map source " + mapSource);
+
+			log.trace("Downloading " + conn.getURL());
+
+			prepareConnection(conn);
+			conn.connect();
+
+			int code = conn.getResponseCode();
+			data = loadBodyDataInBuffer(conn);
+
+			if (code != HttpURLConnection.HTTP_OK)
+			{
+				log.error("loadBodyDataInBuffer() failed:" + code);
+				throw new DownloadFailedException(conn, code);
+			}
+
+			checkContentType(conn, data);
+			checkContentLength(conn, data);
+
+			String eTag = conn.getHeaderField("ETag");
+			long timeLastModified = conn.getLastModified();
+			long timeExpires = conn.getExpiration();
+
+			OSMBUtilities.checkForInterruption();
+			TileImageType imageType = OSMBUtilities.getImageType(data);
+			if (imageType == null)
+				throw new UnrecoverableDownloadException("The returned image is of unknown format");
+			// ACTileStore.getInstance().putTileData(data, x, y, zoom, mapSource, timeLastModified, timeExpires, eTag);
+			mapSource.getTileStore().putTileData(data, tAddr.getX(), tAddr.getY(), tAddr.getZoom(), mapSource, timeLastModified, timeExpires, eTag);
+			OSMBUtilities.checkForInterruption();
 		}
-
-		checkContentType(conn, data);
-		checkContentLength(conn, data);
-
-		String eTag = conn.getHeaderField("ETag");
-		long timeLastModified = conn.getLastModified();
-		long timeExpires = conn.getExpiration();
-
-		OSMBUtilities.checkForInterruption();
-		TileImageType imageType = OSMBUtilities.getImageType(data);
-		if (imageType == null)
-			throw new UnrecoverableDownloadException("The returned image is of unknown format");
-		if (useTileStore)
+		catch (Exception e)
 		{
-			ACTileStore.getInstance().putTileData(data, x, y, zoom, mapSource, timeLastModified, timeExpires, eTag);
+
 		}
-		OSMBUtilities.checkForInterruption();
 		return data;
 	}
 
@@ -232,14 +181,13 @@ public class TileDownLoader
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public static byte[] updateStoredTile(IfTileStoreEntry tile, IfHttpMapSource mapSource)
-	    throws UnrecoverableDownloadException, IOException, InterruptedException
+	public static byte[] updateStoredTile(IfStoredTile tile, ACOnlineMapSource mapSource) throws UnrecoverableDownloadException, IOException, InterruptedException
 	{
 		log.trace(OSMBStrs.RStr("START"));
 		final int x = tile.getX();
 		final int y = tile.getY();
 		final int zoom = tile.getZoom();
-		final IfHttpMapSource.TileUpdate tileUpdate = mapSource.getTileUpdate();
+		final IfOnlineMapSource.TileUpdate tileUpdate = mapSource.getTileUpdate();
 
 		switch (tileUpdate)
 		{
@@ -274,7 +222,7 @@ public class TileDownLoader
 			default:
 				break;
 		}
-		HttpURLConnection conn = mapSource.getTileUrlConnection(zoom, x, y);
+		HttpURLConnection conn = mapSource.getTileUrlConnection(tile.getTAddr());
 		if (conn == null)
 			throw new UnrecoverableDownloadException("Tile x=" + x + " y=" + y + " zoom=" + zoom + " is not a valid tile in map source " + mapSource);
 
@@ -353,7 +301,8 @@ public class TileDownLoader
 				throw new UnrecoverableDownloadException("The returned image is of unknown format");
 			if (s.getTileStoreEnabled())
 			{
-				ACTileStore.getInstance().putTileData(data, x, y, zoom, mapSource, timeLastModified, timeExpires, eTag);
+				// ACTileStore.getInstance().putTileData(data, x, y, zoom, mapSource, timeLastModified, timeExpires, eTag);
+				mapSource.getTileStore().putTileData(data, x, y, zoom, mapSource, timeLastModified, timeExpires, eTag);
 			}
 			OSMBUtilities.checkForInterruption();
 			return data;
@@ -364,7 +313,7 @@ public class TileDownLoader
 	 * @deprecated This is moved into the {@link ACTileStore}
 	 */
 	@Deprecated
-	public static boolean isTileExpired(IfTileStoreEntry tileStoreEntry)
+	public static boolean isTileExpired(IfStoredTile tileStoreEntry)
 	{
 		if (tileStoreEntry == null)
 			return true;
@@ -430,7 +379,7 @@ public class TileDownLoader
 	 * Returns true if the tile online is newer than the one referenced by the tile store entry.
 	 * Performs a <code>HEAD</code> request for retrieving the <code>LastModified</code> header value.
 	 */
-	protected static boolean isTileNewer(IfTileStoreEntry tile, IfHttpMapSource mapSource) throws IOException
+	protected static boolean isTileNewer(IfStoredTile tile, IfOnlineMapSource mapSource) throws IOException
 	{
 		log.trace(OSMBStrs.RStr("START"));
 		long oldLastModified = tile.getTimeLastModified();
@@ -439,7 +388,7 @@ public class TileDownLoader
 			log.warn("Tile age comparison not possible: " + "tile in tilestore does not contain lastModified attribute");
 			return true;
 		}
-		HttpURLConnection conn = mapSource.getTileUrlConnection(tile.getZoom(), tile.getX(), tile.getY());
+		HttpURLConnection conn = mapSource.getTileUrlConnection(tile.getTAddr());
 		conn.setRequestMethod("HEAD");
 		conn.setRequestProperty("Accept", ACCEPT);
 		long newLastModified = conn.getLastModified();
@@ -452,7 +401,7 @@ public class TileDownLoader
 	 * Returns true if the tile online has an eTag different from the one referenced by the tile store entry.
 	 * Performs a <code>HEAD</code> request for retrieving the <code>ETag</code> header value.
 	 */
-	protected static boolean isETagDifferent(IfTileStoreEntry tile, IfHttpMapSource mapSource) throws IOException
+	protected static boolean isETagDifferent(IfStoredTile tile, IfOnlineMapSource mapSource) throws IOException
 	{
 		log.trace(OSMBStrs.RStr("START"));
 		String eTag = tile.getETag();
@@ -461,7 +410,7 @@ public class TileDownLoader
 			log.warn("ETag check not possible: " + "tile in tilestore does not contain ETag attribute");
 			return true;
 		}
-		HttpURLConnection conn = mapSource.getTileUrlConnection(tile.getZoom(), tile.getX(), tile.getY());
+		HttpURLConnection conn = mapSource.getTileUrlConnection(tile.getTAddr());
 		conn.setRequestMethod("HEAD");
 		conn.setRequestProperty("Accept", ACCEPT);
 		String onlineETag = conn.getHeaderField("ETag");

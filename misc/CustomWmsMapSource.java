@@ -55,7 +55,7 @@ public class CustomWmsMapSource extends CustomMapSource
 	public String getTileUrl(int zoom, int tilex, int tiley)
 	{
 		double[] coords = MapSourceTools.calculateLatLon(this, zoom, tilex, tiley);
-		String url = this.url + "REQUEST=GetMap" + "&LAYERS=" + layers + "&SRS=" + coordinatesystem + "&VERSION=" + version + "&FORMAT=image/"
+		String url = this.mUrl + "REQUEST=GetMap" + "&LAYERS=" + layers + "&SRS=" + coordinatesystem + "&VERSION=" + version + "&FORMAT=image/"
 		    + tileType.getMimeType() + "&BBOX=" + coords[0] + "," + coords[1] + "," + coords[2] + "," + coords[3] + "&WIDTH=256&HEIGHT=256" + additionalparameters;
 		return url;
 	}

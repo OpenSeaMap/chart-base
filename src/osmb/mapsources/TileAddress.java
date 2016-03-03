@@ -57,6 +57,13 @@ public class TileAddress
 	// MP2MapSpace.cLatToY_Pixel(lat, MP2MapSpace.MAX_TECH_ZOOM) / MP2MapSpace.TECH_TILESIZE, MP2MapSpace.MAX_TECH_ZOOM);
 	// }
 
+	public TileAddress(int tileXIdx, int tileYIdx, int zoom)
+	{
+		mX = tileXIdx;
+		mY = tileYIdx;
+		mZoom = zoom;
+	}
+
 	/**
 	 * @return The x index of this tile.
 	 */
@@ -114,4 +121,10 @@ public class TileAddress
 	// {
 	// return new MP2Corner((mX + 1) * MP2MapSpace.TECH_TILESIZE, (mY + 1) * MP2MapSpace.TECH_TILESIZE, mZoom);
 	// }
+
+	@Override
+	public String toString()
+	{
+		return new String("x=" + mX + ", y=" + mY + ", z=" + mZoom);
+	}
 }

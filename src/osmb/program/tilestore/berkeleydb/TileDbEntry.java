@@ -28,10 +28,11 @@ import com.sleepycat.persist.model.KeyField;
 import com.sleepycat.persist.model.Persistent;
 import com.sleepycat.persist.model.PrimaryKey;
 
-import osmb.program.tilestore.IfTileStoreEntry;
+import osmb.mapsources.TileAddress;
+import osmb.program.tilestore.IfStoredTile;
 
 @Entity(version = 7)
-public class TileDbEntry implements IfTileStoreEntry
+public class TileDbEntry implements IfStoredTile
 {
 	@PrimaryKey
 	protected TileDbKey tileKey;
@@ -94,6 +95,12 @@ public class TileDbEntry implements IfTileStoreEntry
 	{
 		timeDownloaded = System.currentTimeMillis();
 		this.timeExpires = timeExpires;
+	}
+
+	@Override
+	public TileAddress getTAddr()
+	{
+		return new TileAddress(tileKey.x, tileKey.y, tileKey.zoom);
 	}
 
 	@Override
@@ -188,4 +195,5 @@ public class TileDbEntry implements IfTileStoreEntry
 			return "[x=" + x + ", y=" + y + ", zoom=" + zoom + "]";
 		}
 	}
+
 }

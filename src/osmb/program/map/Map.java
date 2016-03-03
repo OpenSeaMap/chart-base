@@ -31,8 +31,8 @@ import javax.xml.bind.annotation.XmlType;
 import org.apache.log4j.Logger;
 
 import osmb.exceptions.InvalidNameException;
+import osmb.mapsources.ACMapSource;
 import osmb.mapsources.ACMultiLayerMapSource;
-import osmb.mapsources.IfMapSource;
 import osmb.mapsources.MP2Corner;
 import osmb.mapsources.MP2MapSpace;
 // W #mapSpace import osmb.mapsources.mapspace.MercatorPower2MapSpace;
@@ -182,7 +182,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	protected Point maxPixelCoordinate = null;
 	protected Point minPixelCoordinate = null;
 	@XmlAttribute
-	protected IfMapSource mapSource = null;
+	protected ACMapSource mapSource = null;
 	// protected int zoom;
 	protected Layer layer;
 	protected TileImageParameters parameters = null;
@@ -200,7 +200,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 
 	// protected Map(Layer layer, String name, IfMapSource mapSource, int zoom, Point minPixelCoordinate, Point maxPixelCoordinate, TileImageParameters
 	// parameters)
-	protected Map(Layer layer, IfMapSource mapSource, int zoom, Point minPixelCoordinate, Point maxPixelCoordinate, TileImageParameters parameters)
+	protected Map(Layer layer, ACMapSource mapSource, int zoom, Point minPixelCoordinate, Point maxPixelCoordinate, TileImageParameters parameters)
 	{
 		this.layer = layer;
 		this.maxPixelCoordinate = maxPixelCoordinate;
@@ -244,7 +244,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	}
 
 	@Override
-	public IfMapSource getMapSource()
+	public ACMapSource getMapSource()
 	{
 		return this.mapSource;
 	}

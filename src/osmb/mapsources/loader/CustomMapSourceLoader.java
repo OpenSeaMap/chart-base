@@ -16,35 +16,34 @@ import javax.xml.bind.ValidationEventLocator;
 
 import org.apache.log4j.Logger;
 
-import osmb.mapsources.ACMapSourcesManager;
+import osmb.mapsources.ACMapSource;
 import osmb.mapsources.CustomLocalTileSQliteMapSource;
 import osmb.mapsources.CustomLocalTileZipMapSource;
-import osmb.mapsources.CustomMapSource;
 import osmb.mapsources.CustomMultiLayerMapSource;
-import osmb.mapsources.CustomWmsMapSource;
+import osmb.mapsources.CustomOnlineMapSource;
 import osmb.mapsources.IfFileBasedMapSource;
-import osmb.mapsources.IfMapSource;
-import osmb.mapsources.IfWrappedMapSource;
 import osmb.mapsources.MapSourceCreateException;
 import osmb.mapsources.MapSourceLoaderInfo;
 import osmb.mapsources.MapSourceLoaderInfo.LoaderType;
+import osmb.mapsources.SiACMapSourcesManager;
 import osmb.utilities.file.FileExtFilter;
 
 public class CustomMapSourceLoader implements ValidationEventHandler
 {
 	private final Logger log = Logger.getLogger(CustomMapSourceLoader.class);
-	private final ACMapSourcesManager mapSourcesManager;
+	private final SiACMapSourcesManager mapSourcesManager;
 	private final File mapSourcesDir;
 
 	private final Unmarshaller unmarshaller;
 
-	public CustomMapSourceLoader(ACMapSourcesManager mapSourceManager, File mapSourcesDir) {
+	public CustomMapSourceLoader(SiACMapSourcesManager mapSourceManager, File mapSourcesDir)
+	{
 		this.mapSourcesManager = mapSourceManager;
 		this.mapSourcesDir = mapSourcesDir;
 		try
 		{
-			Class<?>[] customMapClasses = new Class[] {CustomMapSource.class, CustomWmsMapSource.class, CustomMultiLayerMapSource.class,
-					CustomLocalTileZipMapSource.class, CustomLocalTileSQliteMapSource.class};
+			Class<?>[] customMapClasses = new Class[]
+			{ CustomOnlineMapSource.class, CustomMultiLayerMapSource.class, CustomLocalTileZipMapSource.class, CustomLocalTileSQliteMapSource.class };
 			JAXBContext context = JAXBContext.newInstance(customMapClasses);
 			unmarshaller = context.createUnmarshaller();
 			unmarshaller.setEventHandler(this);
@@ -59,16 +58,16 @@ public class CustomMapSourceLoader implements ValidationEventHandler
 	{
 		File[] customMapSourceFiles = mapSourcesDir.listFiles(new FileExtFilter(".xml"));
 		Arrays.sort(customMapSourceFiles);
-		for (File f: customMapSourceFiles)
+		for (File f : customMapSourceFiles)
 		{
 			try
 			{
-				IfMapSource customMapSource;
+				ACMapSource customMapSource;
 				Object o = unmarshaller.unmarshal(f);
-				if (o instanceof IfWrappedMapSource)
-					customMapSource = ((IfWrappedMapSource) o).getMapSource();
-				else
-					customMapSource = (IfMapSource) o;
+				// if (o instanceof IfWrappedMapSource)
+				// customMapSource = ((IfWrappedMapSource) o).getMapSource();
+				// else
+				customMapSource = (ACMapSource) o;
 				customMapSource.setLoaderInfo(new MapSourceLoaderInfo(LoaderType.XML, f));
 				if (!(customMapSource instanceof IfFileBasedMapSource) && customMapSource.getTileImageType() == null)
 					log.warn("A problem occured while loading \"" + f.getName() + "\": tileType is null - some bundle formats will produce an error!");
@@ -82,14 +81,14 @@ public class CustomMapSourceLoader implements ValidationEventHandler
 		}
 	}
 
-	public IfMapSource loadCustomMapSource(InputStream in) throws MapSourceCreateException, JAXBException
+	public CustomOnlineMapSource loadCustomMapSource(InputStream in) throws MapSourceCreateException, JAXBException
 	{
-		IfMapSource customMapSource;
+		CustomOnlineMapSource customMapSource;
 		Object o = unmarshaller.unmarshal(in);
-		if (o instanceof IfWrappedMapSource)
-			customMapSource = ((IfWrappedMapSource) o).getMapSource();
-		else
-			customMapSource = (IfMapSource) o;
+		// if (o instanceof IfWrappedMapSource)
+		// customMapSource = ((IfWrappedMapSource) o).getMapSource();
+		// else
+		customMapSource = (CustomOnlineMapSource) o;
 		customMapSource.setLoaderInfo(new MapSourceLoaderInfo(LoaderType.XML, null));
 		log.trace("Custom map source loaded: " + customMapSource);
 		return customMapSource;
@@ -122,9 +121,9 @@ public class CustomMapSourceLoader implements ValidationEventHandler
 				t = t.getCause();
 			}
 		}
-		JOptionPane.showMessageDialog(null, "<html><h3>Failed to load a custom map</h3><p><i>" + errorMsg + "</i></p><br><p>file: \"<b>" + file
-				+ "</b>\"<br>line/column: <i>" + loc.getLineNumber() + "/" + loc.getColumnNumber() + "</i></p>", "Error: custom map loading failed",
-				JOptionPane.ERROR_MESSAGE);
+		JOptionPane.showMessageDialog(null, "<html><h3>Failed to load a custom map source</h3><p><i>" + errorMsg + "</i></p><br><p>file: \"<b>" + file
+		    + "</b>\"<br>line/column: <i>" + loc.getLineNumber() + "/" + loc.getColumnNumber() + "</i></p>", "Error: custom map source loading failed",
+		    JOptionPane.ERROR_MESSAGE);
 		log.error(event.toString());
 		return false;
 	}

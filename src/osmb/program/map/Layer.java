@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlElements;
 import org.apache.log4j.Logger;
 
 import osmb.exceptions.InvalidNameException;
-import osmb.mapsources.IfMapSource;
+import osmb.mapsources.ACMapSource;
 import osmb.mapsources.MP2MapSpace;
 import osmb.program.catalog.Catalog;
 import osmb.program.catalog.IfCapabilityDeletable;
@@ -70,7 +70,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		private int nZoomLvl;
 		Point minPixelC;
 		Point maxPixelC;
-		IfMapSource mapSource;
+		ACMapSource mapSource;
 	}
 
 	static public Layer GetLayerByZoom(IfCatalog catalog, int zoom)
@@ -132,7 +132,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	 * another map or other way round
 	 */
 	@Override
-	public void addMapsAutocut(String mapNameBase, IfMapSource mapSource, Point minPixelCoordinate, Point maxPixelCoordinate, int zoom,
+	public void addMapsAutocut(String mapNameBase, ACMapSource mapSource, Point minPixelCoordinate, Point maxPixelCoordinate, int zoom,
 	    TileImageParameters parameters, int maxMapSize, int overlapTiles) throws InvalidNameException
 	{
 		log.trace("Adding new map(s): \"" + mapNameBase + "\" " + mapSource + " zoom=" + zoom + " min=" + minPixelCoordinate.x + "/" + minPixelCoordinate.y
