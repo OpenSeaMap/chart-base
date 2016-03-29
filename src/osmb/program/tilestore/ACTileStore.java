@@ -27,6 +27,7 @@ import osmb.mapsources.ACMapSource;
 import osmb.mapsources.TileAddress;
 import osmb.program.ACSettings;
 import osmb.program.tiles.Tile;
+import osmb.program.tiles.TileImageType;
 import osmb.program.tilestore.berkeleydb.SiBerkeleyDbTileStore;
 
 /**
@@ -72,8 +73,7 @@ public abstract class ACTileStore
 
 	/**
 	 * This writes one tile into the tile store for the specified {@link IfMapSource}. It employs {@link putTileData(byte[] tileData, int x, int y, int zoom,
-	 * IfMapSource mapSource,
-	 * long timeLastModified, long timeExpires, String eTag)} for this task.
+	 * IfMapSource mapSource, long timeLastModified, long timeExpires, String eTag)} for this task.
 	 * 
 	 * @param tileData
 	 * @param x
@@ -82,8 +82,24 @@ public abstract class ACTileStore
 	 * @param mapSource
 	 * @throws IOException
 	 */
-	public abstract void putTileData(byte[] tileData, int x, int y, int zoom, ACMapSource mapSource) throws IOException;
+	@Deprecated
+	public void putTileData(byte[] tileData, int x, int y, int zoom, ACMapSource mapSource) throws IOException
+	{
+		putTileData(tileData, new TileAddress(x, y, zoom), mapSource);
+	}
 
+	/**
+	 * This writes one tile into the tile store for the specified {@link IfMapSource}. It employs {@link putTileData(byte[] tileData, TileAddress tAddr,
+	 * IfMapSource mapSource, long timeLastModified, long timeExpires, String eTag)} for this task.
+	 * 
+	 * @param tileData
+	 *          The image data as a byte array.
+	 * @param tAddr
+	 *          The tiles address.
+	 * @param mapSource
+	 *          This tiles map source.
+	 * @throws IOException
+	 */
 	public abstract void putTileData(byte[] tileData, TileAddress tAddr, ACMapSource mapSource) throws IOException;
 
 	/**
@@ -99,7 +115,33 @@ public abstract class ACTileStore
 	 * @param eTag
 	 * @throws IOException
 	 */
-	public abstract void putTileData(byte[] tileData, int x, int y, int zoom, ACMapSource mapSource, long timeLastModified, long timeExpires, String eTag)
+	public void putTileData(byte[] tileData, int x, int y, int zoom, ACMapSource mapSource, long timeLastModified, long timeExpires, String eTag)
+	    throws IOException
+	{
+		putTileData(tileData, new TileAddress(x, y, zoom), mapSource, timeLastModified, timeExpires, "-");
+	}
+
+	/**
+	 * This writes one tile into the tile store for the specified {@link ACMapSource}.
+	 * 
+	 * @param byteArray
+	 *          The image data as specified by the map sources {@link TileImageType}.
+	 * @param tileData
+	 *          The image data as a byte array.
+	 * @param tAddr
+	 *          The tiles address.
+	 * @param mapSource
+	 *          This tiles map source.
+	 * @param timeLastModified
+	 *          The timestamp of the last modification of the tiles data. Either the creation time of a local default tile, or the download time of the online
+	 *          tile.
+	 * @param timeExpires
+	 *          The timestamp of the expiration of the tiles data.
+	 * @param eTag
+	 *          The eTag as provided by the server or an empty eTag for local default tiles.
+	 * @throws IOException
+	 */
+	public abstract void putTileData(byte[] tileData, TileAddress tAddr, ACMapSource mapSource, long timeLastModified, long timeExpires, String eTag)
 	    throws IOException;
 
 	public abstract void putTile(IfStoredTile tile, ACMapSource mapSource);
@@ -148,8 +190,9 @@ public abstract class ACTileStore
 	/**
 	 * 
 	 * @param storeName
+	 * @throws TileStoreException
 	 */
-	public abstract void clearStore(String storeName);
+	public abstract void clearStore(String storeName) throws TileStoreException;
 
 	/**
 	 * 

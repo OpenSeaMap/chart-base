@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
+import java.net.SocketTimeoutException;
+import java.util.Date;
 
 import org.apache.log4j.Logger;
 
@@ -29,6 +31,7 @@ import osmb.mapsources.IfOnlineMapSource;
 import osmb.mapsources.MP2MapSpace;
 import osmb.mapsources.TileAddress;
 import osmb.program.ACSettings;
+import osmb.program.tiles.Tile.TileState;
 //W #mapSpace import osmb.program.map.IfMapSpace;
 import osmb.program.tilestore.ACTileStore;
 import osmb.program.tilestore.IfStoredTile;
@@ -78,7 +81,7 @@ public class TileDownLoader
 	public static byte[] loadTileData(TileAddress tAddr, ACOnlineMapSource mapSource) throws IOException, InterruptedException, UnrecoverableDownloadException
 	{
 		log.trace(OSMBStrs.RStr("START"));
-		int maxTileIndex = MP2MapSpace.getSizeInPixel(tAddr.getZoom()) / MP2MapSpace.getTileSize();
+		int maxTileIndex = MP2MapSpace.getSizeInPixel(tAddr.getZoom()) / MP2MapSpace.TECH_TILESIZE;
 		if (tAddr.getX() > maxTileIndex)
 			throw new RuntimeException("Invalid tile index x=" + tAddr.getX() + " for zoom " + tAddr.getZoom() + ", MAX=" + maxTileIndex);
 		if (tAddr.getY() > maxTileIndex)
@@ -94,18 +97,10 @@ public class TileDownLoader
 
 	private static void notifyTileDownloaded(int size)
 	{
-		if (Thread.currentThread() instanceof IfMapSourceListener)
+		// if (Thread.currentThread() instanceof IfMapSourceListener)
+		if (IfMapSourceListener.class.isAssignableFrom(Thread.currentThread().getClass()))
 		{
 			((IfMapSourceListener) Thread.currentThread()).tileDownloaded(size);
-		}
-	}
-
-	@Deprecated
-	private static void notifyCachedTileUsed(int size)
-	{
-		if (Thread.currentThread() instanceof IfMapSourceListener)
-		{
-			((IfMapSourceListener) Thread.currentThread()).tileLoadedFromCache(size);
 		}
 	}
 
@@ -123,10 +118,10 @@ public class TileDownLoader
 	 */
 	public static byte[] downloadTileAndUpdateStore(TileAddress tAddr, ACOnlineMapSource mapSource)
 	{
+		log.trace(OSMBStrs.RStr("START"));
 		byte[] data = null;
 		try
 		{
-			log.trace(OSMBStrs.RStr("START"));
 			if (tAddr.getZoom() < 0)
 				throw new UnrecoverableDownloadException("Negative zoom!");
 			HttpURLConnection conn = mapSource.getTileUrlConnection(tAddr);
@@ -150,6 +145,7 @@ public class TileDownLoader
 
 			checkContentType(conn, data);
 			checkContentLength(conn, data);
+			notifyTileDownloaded(data.length);
 
 			String eTag = conn.getHeaderField("ETag");
 			long timeLastModified = conn.getLastModified();
@@ -168,6 +164,60 @@ public class TileDownLoader
 
 		}
 		return data;
+	}
+
+	public static Tile downloadTile(TileAddress tAddr, ACOnlineMapSource mapSource)
+	{
+		log.trace(OSMBStrs.RStr("START"));
+		Tile tile = null;
+		try
+		{
+			tile = new Tile(mapSource, tAddr);
+			byte[] data = null;
+			HttpURLConnection conn = mapSource.getTileUrlConnection(tAddr);
+			if (conn == null)
+				throw new UnrecoverableDownloadException(tile + " is not a valid tile in map source '" + mapSource + "'");
+
+			log.debug("Downloading " + conn.getURL() + " by " + Thread.currentThread().getClass());
+
+			prepareConnection(conn);
+			conn.connect();
+
+			int code = conn.getResponseCode();
+			data = loadBodyDataInBuffer(conn);
+
+			if (code != HttpURLConnection.HTTP_OK)
+			{
+				log.error("loadBodyDataInBuffer() failed:" + code);
+				throw new UnrecoverableDownloadException(conn.toString() + code);
+			}
+
+			checkContentType(conn, data);
+			checkContentLength(conn, data);
+
+			if (OSMBUtilities.getImageType(data) != null)
+			{
+				tile.loadImage(data);
+				tile.setTileState(TileState.TS_LOADED);
+				tile.setEtag(conn.getHeaderField("ETag"));
+				tile.setMod(new Date(Math.max(conn.getLastModified(), System.currentTimeMillis())));
+				tile.setExp(new Date(Math.max(conn.getExpiration(), System.currentTimeMillis() + ACSettings.getInstance().getTileMaxExpirationTime())));
+				notifyTileDownloaded(data.length);
+			}
+			else
+				throw new UnrecoverableDownloadException("The returned image is of unknown format");
+		}
+		catch (SocketTimeoutException e)
+		{
+			log.error("Downloading of " + tAddr + " from " + mapSource.getName() + " failed due to timeout -> retry");
+			tile = null;
+		}
+		catch (Exception e)
+		{
+			log.error("Downloading of " + tAddr + " failed", e);
+			tile = null;
+		}
+		return tile;
 	}
 
 	/**
@@ -427,6 +477,10 @@ public class TileDownLoader
 		ACSettings s = ACSettings.getInstance();
 		conn.setConnectTimeout(1000 * s.getHttpConnectionTimeout());
 		conn.setReadTimeout(1000 * s.getHttpReadTimeout());
+		// conn.setConnectTimeout(1000 * 15);
+		// conn.setReadTimeout(1000 * 20);
+		if (conn.getReadTimeout() < 10000)
+			log.warn("timeout=" + conn.getReadTimeout());
 		if (conn.getRequestProperty("User-agent") == null)
 			conn.setRequestProperty("User-agent", s.getUserAgent());
 		conn.setRequestProperty("Accept", ACCEPT);

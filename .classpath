@@ -8,5 +8,6 @@
 	<classpathentry kind="lib" path="lib/jai_imageio-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/je-3.3.93.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.15.jar"/>
+	<classpathentry kind="lib" path="lib/sqlite-jdbc-3.8.11.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

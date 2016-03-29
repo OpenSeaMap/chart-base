@@ -28,11 +28,13 @@ import javax.xml.bind.annotation.XmlList;
 
 import org.apache.log4j.Logger;
 
+import osmb.program.tiles.Tile;
 //import osmb.mapsources.mapspace.MercatorPower2MapSpace; // W #mapSpace
 //import osmb.program.map.IfMapSpace; // W #mapSpace
 import osmb.program.tiles.TileDownLoader;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
+import osmb.utilities.OSMBStrs;
 
 /**
  * Abstract base class for map sources.
@@ -127,6 +129,20 @@ public abstract class ACOnlineMapSource extends ACMapSource implements IfOnlineM
 		return TileDownLoader.downloadTileAndUpdateStore(tAddr, this);
 	}
 
+	@Override
+	public Tile loadTile(TileAddress tAddr) throws IOException
+	{
+		log.trace(OSMBStrs.RStr("START"));
+		Tile tile = null;
+		tile = TileDownLoader.downloadTile(tAddr, this);
+		if (tile != null)
+		{
+			mNTS.putTile(tile);
+			log.debug("put " + tile + " into TS " + mNTS);
+		}
+		return tile;
+	}
+
 	/**
 	 * This retrieves the tile image as an {@link BufferedImage} either from the online source or from the tile store depending on the specified loadMethod.
 	 * It simply converts the result of {@link #getTileData}().
@@ -134,6 +150,7 @@ public abstract class ACOnlineMapSource extends ACMapSource implements IfOnlineM
 	@Override
 	public BufferedImage loadTileImage(TileAddress tAddr)
 	{
+		log.warn(OSMBStrs.RStr("START"));
 		BufferedImage img = null;
 		try
 		{
@@ -145,7 +162,7 @@ public abstract class ACOnlineMapSource extends ACMapSource implements IfOnlineM
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
+			log.error("loading of " + tAddr + " failed", e);
 			e.printStackTrace();
 		}
 		return img;
@@ -165,6 +182,7 @@ public abstract class ACOnlineMapSource extends ACMapSource implements IfOnlineM
 	 */
 	public BufferedImage downloadTileImage(TileAddress tAddr)
 	{
+		log.warn(OSMBStrs.RStr("START"));
 		BufferedImage img = null;
 		initialize();
 		byte[] data = null;
@@ -175,7 +193,7 @@ public abstract class ACOnlineMapSource extends ACMapSource implements IfOnlineM
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
+			log.error("loading of " + tAddr + " failed", e);
 			e.printStackTrace();
 		}
 		if (img == null)

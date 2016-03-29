@@ -125,6 +125,7 @@ public class TileAddress
 	@Override
 	public String toString()
 	{
-		return new String("x=" + mX + ", y=" + mY + ", z=" + mZoom);
+		// return new String("x=" + mX + ", y=" + mY + ", z=" + mZoom);
+		return new String("(" + mX + "|" + mY + "@" + mZoom + ")");
 	}
 }

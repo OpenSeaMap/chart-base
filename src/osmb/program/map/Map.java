@@ -134,49 +134,50 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	};
 
 	/**
-	 * This makes an osm-internal chart number, which is worldwide unique
+	 * This composes an osm-internal map number in the form: Zoom-LatIdx-LonIdx-Height-Width, which is worldwide unique. It is a sufficient map area
+	 * specification.
 	 * 
 	 * @param nZoom
 	 *          The maps zoom level.
 	 * @param nMinY
-	 *          The minimal y pixel index.
+	 *          The upper (northerly) pixel index.
 	 * @param nMaxY
-	 *          The maximal y pixel index.
+	 *          The lower (southerly) pixel index.
 	 * @param nMinX
-	 *          The minimal x pixel index.
+	 *          The left (westerly) pixel index.
 	 * @param nMaxX
-	 *          The maximal x pixel index.
+	 *          The right (easterly) pixel index.
 	 * @return A String containing the unique chart number.
+	 * @see #number
 	 */
 	public static String makeMapNumber(int nZoom, int nMinY, int nMaxY, int nMinX, int nMaxX)
 	{
-		// 20150722 AH use fixed numbers in here
-		String strNum = nZoom + "-" + nMinY / (MP2MapSpace.TECH_TILESIZE * 8) + "-" + nMinX / (MP2MapSpace.TECH_TILESIZE * 8) + "-"
+		// 20150722 AH use fix numbers in here
+		String strNum = nZoom + "-" + nMinY / (MP2MapSpace.TECH_TILESIZE) + "-" + nMinX / (MP2MapSpace.TECH_TILESIZE) + "-"
 		    + ((nMaxY - nMinY + 1) / MP2MapSpace.TECH_TILESIZE) + "-" + ((nMaxX - nMinX + 1) / MP2MapSpace.TECH_TILESIZE);
 		return strNum;
 	}
 
 	// instance data
 	/**
-	 * The osm internal name This is "L" + the maps number.
+	 * The osm internal name. This is "L" + the maps {@link #number}.
 	 */
 	protected String name;
 	/**
-	 * the osm internal number, the numbering scheme is still to be defined
-	 * 20150722 AH proposal: ZL-LAT-LON-HEI-WID, LAT and LON in tiles/8 since this is our map alignment grid, HEI, WID in tiles.
-	 * 20160123 AH: this get higher priority, since OpenCPN needs the map file names to be unique over all maps.
+	 * The osm internal number. It composes a worldwide unique map number, stating zoom level, location and size in tiles.<br>
+	 * ZOOM-LAT-LON-HEIGHT-WIDTH, LAT and LON of the upper left (N-W) corner in tiles, HEIGHT, WIDTH in tiles.
 	 */
 	protected String number;
 	/**
-	 * the INT conformant name - if there is one; for a lot of maps this is empty
+	 * the INT conformant name - if there is one; for a lot of maps this is empty.
 	 */
 	protected String intName = null;
 	/**
-	 * the INT conformant number - if there is one; for a lot of maps this is empty
+	 * the INT conformant number - if there is one; for a lot of maps this is empty.
 	 */
 	protected String intNumber = null;
 	/**
-	 * the INT national name - if there is one; for a lot of maps this is empty
+	 * the INT national name - if there is one; for a lot of maps this is empty.
 	 */
 	protected String natName = null;
 	protected Point maxPixelCoordinate = null;
@@ -190,6 +191,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 
 	protected Map()
 	{
+		log = Logger.getLogger(this.getClass());
 	}
 
 	protected Map(Map map)
@@ -399,13 +401,33 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@XmlAttribute
 	public String getName()
 	{
+		// test if the name is correct
+		this.number = makeMapNumber(getZoom(), minPixelCoordinate.y, maxPixelCoordinate.y, minPixelCoordinate.x, maxPixelCoordinate.x);
+		this.name = "L" + number;
 		return name;
+	}
+
+	@Override
+	public void setName(String newName) throws InvalidNameException
+	{
+		if (layer != null)
+		{
+			for (IfMap map : layer)
+			{
+				if ((map != this) && (newName.equals(map.getName())))
+					throw new InvalidNameException("There is already a map named \"" + newName + "\" in this layer.\nMap names have to be unique.");
+			}
+		}
+		this.name = newName;
+		log.trace("map " + name);
 	}
 
 	@Override
 	@XmlAttribute
 	public String getNumber()
 	{
+		this.number = makeMapNumber(getZoom(), minPixelCoordinate.y, maxPixelCoordinate.y, minPixelCoordinate.x, maxPixelCoordinate.x);
+		this.name = "L" + number;
 		return number;
 	}
 
@@ -413,6 +435,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	{
 		number = strNum;
 		this.name = "L" + strNum;
+		log.info("map " + number + ", X=" + (maxPixelCoordinate.x / 256));
 	}
 
 	/**
@@ -430,9 +453,8 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	 */
 	public void setMapNumber(int nZoom, int nMinY, int nMaxY, int nMinX, int nMaxX)
 	{
-		// 20150722 AH fixed numbers in here
-		String strNum = nZoom + "-" + nMinY / (MP2MapSpace.TECH_TILESIZE * 8) + "-" + nMinX / (MP2MapSpace.TECH_TILESIZE * 8) + "-"
-		    + ((nMaxY - nMinY + 1) / MP2MapSpace.TECH_TILESIZE) + "-" + ((nMaxX - nMinX + 1) / MP2MapSpace.TECH_TILESIZE);
+		// 20160315 AH This provides a spec of the map in tile indices, (Zoom-YIdx-XIdy-Height-Width). This map number is worldwide unique.
+		String strNum = makeMapNumber(nZoom, nMinY, nMaxY, nMinX, nMaxX);
 		log.trace("new map: '" + strNum + "'");
 		this.number = strNum;
 		this.name = "L" + strNum;
@@ -574,28 +596,24 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	@Override
 	public double getMinLat()
 	{
-		// return MP2MapSpace.cYToLat(maxPixelCoordinate.y, getZoom()); // #mapSpace mapSource.getMapSpace().cYToLat(maxPixelCoordinate.y, getZoom());
 		return MP2MapSpace.cYToLatLowerBorder(maxPixelCoordinate.y, getZoom());
 	}
 
 	@Override
 	public double getMaxLat()
 	{
-		// return MP2MapSpace.cYToLat(minPixelCoordinate.y, getZoom()); // #mapSpace mapSource.getMapSpace().cYToLat(minPixelCoordinate.y, getZoom());
 		return MP2MapSpace.cYToLatUpperBorder(minPixelCoordinate.y, getZoom());
 	}
 
 	@Override
 	public double getMinLon()
 	{
-		// return MP2MapSpace.cXToLon(minPixelCoordinate.x, getZoom()); // #mapSpace mapSource.getMapSpace().cXToLon(minPixelCoordinate.x, getZoom());
 		return MP2MapSpace.cXToLonLeftBorder(minPixelCoordinate.x, getZoom());
 	}
 
 	@Override
 	public double getMaxLon()
 	{
-		// return MP2MapSpace.cXToLon(maxPixelCoordinate.x, getZoom()); // #mapSpace mapSource.getMapSpace().cXToLon(maxPixelCoordinate.x, getZoom());
 		return MP2MapSpace.cXToLonRightBorder(maxPixelCoordinate.x, getZoom());
 	}
 
@@ -603,20 +621,6 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	public void delete()
 	{
 		layer.deleteMap(this);
-	}
-
-	@Override
-	public void setName(String newName) throws InvalidNameException
-	{
-		if (layer != null)
-		{
-			for (IfMap map : layer)
-			{
-				if ((map != this) && (newName.equals(map.getName())))
-					throw new InvalidNameException("There is already a map named \"" + newName + "\" in this layer.\nMap names have to be unique within a layer.");
-			}
-		}
-		this.name = newName;
 	}
 
 	@Override

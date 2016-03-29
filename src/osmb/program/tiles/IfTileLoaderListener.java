@@ -16,15 +16,16 @@
  ******************************************************************************/
 package osmb.program.tiles;
 
-//License: GPL. Copyright 2008 by Jan Peter Stotz
-
+/**
+ * A TileLoaderListener must listen to the following messages, which are sent by the actual TileLoader instance.
+ * 
+ * @author humbach
+ */
 public interface IfTileLoaderListener
 {
-	/**
-	 * Will be called when a new {@link Tile} has been loaded successfully.
-	 * Loaded can mean down loaded from online map source or loaded from tile store.
-	 * 
-	 * @param tile
-	 */
 	public void tileLoadingFinished(Tile tile, boolean success);
+
+	public void tileDownloaded(Tile tile, int size);
+
+	public void tileLoadedFromCache(Tile tile, int size);
 }

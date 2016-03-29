@@ -41,6 +41,7 @@ import osmb.mapsources.ACMapSource;
 import osmb.mapsources.MP2MapSpace;
 import osmb.mapsources.TileAddress;
 import osmb.program.tiles.Tile.TileState;
+import osmb.utilities.OSMBStrs;
 
 /**
  * {@link TileImageCache} implementation that stores all {@link Tile} objects in memory up to a certain limit ( {@link #getCacheSize()}). If the limit is
@@ -50,20 +51,37 @@ import osmb.program.tiles.Tile.TileState;
  * 
  * @author humbach
  */
-public class MemoryTileCache implements NotificationListener
+public final class MemoryTileCache implements NotificationListener
 {
 	// static / class data
-	protected static final Logger log = Logger.getLogger(MemoryTileCache.class);
+	protected static Logger log = Logger.getLogger(MemoryTileCache.class);
 
 	// instance data
 	/**
 	 * Default cache size in tiles. May be modified by constructor {@link #MemoryTileCache(int cacheSize)}.
 	 */
 	protected int mCacheSize = 0;
-	// protected Hashtable<String, CacheEntry> mHT;
+
 	/**
-	 * LinkedHashMap holding the actual tile data.
+	 * LinkedHashMap holding the actual tile data. This LinkedHashMap is ordered by access, so it automatically can remove the eldest entry if the size is
+	 * exhausted.
 	 */
+	protected class OSMMemTileMap extends LinkedHashMap<String, Tile>
+	{
+		private static final long serialVersionUID = 1L;
+
+		OSMMemTileMap(int nSize, float fFillFact)
+		{
+			super(nSize, fFillFact, true);
+		}
+
+		@Override
+		protected boolean removeEldestEntry(Map.Entry<String, Tile> eldest)
+		{
+			return (size() > mCacheSize);
+		}
+	}
+
 	// protected ConcurrentHashMap<String, Tile> mHM = null;
 	protected Map<String, Tile> mHM = null;
 
@@ -80,13 +98,12 @@ public class MemoryTileCache implements NotificationListener
 	public MemoryTileCache(int cacheSize)
 	{
 		mCacheSize = cacheSize;
-		mHM = Collections.synchronizedMap(new LinkedHashMap<String, Tile>(mCacheSize / 10, 0.75f, true));
-		// mruTiles = new CacheLinkedListElement();
+		mHM = Collections.synchronizedMap(new OSMMemTileMap(mCacheSize / 10, 0.75f));
 
 		MemoryMXBean mbean = ManagementFactory.getMemoryMXBean();
 		NotificationBroadcaster emitter = (NotificationBroadcaster) mbean;
 		emitter.addNotificationListener(this, null, null);
-		// Set-up each memory pool to notify if the free memory falls below 10%
+		// Set-up each memory pool to notify if the free memory falls below 5% ????
 		for (MemoryPoolMXBean memPool : ManagementFactory.getMemoryPoolMXBeans())
 		{
 			if (memPool.isUsageThresholdSupported())
@@ -111,6 +128,7 @@ public class MemoryTileCache implements NotificationListener
 			log.trace("Memory notification: " + notification.toString());
 			return;
 		}
+
 		// MemoryNotificationInfo info = MemoryNotificationInfo.from((CompositeData) notification.getUserData());
 		// log.warn("Memory notification: " + notification.getMessage() + ", " + info.getPoolName());
 		// synchronized (mruTiles)
@@ -135,23 +153,12 @@ public class MemoryTileCache implements NotificationListener
 		// log.debug("mtc[" + mHT.size() + "] modified");
 	}
 
-	protected boolean removeEldestEntry(Map.Entry<String, Tile> eldest)
-	{
-		return (mHM.size() > mCacheSize);
-	}
-
 	/**
 	 * This adds a tile to the cache and removes any old entries for this tile from it.
 	 */
 	public void addTile(Tile tile)
 	{
-		// CacheEntry entry = createCacheEntry(tile);
-		// mHT.put(tile.getKey(), entry);
 		mHM.put(tile.getKey(), tile);
-		// mruTiles.addFirst(entry);
-		// if (mHM.size() > mCacheSize)
-		// // removeOldEntries();
-		// mHM.removeEldestEntry(null);
 		log.debug("mtc[" + mHM.size() + "] modified");
 	}
 
@@ -159,7 +166,7 @@ public class MemoryTileCache implements NotificationListener
 	 * Retrieves the tile from the memory tile cache. The tile is identified by its x and y indices. Each zoom level holds 2<sup>zoom</sup> tiles.
 	 * This currently does not handle 'special' tiles (hourglass, error, empty, plain sea), they exist multiple times in the cache.
 	 * 
-	 * @param source
+	 * @param mapSource
 	 * @param x
 	 *          tile x-index
 	 * @param y
@@ -168,14 +175,14 @@ public class MemoryTileCache implements NotificationListener
 	 *          Zoom level
 	 * @return The tile or null if the tile is not in the cache.
 	 */
-	public Tile getTile(ACMapSource source, int x, int y, int z)
+	public Tile getTile(ACMapSource mapSource, int x, int y, int z)
 	{
-		return mHM.get(Tile.getTileKey(source, x, y, z));
+		return mHM.get(Tile.getTileKey(mapSource, new TileAddress(x, y, z)));
 	}
 
 	public Tile getTile(ACMapSource mapSource, TileAddress tAddr)
 	{
-		return mHM.get(Tile.getTileKey(mapSource, tAddr.getX(), tAddr.getY(), tAddr.getZoom()));
+		return mHM.get(Tile.getTileKey(mapSource, tAddr));
 	}
 
 	/**
@@ -185,7 +192,8 @@ public class MemoryTileCache implements NotificationListener
 	// This does belong here. It has been moved from Tile to here. The Tile should not know anything about the TileStore/Cache structures.
 	public Tile loadPlaceholderFromCache(Tile tile)
 	{
-		Tile phTile = tile;
+		log.trace(OSMBStrs.RStr("START"));
+		// Tile phTile = tile;
 		int tileSize = MP2MapSpace.getTileSize();
 		BufferedImage tmpImage = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = (Graphics2D) tmpImage.getGraphics();
@@ -194,7 +202,7 @@ public class MemoryTileCache implements NotificationListener
 		{
 			// first we check if there are already the 2^x tiles
 			// of a higher detail level
-			int zoom_high = tile.mZoom + zoomDiff;
+			int zoom_high = tile.getZoom() + zoomDiff;
 			if (zoomDiff < 3 && zoom_high <= tile.getSource().getMaxZoom())
 			{
 				int factor = 1 << zoomDiff;
@@ -218,11 +226,12 @@ public class MemoryTileCache implements NotificationListener
 				if (paintedTileCount == factor * factor)
 				{
 					tile.setImage(tmpImage);
+					tile.setTileState(TileState.TS_LOADING);
 				}
 			}
 			else
 			{
-				int zoom_low = tile.mZoom - zoomDiff;
+				int zoom_low = tile.getZoom() - zoomDiff;
 				if (zoom_low >= tile.getSource().getMinZoom())
 				{
 					int xtile_low = tile.getXtile() >> zoomDiff;
@@ -241,6 +250,7 @@ public class MemoryTileCache implements NotificationListener
 					}
 				}
 				tile.setImage(tmpImage);
+				tile.setTileState(TileState.TS_LOADING);
 			}
 		}
 		return tile;
@@ -265,136 +275,6 @@ public class MemoryTileCache implements NotificationListener
 	public void setCacheSize(int cacheSize)
 	{
 		this.mCacheSize = cacheSize;
-	}
-
-	/**
-	 * Linked list element holding the {@link Tile} and links to the {@link #next} and {@link #prev} item in the list.
-	 */
-	protected static class CacheEntry
-	{
-		// Tile tile;
-		String tileID;
-
-		CacheEntry next;
-		CacheEntry prev;
-
-		protected CacheEntry(Tile tile)
-		{
-			this.tileID = tile.getKey();
-		}
-
-		// public String getTile()
-		// {
-		// return tileID;
-		// }
-		//
-		public CacheEntry getNext()
-		{
-			return next;
-		}
-
-		public CacheEntry getPrev()
-		{
-			return prev;
-		}
-	}
-
-	/**
-	 * 
-	 * @author humbach
-	 */
-	protected static class CacheLinkedListElement
-	{
-		protected int elementCount = 0;
-		protected CacheEntry firstElement = null;
-		protected CacheEntry lastElement = null;
-
-		public CacheLinkedListElement()
-		{
-			clear();
-		}
-
-		public synchronized void clear()
-		{
-			elementCount = 0;
-			firstElement = null;
-			lastElement = null;
-		}
-
-		/**
-		 * Add the element to the head of the list.
-		 * 
-		 * @param element
-		 *          element to be added
-		 */
-		public synchronized void addFirst(CacheEntry element)
-		{
-			if (elementCount == 0)
-			{
-				firstElement = element;
-				lastElement = element;
-				element.prev = null;
-				element.next = null;
-			}
-			else
-			{
-				removeEntry(element);
-
-				element.next = firstElement;
-				firstElement.prev = element;
-				element.prev = null;
-				firstElement = element;
-			}
-			elementCount++;
-		}
-
-		/**
-		 * Removes the specified element from the list.
-		 * 
-		 * @param element
-		 *          to be removed
-		 */
-		public synchronized void removeEntry(CacheEntry element)
-		{
-			if (element.next != null)
-			{
-				element.next.prev = element.prev;
-			}
-			if (element.prev != null)
-			{
-				element.prev.next = element.next;
-			}
-			if (element == firstElement)
-				firstElement = element.next;
-			if (element == lastElement)
-				lastElement = element.prev;
-			element.next = null;
-			element.prev = null;
-			elementCount--;
-		}
-
-		public synchronized void moveElementToFirstPos(CacheEntry entry)
-		{
-			if (firstElement == entry)
-				return;
-			removeEntry(entry);
-			addFirst(entry);
-		}
-
-		public int getElementCount()
-		{
-			return elementCount;
-		}
-
-		public CacheEntry getLastElement()
-		{
-			return lastElement;
-		}
-
-		public CacheEntry getFirstElement()
-		{
-			return firstElement;
-		}
 	}
 
 	/**

@@ -293,16 +293,9 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 	}
 
 	@Override
-	public void putTileData(byte[] tileData, int x, int y, int zoom, ACMapSource mapSource) throws IOException
+	public void putTileData(byte[] tileData, TileAddress tAddr, ACMapSource mapSource, long timeLastModified, long timeExpires, String eTag) throws IOException
 	{
-		this.putTileData(tileData, x, y, zoom, mapSource, -1, -1, null);
-	}
-
-	@Override
-	public void putTileData(byte[] tileData, int x, int y, int zoom, ACMapSource mapSource, long timeLastModified, long timeExpires, String eTag)
-	    throws IOException
-	{
-		TileDbEntry tile = new TileDbEntry(x, y, zoom, tileData, timeLastModified, timeExpires, eTag);
+		TileDbEntry tile = new TileDbEntry(tAddr.getX(), tAddr.getY(), tAddr.getZoom(), tileData, timeLastModified, timeExpires, eTag);
 		TileDatabase db = null;
 		try
 		{
@@ -318,6 +311,27 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 				db.close();
 			log.error("Failed to write tile to tile store \"" + mapSource.getName() + "\"", e);
 		}
+	}
+
+	@Override
+	public void putTileData(byte[] tileData, TileAddress tAddr, ACMapSource mapSource) throws IOException
+	{
+		this.putTileData(tileData, tAddr, mapSource, -1, -1, null);
+	}
+
+	@Override
+	@Deprecated
+	public void putTileData(byte[] tileData, int x, int y, int zoom, ACMapSource mapSource) throws IOException
+	{
+		this.putTileData(tileData, new TileAddress(x, y, zoom), mapSource, -1, -1, null);
+	}
+
+	@Override
+	@Deprecated
+	public void putTileData(byte[] tileData, int x, int y, int zoom, ACMapSource mapSource, long timeLastModified, long timeExpires, String eTag)
+	    throws IOException
+	{
+		this.putTileData(tileData, new TileAddress(x, y, zoom), mapSource, timeLastModified, timeExpires, eTag);
 	}
 
 	@Override
@@ -831,13 +845,6 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 			close();
 			super.finalize();
 		}
-	}
-
-	@Override
-	public void putTileData(byte[] tileData, TileAddress tAddr, ACMapSource mapSource) throws IOException
-	{
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

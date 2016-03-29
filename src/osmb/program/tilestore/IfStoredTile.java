@@ -47,14 +47,12 @@ public interface IfStoredTile
 	public void update(long timeExpires);
 
 	/**
-	 * 
 	 * @return Last modification time in UTC or <code>0</code> if not supported
 	 *         by the server
 	 */
 	public long getTimeLastModified();
 
 	/**
-	 * 
 	 * @return Expiration time in UTC or <code>0</code> if not supported by the
 	 *         server
 	 */

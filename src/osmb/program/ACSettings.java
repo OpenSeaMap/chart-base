@@ -157,7 +157,7 @@ public abstract class ACSettings implements IfSettings
 	 * Minimum expiration (in milliseconds) acceptable. If a server sets an expiration time smaller than this value it is truncated to this value on next
 	 * download.
 	 */
-	protected long cfgTileMinExpirationTime = TimeUnit.DAYS.toMillis(5);
+	protected long cfgTileMinExpirationTime = TimeUnit.DAYS.toMillis(14);
 
 	@XmlElementWrapper(name = "mapSourcesDisabled")
 	@XmlElement(name = "mapSource")
@@ -356,6 +356,10 @@ public abstract class ACSettings implements IfSettings
 		this.cfgDownloadThreadCount = downloadThreadCount;
 	}
 
+	/**
+	 * @return The maximum expiration time [ms] of a tile. If this time has already expired, the server will be asked for the tile to download regardless of its
+	 *         expiration time, if any was specified by the server..
+	 */
 	public long getTileMaxExpirationTime()
 	{
 		return cfgTileMaxExpirationTime;
@@ -366,6 +370,9 @@ public abstract class ACSettings implements IfSettings
 		this.cfgTileMaxExpirationTime = tileMaxExpirationTime;
 	}
 
+	/**
+	 * @return The minimum expiration time [ms] of a tile. If this time has not yet expired, there will be no try to download the tile.
+	 */
 	public long getTileMinExpirationTime()
 	{
 		return cfgTileMinExpirationTime;

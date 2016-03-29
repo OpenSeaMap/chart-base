@@ -13,12 +13,15 @@ import org.apache.log4j.Logger;
 import osmb.program.jaxb.ColorAdapter;
 import osmb.program.jaxb.MapSourceAdapter;
 import osmb.program.tiles.IfTileProvider;
+import osmb.program.tiles.MemoryTileCache;
 import osmb.program.tiles.Tile;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
 import osmb.program.tilestore.ACTileStore;
+import osmb.program.tilestore.TileStoreException;
 import osmb.program.tilestore.berkeleydb.SiBerkeleyDbTileStore;
 import osmb.program.tilestore.sqlitedb.SQLiteDbTileStore;
+import osmb.utilities.OSMBStrs;
 
 @XmlJavaTypeAdapter(MapSourceAdapter.class)
 public abstract class ACMapSource implements IfTileProvider
@@ -29,6 +32,7 @@ public abstract class ACMapSource implements IfTileProvider
 	// instance data
 	protected boolean initialized = false;
 	protected int mID = 0;
+	protected MemoryTileCache mMTC = null;
 	// for testing use both tile stores
 	protected SiBerkeleyDbTileStore mTS = SiBerkeleyDbTileStore.getInstance();
 	protected SQLiteDbTileStore mNTS = null;
@@ -78,6 +82,11 @@ public abstract class ACMapSource implements IfTileProvider
 						{
 							mTS.prepareTileStore(this);
 						}
+						if (mNTS == null)
+						{
+							SQLiteDbTileStore.initializeCommonDB();
+							mNTS = SQLiteDbTileStore.prepareTileStore(this);
+						}
 						initialized = true;
 						log.trace("Map source has been initialized");
 					}
@@ -104,6 +113,23 @@ public abstract class ACMapSource implements IfTileProvider
 	public ACTileStore getTileStore()
 	{
 		return mTS;
+	}
+
+	public SQLiteDbTileStore getNTileStore()
+	{
+		if ((mNTS == null) || (!mNTS.isInitialized()))
+		{
+			try
+			{
+				mNTS = SQLiteDbTileStore.prepareTileStore(this);
+			}
+			catch (TileStoreException e)
+			{
+				log.error("exception while 'reinitializing' SQLite tile store");
+				e.printStackTrace();
+			}
+		}
+		return mNTS;
 	}
 
 	public String getTileStoreName()
@@ -189,6 +215,7 @@ public abstract class ACMapSource implements IfTileProvider
 	@Deprecated
 	public byte[] getTileData(int zoom, int x, int y) throws IOException, TileException, InterruptedException
 	{
+		log.warn(OSMBStrs.RStr("START"));
 		return null;
 	}
 
@@ -223,6 +250,7 @@ public abstract class ACMapSource implements IfTileProvider
 	@Deprecated
 	public BufferedImage getTileImage(int zoom, int x, int y) throws IOException, TileException, InterruptedException
 	{
+		log.warn(OSMBStrs.RStr("START"));
 		return null;
 	}
 
@@ -235,6 +263,7 @@ public abstract class ACMapSource implements IfTileProvider
 	@Override
 	public BufferedImage loadTileImage(TileAddress tAddr)
 	{
+		log.warn(OSMBStrs.RStr("START"));
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -243,12 +272,14 @@ public abstract class ACMapSource implements IfTileProvider
 	 * Retrieves the tile from the map sources source, i.e. either online or local, depending on the map source.
 	 * 
 	 * @return The tile or null if no tile is currently available.
+	 * @throws IOException
 	 */
 	@Override
-	public Tile loadTile(TileAddress tAddr)
+	public Tile loadTile(TileAddress tAddr) throws IOException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		log.warn(OSMBStrs.RStr("START"));
+		Tile tile = new Tile(this, tAddr);
+		return tile;
 	}
 
 	@Override

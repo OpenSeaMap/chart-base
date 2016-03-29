@@ -30,6 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 // W #mapSpace import osmb.program.map.IfMapSpace;
 import osmb.program.tiles.TileDownLoader;
 import osmb.program.tilestore.TileStoreException;
+import osmb.utilities.OSMBStrs;
 
 /**
  * Custom online map source, configurable via 'MapSource.xml'.
@@ -82,48 +83,10 @@ public class CustomOnlineMapSource extends ACOnlineMapSource
 	@Override
 	public byte[] loadTileData(TileAddress tAddr)
 	{
-		log.debug("called with 'LoadMethod.SOURCE'");
+		log.warn(OSMBStrs.RStr("START"));
 		initialize();
 		return TileDownLoader.downloadTileAndUpdateStore(tAddr, this);
-		/*
-		 * if (invertYCoordinate)
-		 * y = ((1 << zoom) - y - 1);
-		 * 
-		 * if (loadMethod == LoadMethod.CACHE)
-		 * {
-		 * log.error("no image data from mtc");
-		 * return null;
-		 * }
-		 * else if (loadMethod == LoadMethod.STORE)
-		 * {
-		 * IfTileStoreEntry entry = ACTileStore.getInstance().getTile(x, y, zoom, this);
-		 * if (entry == null)
-		 * return null;
-		 * byte[] data = entry.getData();
-		 * // if (Thread.currentThread() instanceof IfMapSourceListener)
-		 * // {
-		 * // ((IfMapSourceListener) Thread.currentThread()).tileDownloaded(data.length);
-		 * // }
-		 * return data;
-		 * }
-		 * // if (ignoreErrors)
-		 * else if (loadMethod == LoadMethod.SOURCE)
-		 * {
-		 * try
-		 * {
-		 * return TileDownLoader.getTileData(x, y, zoom, this);
-		 * }
-		 * catch (Exception e)
-		 * {
-		 * log.error("download failed with exception: " + e.getCause());
-		 * return null;
-		 * }
-		 * }
-		 * else
-		 * {
-		 * return TileDownLoader.getTileData(x, y, zoom, this);
-		 * }
-		 */
+		// return TileDownLoader.downloadTile(tAddr, this);
 	}
 
 	/**
@@ -132,6 +95,7 @@ public class CustomOnlineMapSource extends ACOnlineMapSource
 	@Override
 	public BufferedImage loadTileImage(TileAddress tAddr)
 	{
+		log.trace(OSMBStrs.RStr("START"));
 		byte[] data;
 		try
 		{
@@ -146,18 +110,12 @@ public class CustomOnlineMapSource extends ACOnlineMapSource
 				// }
 				// else
 				{
-					int tileSize = MP2MapSpace.getTileSize();
+					int tileSize = MP2MapSpace.TECH_TILESIZE;
 					BufferedImage image = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_4BYTE_ABGR);
 					Graphics g = image.getGraphics();
-					try
-					{
-						g.setColor(mBackgroundColor);
-						g.fillRect(0, 0, tileSize, tileSize);
-					}
-					finally
-					{
-						g.dispose();
-					}
+					g.setColor(mBackgroundColor);
+					g.fillRect(0, 0, tileSize, tileSize);
+					g.dispose();
 					return image;
 				}
 			}
@@ -168,7 +126,7 @@ public class CustomOnlineMapSource extends ACOnlineMapSource
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
+			log.error("loading of " + tAddr + " failed", e);
 			e.printStackTrace();
 		}
 		return null;
@@ -179,6 +137,7 @@ public class CustomOnlineMapSource extends ACOnlineMapSource
 	 */
 	public BufferedImage loadTileImageXX(TileAddress tAddr)
 	{
+		log.warn(OSMBStrs.RStr("START"));
 		BufferedImage img = null;
 		try
 		{
@@ -194,7 +153,7 @@ public class CustomOnlineMapSource extends ACOnlineMapSource
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
+			log.error("loading of " + tAddr + " failed", e);
 			e.printStackTrace();
 		}
 		return img;
@@ -204,18 +163,6 @@ public class CustomOnlineMapSource extends ACOnlineMapSource
 	public Color getBackgroundColor()
 	{
 		return mBackgroundColor;
-	}
-
-	@Override
-	public void initialize()
-	{
-	}
-
-	@Override
-	public TileUpdate getTileUpdate()
-	{
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

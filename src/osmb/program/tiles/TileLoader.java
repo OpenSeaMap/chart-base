@@ -16,13 +16,12 @@
  ******************************************************************************/
 package osmb.program.tiles;
 
-//License: GPL. Copyright 2008 by Jan Peter Stotz
-
-import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 import org.apache.log4j.Logger;
 
 import osmb.mapsources.ACMapSource;
+import osmb.mapsources.IfMapSourceListener;
 import osmb.mapsources.TileAddress;
 import osmb.program.JobDispatcher;
 import osmb.program.tiles.Tile.TileState;
@@ -60,9 +59,9 @@ public class TileLoader
 	 * @param zoom
 	 * @return A {@link Runnable} to execute by some thread pool
 	 */
-	public Runnable createTileLoaderJob(final ACMapSource source, final int tileXIdx, final int tileYIdx, final int zoom)
+	public Runnable createTileLoaderJob(final ACMapSource source, final TileAddress tAddr)
 	{
-		return new TileAsyncLoadJob(source, new TileAddress(tileXIdx, tileYIdx, zoom));
+		return new TileAsyncLoadJob(source, tAddr);
 	}
 
 	/**
@@ -73,21 +72,19 @@ public class TileLoader
 	 * 
 	 * @author humbach
 	 */
-	protected class TileAsyncLoadJob implements Runnable
+	protected class TileAsyncLoadJob implements Runnable, IfMapSourceListener
 	{
-		// final int mTileXIdx, mTileYIdx, mZoom;
 		final TileAddress mTAddr;
 		final ACMapSource mMapSource;
 		Tile mTile = null;
 		// boolean fileTilePainted = false;
 		protected IfStoredTile tileStoreEntry = null;
-		private Object mSem = new Object();
 
-		// public TileAsyncLoadJob(IfMapSource source, int tileXIdx, int tileYIdx, int zoom)
 		public TileAsyncLoadJob(ACMapSource source, TileAddress tAddr)
 		{
 			super();
 			this.mMapSource = source;
+			mMapSource.initialize();
 			mTAddr = tAddr;
 		}
 
@@ -100,10 +97,20 @@ public class TileLoader
 			log.trace(OSMBStrs.RStr("START"));
 			int sleepTime = 100;
 			boolean bLoadOK = false;
-			if (((mTile = mMTC.getTile(mMapSource, mTAddr)) != null) && (mTile.getTileState() != TileState.TS_LOADING))
+			if (((mTile = mMTC.getTile(mMapSource, mTAddr)) != null) && (mTile.getTileState() != TileState.TS_LOADING) && (mTile.getTileState() != TileState.TS_NEW))
 			{
 				bLoadOK = true;
 				log.debug("use " + mTile + " from mtc");
+			}
+			if ((mTile != null) && (mTile.getTileState() == TileState.TS_LOADING))
+			{
+				try
+				{
+					log.info(mTile + " size=" + mTile.getImageData().length);
+				}
+				catch (IOException e)
+				{
+				}
 			}
 			else
 			{
@@ -111,6 +118,7 @@ public class TileLoader
 				log.debug("loading of " + mTile + " started");
 				if (!(bLoadOK = loadTileFromStore()))
 				{
+					log.debug(mTile + " not found in tile store");
 					synchronized (mTile)
 					{
 						while (!(bLoadOK = downloadAndUpdateTile()))
@@ -125,12 +133,10 @@ public class TileLoader
 							catch (InterruptedException e)
 							{
 								log.debug("loading of " + mTile + " interrupted");
-								// TODO Auto-generated catch block
-								e.printStackTrace();
 							}
 							catch (Exception e)
 							{
-								e.printStackTrace();
+								log.error("loading of " + mTile + " failed", e);
 							}
 						}
 						log.debug("loading of " + mTile + " finished with stime=" + sleepTime / 1000.0 + "s");
@@ -140,7 +146,13 @@ public class TileLoader
 					log.debug(mTile + " loaded from store");
 			}
 			listener.tileLoadingFinished(mTile, bLoadOK);
-			log.debug("loading of " + mTile + " finished");
+			try
+			{
+				log.debug("loading of " + mTile + " finished, size=" + mTile.getImageData().length);
+			}
+			catch (IOException e)
+			{
+			}
 		}
 
 		/**
@@ -157,8 +169,31 @@ public class TileLoader
 			try
 			{
 				Tile tmpTile = null;
-				if ((tmpTile = mMapSource.getTileStore().getTile(mTAddr, mMapSource)) != null)
+				if ((tmpTile = mMapSource.getNTileStore().getTile(mTAddr)) != null)
+				{
 					mTile = tmpTile;
+					if (mTile.getTileState() == TileState.TS_LOADED)
+						bLoadOK = true;
+				}
+				if (!bLoadOK)
+				{
+					if ((tmpTile = mMapSource.getTileStore().getTile(mTAddr, mMapSource)) != null)
+					{
+						mTile = tmpTile;
+						log.debug(mTile + " found in old store, put into new store");
+						mMapSource.getNTileStore().putTile(mTile);
+						if (mTile.getTileState() == TileState.TS_LOADED)
+							bLoadOK = true;
+					}
+					else
+						log.debug(mTile + " not found in TileStore");
+				}
+				if (bLoadOK && (mTile.isExpired()))
+				{
+					log.warn(mTile + " has expired");
+					mTile.setTileState(TileState.TS_EXPIRED);
+					bLoadOK = false;
+				}
 			}
 			catch (Exception e)
 			{
@@ -168,7 +203,8 @@ public class TileLoader
 		}
 
 		/**
-		 * This loads the tile from the online map source. The caller has to push it into the tile store.
+		 * This loads the tile from the online map source. When the tile is downloaded successfully, it is put in the tile store by
+		 * {@link ACMapSource.loadTile(TileAddress tAddr)}.
 		 */
 		private boolean downloadAndUpdateTile()
 		{
@@ -176,22 +212,37 @@ public class TileLoader
 			boolean bLoadOK = false;
 			try
 			{
-				BufferedImage image = mMapSource.loadTileImage(mTAddr);
-				if (image != null)
+				Tile tile = mMapSource.loadTile(mTAddr);
+				if (tile != null)
 				{
-					mTile.setImage(image);
-					mTile.setTileState(TileState.TS_LOADED);
+					mTile = tile;
+					log.debug(mTile + " loaded from online map source");
+					// mMapSource.getNTileStore().putTile(mTile);
 					bLoadOK = true;
-					log.debug("tile " + mTile + " loaded from online map source");
 				}
+				else
+					log.info("no image for " + mTile + " received from online map source");
 			}
 			catch (Exception e)
 			{
 				log.error("Downloading of " + mTile + " failed", e);
 				mTile.setErrorImage();
 			}
-			listener.tileLoadingFinished(mTile, bLoadOK);
 			return bLoadOK;
+		}
+
+		@Override
+		public void tileDownloaded(int size)
+		{
+			listener.tileDownloaded(mTile, size);
+			log.info(mTile + " loaded from online map source, size=" + size);
+		}
+
+		@Override
+		public void tileLoadedFromCache(int size)
+		{
+			listener.tileLoadedFromCache(mTile, size);
+			log.info(mTile + " loaded from mtc, size=" + size);
 		}
 	}
 }

@@ -17,6 +17,7 @@
 package osmb.program.tiles;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 import osmb.mapsources.TileAddress;
 
@@ -33,5 +34,5 @@ public interface IfTileProvider
 
 	public BufferedImage loadTileImage(TileAddress tAddr);
 
-	public Tile loadTile(TileAddress tAddr);
+	public Tile loadTile(TileAddress tAddr) throws IOException;
 }

@@ -16,23 +16,23 @@
  ******************************************************************************/
 package osmb.program.tiles;
 
-//License: GPL. Copyright 2008 by Jan Peter Stotz
-
-import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 
 import javax.imageio.ImageIO;
 
+import org.apache.log4j.Logger;
+
 import osmb.mapsources.ACMapSource;
 import osmb.mapsources.MP2MapSpace;
 import osmb.mapsources.TileAddress;
+import osmb.program.ACSettings;
+import osmb.utilities.OSMBStrs;
 import osmb.utilities.OSMBUtilities;
 
 /**
@@ -73,120 +73,79 @@ public class Tile
 	}
 
 	/**
+	 * This describes the state the tile is in. It can be <br>
+	 * TS_NEW - Meaning a newly created tile.<br>
+	 * TS_LOADING - There is a load scheduled, but it has not yet finished.<br>
+	 * TS_LOADED - The tile has been successfully loaded from the specified source.<br>
+	 * TS_ERROR - There has bee some error and no image is available. The image shown is a standard error image.<br>
+	 * TS_EXPIRED - The image shown is expired and should be replaced by a new version from the source.
+	 * TS_ZOOMED - The image is composed from another zoom level and not actually loaded.
+	 * 
 	 * @author humbach
 	 */
 	public enum TileState
 	{
-		TS_NEW, TS_LOADING, TS_LOADED, TS_ERROR, TS_EXPIRED
+		TS_NEW, TS_LOADING, TS_LOADED, TS_ERROR, TS_EXPIRED, TS_ZOOMED
 	};
 
+	// static/class data
+	protected static Logger log = Logger.getLogger(ACMapSource.class);
+
+	/**
+	 * The key identifies the tile. Be aware that the map sources name is part of the key. Probably we should have something like the 'key' in the map source
+	 * too...<br>
+	 * It is primarily used by the mtc to identify tiles.
+	 * 
+	 * @param source
+	 * @param tAddr
+	 *          The tile address: zoom, x-idx, y-idx.
+	 * @return The key as a concatenation of zoom, x, y and map source name.
+	 */
+	public static String getTileKey(ACMapSource source, TileAddress tAddr)
+	{
+		return tAddr.getZoom() + "/" + tAddr.getX() + "/" + tAddr.getY() + "@" + source.getName();
+	}
+
+	// instance data
 	protected ACMapSource mMapSource = null;
-	protected int mXTIdx = 0;
-	protected int mYTIdx = 0;
-	protected int mZoom = 0;
+	// protected int mXTIdx = 0;
+	// protected int mYTIdx = 0;
+	// protected int mZoom = 0;
 	protected TileAddress mTA = null;
 	protected BufferedImage mImage = LOADING_IMAGE;
 	protected TileState mTileState = TileState.TS_NEW;
-	protected Date mod = null;
-	protected Date exp = null;
-	protected String etag = "";
+	protected Date mod = new Date();
+	protected Date exp = new Date();
+	protected String etag = "-";
 	protected String mKey = "";
 
 	/**
 	 * Creates a tile with a 'loading' image and TS_NEW state.
-	 * 
-	 * @param mapSource
-	 * @param xTIdx
-	 *          tile x-index
-	 * @param yTIdx
-	 *          tile y-index
-	 * @param zoom
 	 */
 	public Tile(ACMapSource mapSource, int xTIdx, int yTIdx, int zoom)
 	{
-		super();
-		this.mMapSource = mapSource;
-		this.mXTIdx = xTIdx;
-		this.mYTIdx = yTIdx;
-		this.mZoom = zoom;
-		this.mKey = getTileKey(mapSource, xTIdx, yTIdx, zoom);
-	}
-
-	public Tile(ACMapSource source, int xTIdx, int yTIdx, int zoom, BufferedImage image)
-	{
-		this(source, xTIdx, yTIdx, zoom);
-		this.mImage = image;
-	}
-
-	public Tile(ACMapSource mapSource, TileAddress tAddr)
-	{
-		this(mapSource, tAddr.getX(), tAddr.getY(), tAddr.getZoom());
+		this(mapSource, new TileAddress(xTIdx, yTIdx, zoom));
 	}
 
 	/**
-	 * Tries to get tiles of a lower or higher zoom level (one or two level difference) from cache and use it as a
-	 * placeholder until the tile has been loaded.
+	 * Creates a tile with specified image and TS_NEW state.<br>
+	 * The {@link TileState} should be set to a reasonable value after this way of construction.
 	 */
-	// This does not belong into here. It has to be moved into the MemoryTileCache. The Tile should not know anything about the TileStore/Cache
-	public void loadPlaceholderFromCache(MemoryTileCache cache)
+	public Tile(ACMapSource mapSource, int xTIdx, int yTIdx, int zoom, BufferedImage image)
 	{
-		int tileSize = MP2MapSpace.getTileSize();
-		BufferedImage tmpImage = new BufferedImage(tileSize, tileSize, BufferedImage.TYPE_INT_RGB);
-		Graphics2D g = (Graphics2D) tmpImage.getGraphics();
-		// g.drawImage(image, 0, 0, null);
-		for (int zoomDiff = 1; zoomDiff < 5; zoomDiff++)
-		{
-			// first we check if there are already the 2^x tiles
-			// of a higher detail level
-			int zoom_high = mZoom + zoomDiff;
-			if (zoomDiff < 3 && zoom_high <= mMapSource.getMaxZoom())
-			{
-				int factor = 1 << zoomDiff;
-				int xtile_high = mXTIdx << zoomDiff;
-				int ytile_high = mYTIdx << zoomDiff;
-				double scale = 1.0 / factor;
-				g.setTransform(AffineTransform.getScaleInstance(scale, scale));
-				int paintedTileCount = 0;
-				for (int x = 0; x < factor; x++)
-				{
-					for (int y = 0; y < factor; y++)
-					{
-						Tile tile = cache.getTile(mMapSource, xtile_high + x, ytile_high + y, zoom_high);
-						if (tile != null && tile.mTileState == TileState.TS_LOADED)
-						{
-							paintedTileCount++;
-							tile.paint(g, x * tileSize, y * tileSize);
-						}
-					}
-				}
-				if (paintedTileCount == factor * factor)
-				{
-					mImage = tmpImage;
-					return;
-				}
-			}
+		this(mapSource, new TileAddress(xTIdx, yTIdx, zoom));
+		this.mImage = image;
+	}
 
-			int zoom_low = mZoom - zoomDiff;
-			if (zoom_low >= mMapSource.getMinZoom())
-			{
-				int xtile_low = mXTIdx >> zoomDiff;
-				int ytile_low = mYTIdx >> zoomDiff;
-				int factor = (1 << zoomDiff);
-				double scale = factor;
-				AffineTransform at = new AffineTransform();
-				int translate_x = (mXTIdx % factor) * tileSize;
-				int translate_y = (mYTIdx % factor) * tileSize;
-				at.setTransform(scale, 0, 0, scale, -translate_x, -translate_y);
-				g.setTransform(at);
-				Tile tile = cache.getTile(mMapSource, xtile_low, ytile_low, zoom_low);
-				if (tile != null && tile.mTileState == TileState.TS_LOADED)
-				{
-					tile.paint(g, 0, 0);
-					mImage = tmpImage;
-					return;
-				}
-			}
-		}
+	/**
+	 * Creates a tile with a 'loading' image and TS_NEW state.
+	 */
+	public Tile(ACMapSource mapSource, TileAddress tAddr)
+	{
+		log = Logger.getLogger(this.getClass());
+		this.mMapSource = mapSource;
+		this.mTA = tAddr;
+		this.mKey = getTileKey(mapSource, tAddr);
 	}
 
 	/**
@@ -198,19 +157,19 @@ public class Tile
 	}
 
 	/**
-	 * @return The tile number on the x axis of this tile.
+	 * @return The tile index on the x axis of this tile.
 	 */
 	public int getXtile()
 	{
-		return mXTIdx;
+		return mTA.getX();
 	}
 
 	/**
-	 * @return The tile number on the y axis of this tile.
+	 * @return The tile index on the y axis of this tile.
 	 */
 	public int getYtile()
 	{
-		return mYTIdx;
+		return mTA.getY();
 	}
 
 	/**
@@ -218,7 +177,15 @@ public class Tile
 	 */
 	public int getZoom()
 	{
-		return mZoom;
+		return mTA.getZoom();
+	}
+
+	/**
+	 * @return The tiles address.
+	 */
+	public TileAddress getAddress()
+	{
+		return mTA;
 	}
 
 	/**
@@ -226,6 +193,8 @@ public class Tile
 	 */
 	public Date getMod()
 	{
+		if (mod == null)
+			mod = new Date();
 		return mod;
 	}
 
@@ -243,6 +212,8 @@ public class Tile
 	 */
 	public Date getExp()
 	{
+		if (exp == null)
+			exp = new Date();
 		return exp;
 	}
 
@@ -253,6 +224,42 @@ public class Tile
 	public void setExp(Date exp)
 	{
 		this.exp = exp;
+	}
+
+	public boolean isExpired()
+	{
+		log.trace(OSMBStrs.RStr("START"));
+		boolean bExp = false;
+		ACSettings settings = ACSettings.getInstance();
+		long maxExpirationTime = settings.getTileMaxExpirationTime();
+		long minExpirationTime = settings.getTileMinExpirationTime();
+		// long maxExpirationTime = 18000000;
+		// long minExpirationTime = 3000000;
+		long modMillis = getMod().getTime();
+		long now = System.currentTimeMillis();
+		// if (modDate + maxExpirationTime) has expired. then the tile has expired, regardless of the servers expiration date.
+		if ((modMillis + maxExpirationTime) < now)
+		{
+			bExp = true;
+			log.warn(this + " has expired due to max=" + (maxExpirationTime / 3600000) + "h, mod=" + (modMillis / 1000));
+		}
+		// only if (modDate + minExpirationTime) has expired. then ...
+		else if ((modMillis + minExpirationTime) < now)
+		{
+			Date expiryDate = getExp();
+			if (expiryDate != null)
+			{
+				// server had set an expiration time, use that.
+				bExp = (expiryDate.getTime() < now);
+			}
+			else
+			{
+				// server had not set an expiration time, the tile has expired.
+				bExp = true;
+				log.warn(this + " has no expiration time set");
+			}
+		}
+		return bExp;
 	}
 
 	/**
@@ -282,10 +289,14 @@ public class Tile
 
 	/**
 	 * @return The image for this tile.
+	 * @throws IOException
 	 */
-	public Byte[] getImageData()
+	public byte[] getImageData() throws IOException
 	{
-		return null;
+		ByteArrayOutputStream buf = null;
+		buf = new ByteArrayOutputStream(32000);
+		ImageIO.write(mImage, mMapSource.getTileImageType().getFileExt(), buf);
+		return buf.toByteArray();
 	}
 
 	/**
@@ -335,11 +346,6 @@ public class Tile
 		return mKey;
 	}
 
-	public boolean isErrorTile()
-	{
-		return (ERROR_IMAGE.equals(mImage));
-	}
-
 	public TileState getTileState()
 	{
 		return mTileState;
@@ -347,50 +353,44 @@ public class Tile
 
 	public void setTileState(TileState tileState)
 	{
-		this.mTileState = tileState;
+		mTileState = tileState;
 	}
 
 	/**
-	 * Paints the tile-image on the {@link Graphics} <code>g</code> at the position <code>x</code>/<code>y</code>.
+	 * Paints the tile-image on the {@link Graphics} context <code>gC</code> at the position <code>xTgt</code>/<code>yTgt</code>.<br>
+	 * It simply and silently fails to do anything if the image is null.
 	 * 
-	 * @param g
-	 * @param x
-	 *          x-coordinate in <code>g</code>
-	 * @param y
-	 *          y-coordinate in <code>g</code>
+	 * @param gC
+	 *          The graphics context to paint into.
+	 * @param xTgt
+	 *          x-coordinate in <code>gC</code>
+	 * @param yTgt
+	 *          y-coordinate in <code>gC</code>
 	 */
-	public void paint(Graphics g, int x, int y)
+	public void paint(Graphics gC, int xTgt, int yTgt)
 	{
-		if (mImage == null)
-			return;
-
-		int tileSize = MP2MapSpace.getTileSize();
-		// Google Scale = 2, retina support
-		g.drawImage(mImage, x, y, tileSize, tileSize, Color.WHITE, null);
-		// g.drawImage(image, x, y, Color.WHITE);
+		if (mImage != null)
+		  // gC.drawImage(mImage, xTgt, yTgt, MP2MapSpace.TECH_TILESIZE, MP2MapSpace.TECH_TILESIZE, Color.WHITE, null);
+		  gC.drawImage(mImage, xTgt, yTgt, MP2MapSpace.TECH_TILESIZE, MP2MapSpace.TECH_TILESIZE, mMapSource.getBackgroundColor(), null);
 	}
 
-	public void paintTransparent(Graphics g, int x, int y)
+	/**
+	 * Does the same as {@link #paint(Graphics, int, int)}, but ignores the background color specified by the map source.
+	 * 
+	 * @param gC
+	 * @param xTgt
+	 * @param yTgt
+	 */
+	public void paintTransparent(Graphics gC, int xTgt, int yTgt)
 	{
-		if (mImage == null)
-			return;
-
-		int tileSize = MP2MapSpace.getTileSize();
-		// Google Scale = 2, retina support
-		g.drawImage(mImage, x, y, tileSize, tileSize, null);
-		// g.drawImage(image, x, y, null);
+		if (mImage != null)
+			gC.drawImage(mImage, xTgt, yTgt, MP2MapSpace.TECH_TILESIZE, MP2MapSpace.TECH_TILESIZE, null);
 	}
-
-	// @Override
-	// public String toString()
-	// {
-	// return "tile " + key;
-	// }
 
 	@Override
 	public String toString()
 	{
-		return "Tile (" + mZoom + "|" + mXTIdx + "|" + mYTIdx + ") from '" + mMapSource + "'";
+		return "Tile " + mTA + ":" + this.mTileState + " from '" + mMapSource + "'";
 	}
 
 	/**
@@ -403,7 +403,7 @@ public class Tile
 		if (!(obj instanceof Tile))
 			return false;
 		Tile tile = (Tile) obj;
-		return (mXTIdx == tile.mXTIdx) && (mYTIdx == tile.mYTIdx) && (mZoom == tile.mZoom);
+		return (mTA == tile.getAddress());
 	}
 
 	@Override
@@ -413,18 +413,4 @@ public class Tile
 		return -1;
 	}
 
-	/**
-	 * The key identifies the tile. Be aware that the map sources name is part of the key. Probably we should have something like the 'key' in the map source
-	 * too...
-	 * 
-	 * @param source
-	 * @param xtile
-	 * @param ytile
-	 * @param zoom
-	 * @return The key as a concatenation of zoom, xtile, ytile and source *
-	 */
-	public static String getTileKey(ACMapSource source, int xtile, int ytile, int zoom)
-	{
-		return zoom + "/" + xtile + "/" + ytile + "@" + source.getName();
-	}
 }
