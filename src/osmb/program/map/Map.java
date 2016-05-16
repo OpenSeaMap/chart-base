@@ -435,7 +435,7 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 	{
 		number = strNum;
 		this.name = "L" + strNum;
-		log.info("map " + number + ", X=" + (maxPixelCoordinate.x / 256));
+		log.trace("map " + number + ", X=" + (minPixelCoordinate.x / 256) + ", Y=" + (minPixelCoordinate.y / 256));
 	}
 
 	/**

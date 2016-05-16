@@ -181,7 +181,7 @@ public abstract class ACMultiLayerMapSource extends ACMapSource implements Itera
 				tile.setExp(tExp);
 				tile.setTileState(TileState.TS_LOADED);
 				// long timeExpires = timeLastModified + ACSettings.getTileDefaultExpirationTime();
-				log.warn("put composed " + tile + " into tile store, exp=" + tExp);
+				log.trace("put composed " + tile + " into tile store, exp=" + tExp);
 				getNTileStore().putTile(tile);
 				return tile;
 			}
