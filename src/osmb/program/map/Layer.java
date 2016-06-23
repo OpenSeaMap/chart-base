@@ -43,8 +43,6 @@ import osmb.program.catalog.Catalog;
 import osmb.program.catalog.IfCapabilityDeletable;
 import osmb.program.catalog.IfCatalog;
 import osmb.program.tiles.TileImageParameters;
-//W #mapSpace import osmb.utilities.geo.EastNorthCoordinate;
-//W #mapSpace import osmb.utilities.geo.GeoCoordinate;
 
 /**
  * A layer holding one or multiple maps of the same map source and the same zoom level.
@@ -274,7 +272,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 	}
 
 	/**
-	 * This checks if there is already a map with the specified number and if so tests the next number until an unused number is found.
+	 * This checks if there is already a map with the specified number and if so, tests the next number until an unused number is found.
 	 * 20160123 AH modified to use the osm internal number
 	 * 
 	 * @param mapName
@@ -539,7 +537,7 @@ public class Layer implements IfLayer, IfCapabilityDeletable
 		{
 			tiles += map.calculateTilesToLoad();
 		}
-		log.debug("layer=" + getName() + ", tiles=" + tiles); // trace
+		log.debug("layer=" + getName() + ", tiles=" + tiles);
 		return tiles;
 	}
 

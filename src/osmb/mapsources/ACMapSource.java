@@ -310,4 +310,10 @@ public abstract class ACMapSource implements IfTileProvider
 		}
 		return bOk;
 	}
+
+	public Tile updateTile(Tile mTile)
+	{
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

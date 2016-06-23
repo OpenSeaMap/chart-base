@@ -190,7 +190,7 @@ public class TileLoader
 				}
 				if (bLoadOK && (mTile.isExpired()))
 				{
-					log.warn(mTile + " has expired");
+					log.debug(mTile + " in tile store has expired");
 					mTile.setTileState(TileState.TS_EXPIRED);
 					bLoadOK = false;
 				}
@@ -212,7 +212,11 @@ public class TileLoader
 			boolean bLoadOK = false;
 			try
 			{
-				Tile tile = mMapSource.loadTile(mTAddr);
+				Tile tile = null;
+				if (mTile.isExpired())
+					tile = mMapSource.updateTile(mTile);
+				else
+					tile = mMapSource.loadTile(mTAddr);
 				if (tile != null)
 				{
 					mTile = tile;

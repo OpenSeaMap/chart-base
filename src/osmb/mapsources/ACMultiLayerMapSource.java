@@ -211,6 +211,109 @@ public abstract class ACMultiLayerMapSource extends ACMapSource implements Itera
 	 * When all layer images are loaded, they were combined via Graphics2D.drawImage().
 	 */
 	@Override
+	public Tile updateTile(Tile tile)
+	{
+		log.trace(OSMBStrs.RStr("START"));
+		BufferedImage image = null;
+		Graphics2D g2 = null;
+		try
+		{
+			ArrayList<Tile> layerTiles = new ArrayList<Tile>(mapSources.length);
+			int maxSize = MP2MapSpace.getTileSize();
+			for (int i = 0; i < mapSources.length; i++)
+			{
+				ACMapSource layerMapSource = mapSources[i];
+				// try to load the layer tiles from mtc
+				Tile layerTile = null;
+				if (mMTC != null)
+				{
+					layerTile = mMTC.getTile(layerMapSource, tile.getAddress());
+					if (layerTile.getTileState() == TileState.TS_LOADING)
+						log.debug("'loading' tile found in mtc: " + layerTile);
+				}
+				while (layerTile == null)
+				{
+					// try to load the tile from the online source
+					layerTile = layerMapSource.updateTile(tile);
+					if (layerTile != null)
+					{
+						log.debug("Multi layer loaded: '" + layerMapSource.getName() + "' (" + tile.getAddress() + ") into Layer=" + i);
+						layerTiles.add(layerTile);
+						if (layerTile.getTileState() == TileState.TS_LOADING)
+							log.debug("'loading' tile found in ts: " + layerTile + " for " + layerMapSource.getName());
+					}
+					else
+						log.warn("Multi layer empty: " + layerMapSource.getName() + "' (" + tile.getAddress() + ") into Layer=" + i + ", wait and retry");
+					// tile.wait(20000);
+				}
+			}
+			if (layerTiles.size() > 0)
+			{
+				image = new BufferedImage(MP2MapSpace.TECH_TILESIZE, MP2MapSpace.TECH_TILESIZE, BufferedImage.TYPE_3BYTE_BGR);
+				g2 = image.createGraphics();
+				g2.setColor(getBackgroundColor());
+				g2.fillRect(0, 0, maxSize, maxSize);
+				Date tMod = new Date();
+				// Wie lange sollen neu erzeugte Kacheln gültig sein?
+				// Date tExp = new Date(System.currentTimeMillis() + ACSettings.getInstance().getTileMaxExpirationTime());
+				Date tExp = new Date(System.currentTimeMillis() + 14 * 24 * 3600 * 1000); // max. 14Tage
+
+				for (int i = 0; i < layerTiles.size(); i++)
+				{
+					BufferedImage layerImage = layerTiles.get(i).getImage();
+					g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, getLayerAlpha(i)));
+					g2.drawImage(layerImage, 0, 0, maxSize, maxSize, null);
+					if (tMod.before(layerTiles.get(i).getMod()))
+						tMod = layerTiles.get(i).getMod();
+					if (tExp.after(layerTiles.get(i).getExp()))
+						tExp = layerTiles.get(i).getExp();
+					log.debug("Multi layer added: Alpha=" + getLayerAlpha(i) + "; Layer=" + i);
+				}
+
+				ByteArrayOutputStream buf = new ByteArrayOutputStream(32000);
+				ImageIO.write(image, mTileType.getFileExt(), buf);
+				log.trace("composed image written into buffer:(" + tile.getAddress() + ")");
+				tile.loadImage(buf.toByteArray());
+				tile.setMod(tMod);
+				tile.setExp(tExp);
+				tile.setTileState(TileState.TS_LOADED);
+				// long timeExpires = timeLastModified + ACSettings.getTileDefaultExpirationTime();
+				log.trace("put composed " + tile + " into tile store, exp=" + tExp);
+				getNTileStore().putTile(tile);
+				return tile;
+			}
+			else
+			{
+				log.warn(tile.getAddress() + " empty for" + this.getName());
+				return null;
+			}
+		}
+		// catch (InterruptedException e)
+		// {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		finally
+		{
+			if (g2 != null)
+			{
+				g2.dispose();
+			}
+		}
+		// return null;
+		return tile;
+	}
+
+	/**
+	 * This loads the image via {@link IfMapSource.getTileImage}() for each layer in this multi layer map source.
+	 * When all layer images are loaded, they were combined via Graphics2D.drawImage().
+	 */
+	@Override
 	@Deprecated
 	public BufferedImage getTileImage(int zoom, int x, int y) throws IOException, InterruptedException, TileException
 	{

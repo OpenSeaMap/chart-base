@@ -174,6 +174,7 @@ public class TileDownLoader
 		{
 			tile = new Tile(mapSource, tAddr);
 			byte[] data = null;
+
 			HttpURLConnection conn = mapSource.getTileUrlConnection(tAddr);
 			if (conn == null)
 				throw new UnrecoverableDownloadException(tile + " is not a valid tile in map source '" + mapSource + "'");
@@ -199,7 +200,7 @@ public class TileDownLoader
 			{
 				tile.loadImage(data);
 				tile.setTileState(TileState.TS_LOADED);
-				tile.setEtag(conn.getHeaderField("ETag"));
+				tile.setETag(conn.getHeaderField("ETag"));
 				tile.setMod(new Date(Math.max(conn.getLastModified(), System.currentTimeMillis())));
 				tile.setExp(new Date(Math.max(conn.getExpiration(), System.currentTimeMillis() + ACSettings.getInstance().getTileMaxExpirationTime())));
 				notifyTileDownloaded(data.length);
@@ -224,60 +225,42 @@ public class TileDownLoader
 	 * This checks if the data online are modified against the data in the tile store. If so the new data are down loaded and stored in the tile store - if the
 	 * tile store is enabled in settings.
 	 * 
-	 * @param tile
+	 * @param tTile
 	 * @param mapSource
 	 * @return The tile data as a byte array. Only if the data have been modified according to the update setting. If the data are not modified, it returns null.
 	 * @throws UnrecoverableDownloadException
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public static byte[] updateStoredTile(IfStoredTile tile, ACOnlineMapSource mapSource) throws UnrecoverableDownloadException, IOException, InterruptedException
+	public static Tile updateTile(Tile tTile, ACOnlineMapSource mapSource) throws UnrecoverableDownloadException, IOException
 	{
 		log.trace(OSMBStrs.RStr("START"));
-		final int x = tile.getX();
-		final int y = tile.getY();
-		final int zoom = tile.getZoom();
+		final int x = tTile.getXtile();
+		final int y = tTile.getYtile();
+		final int zoom = tTile.getZoom();
 		final IfOnlineMapSource.TileUpdate tileUpdate = mapSource.getTileUpdate();
 
-		switch (tileUpdate)
+		boolean different = isETagDifferent(tTile, mapSource);
+		if (!different)
 		{
-			case ETag:
-			{
-				boolean different = isETagDifferent(tile, mapSource);
-				if (!different)
-				{
-					if (log.isTraceEnabled())
-						log.debug("Data unchanged on server (eTag): " + mapSource + " " + tile);
-					return null;
-				}
-				break;
-			}
-			case LastModified:
-			{
-				boolean isNewer = isTileNewer(tile, mapSource);
-				if (!isNewer)
-				{
-					if (log.isTraceEnabled())
-						log.trace("Data unchanged on server (LastModified): " + mapSource + " " + tile);
-					return null;
-				}
-				break;
-			}
-			case None:
-			{
-				break;
-			}
-			case IfModifiedSince:
-			case IfNoneMatch:
-			default:
-				break;
+			if (log.isTraceEnabled())
+				log.debug("Data unchanged on server (eTag): " + mapSource + " " + tTile);
+			return tTile;
 		}
-		HttpURLConnection conn = mapSource.getTileUrlConnection(tile.getTAddr());
+		boolean isNewer = isTileNewer(tTile, mapSource);
+		if (!isNewer)
+		{
+			if (log.isTraceEnabled())
+				log.trace("Data unchanged on server (LastModified): " + mapSource + " " + tTile);
+			return tTile;
+		}
+
+		HttpURLConnection conn = mapSource.getTileUrlConnection(tTile.getAddress());
 		if (conn == null)
 			throw new UnrecoverableDownloadException("Tile x=" + x + " y=" + y + " zoom=" + zoom + " is not a valid tile in map source " + mapSource);
 
 		if (log.isTraceEnabled())
-			log.trace(String.format("Checking %s %s", mapSource.getName(), tile));
+			log.trace(String.format("Checking %s %s", mapSource.getName(), tTile));
 
 		prepareConnection(conn);
 
@@ -288,18 +271,18 @@ public class TileDownLoader
 		{
 			case IfNoneMatch:
 			{
-				if (tile.getETag() != null)
+				if (tTile.getETag() != null)
 				{
-					conn.setRequestProperty("If-None-Match", tile.getETag());
+					conn.setRequestProperty("If-None-Match", tTile.getETag());
 					conditionalRequest = true;
 				}
 				break;
 			}
 			case IfModifiedSince:
 			{
-				if (tile.getTimeLastModified() > 0)
+				if (tTile.getMod().getTime() > 0)
 				{
-					conn.setIfModifiedSince(tile.getTimeLastModified());
+					conn.setIfModifiedSince(tTile.getMod().getTime());
 					conditionalRequest = true;
 				}
 				break;
@@ -317,17 +300,17 @@ public class TileDownLoader
 
 		int code = conn.getResponseCode();
 
-		if (conditionalRequest && code == HttpURLConnection.HTTP_NOT_MODIFIED)
+		if (conditionalRequest && (code == HttpURLConnection.HTTP_NOT_MODIFIED))
 		{
 			// server responded: data not modified
 			if (s.getTileStoreEnabled())
 			{
 				// update expiration date in tile store
-				tile.update(conn.getExpiration());
-				ACTileStore.getInstance().putTile(tile, mapSource);
+				tTile.setExp(new Date(conn.getExpiration()));
+				mapSource.getTileStore().putTile(tTile, mapSource);
 			}
 			if (log.isTraceEnabled())
-				log.trace("Server responded: Data not modified: " + mapSource + " " + tile);
+				log.trace("Server responded: Data not modified: " + mapSource + " " + tTile);
 			return null;
 		}
 		else
@@ -345,17 +328,14 @@ public class TileDownLoader
 			long timeLastModified = conn.getLastModified();
 			long timeExpires = conn.getExpiration();
 
-			OSMBUtilities.checkForInterruption();
 			TileImageType imageType = OSMBUtilities.getImageType(data);
 			if (imageType == null)
 				throw new UnrecoverableDownloadException("The returned image is of unknown format");
 			if (s.getTileStoreEnabled())
 			{
-				// ACTileStore.getInstance().putTileData(data, x, y, zoom, mapSource, timeLastModified, timeExpires, eTag);
 				mapSource.getTileStore().putTileData(data, x, y, zoom, mapSource, timeLastModified, timeExpires, eTag);
 			}
-			OSMBUtilities.checkForInterruption();
-			return data;
+			return tTile;
 		}
 	}
 
@@ -429,16 +409,16 @@ public class TileDownLoader
 	 * Returns true if the tile online is newer than the one referenced by the tile store entry.
 	 * Performs a <code>HEAD</code> request for retrieving the <code>LastModified</code> header value.
 	 */
-	protected static boolean isTileNewer(IfStoredTile tile, IfOnlineMapSource mapSource) throws IOException
+	protected static boolean isTileNewer(Tile tTile, IfOnlineMapSource mapSource) throws IOException
 	{
 		log.trace(OSMBStrs.RStr("START"));
-		long oldLastModified = tile.getTimeLastModified();
+		long oldLastModified = tTile.getMod().getTime();
 		if (oldLastModified <= 0)
 		{
 			log.warn("Tile age comparison not possible: " + "tile in tilestore does not contain lastModified attribute");
 			return true;
 		}
-		HttpURLConnection conn = mapSource.getTileUrlConnection(tile.getTAddr());
+		HttpURLConnection conn = mapSource.getTileUrlConnection(tTile.getAddress());
 		conn.setRequestMethod("HEAD");
 		conn.setRequestProperty("Accept", ACCEPT);
 		long newLastModified = conn.getLastModified();
@@ -451,16 +431,16 @@ public class TileDownLoader
 	 * Returns true if the tile online has an eTag different from the one referenced by the tile store entry.
 	 * Performs a <code>HEAD</code> request for retrieving the <code>ETag</code> header value.
 	 */
-	protected static boolean isETagDifferent(IfStoredTile tile, IfOnlineMapSource mapSource) throws IOException
+	protected static boolean isETagDifferent(Tile tTile, IfOnlineMapSource mapSource) throws IOException
 	{
 		log.trace(OSMBStrs.RStr("START"));
-		String eTag = tile.getETag();
+		String eTag = tTile.getETag();
 		if (eTag == null || eTag.length() == 0)
 		{
 			log.warn("ETag check not possible: " + "tile in tilestore does not contain ETag attribute");
 			return true;
 		}
-		HttpURLConnection conn = mapSource.getTileUrlConnection(tile.getTAddr());
+		HttpURLConnection conn = mapSource.getTileUrlConnection(tTile.getAddress());
 		conn.setRequestMethod("HEAD");
 		conn.setRequestProperty("Accept", ACCEPT);
 		String onlineETag = conn.getHeaderField("ETag");

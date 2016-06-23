@@ -686,7 +686,9 @@ public class Map implements IfMap, IfCapabilityDeletable, TreeNode
 		if (mapSource instanceof ACMultiLayerMapSource)
 		{
 			// We have a map with most probably two layers and for each layer we have to download the tiles - therefore double the tileCount
-			tiles *= 2;
+			// Adjust the factor more to reality than theory. We don't have twice the tiles in OpenSeaMap, which currently is the main second layer.
+			tiles *= 15;
+			tiles /= 10;
 		}
 		log.trace("map='" + getName() + "', tiles=" + tiles);
 		return tiles;

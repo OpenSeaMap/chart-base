@@ -34,6 +34,7 @@ import osmb.program.tiles.Tile;
 import osmb.program.tiles.TileDownLoader;
 import osmb.program.tiles.TileException;
 import osmb.program.tiles.TileImageType;
+import osmb.program.tiles.UnrecoverableDownloadException;
 import osmb.utilities.OSMBStrs;
 
 /**
@@ -135,6 +136,27 @@ public abstract class ACOnlineMapSource extends ACMapSource implements IfOnlineM
 		log.trace(OSMBStrs.RStr("START"));
 		Tile tile = null;
 		tile = TileDownLoader.downloadTile(tAddr, this);
+		if (tile != null)
+		{
+			mNTS.putTile(tile);
+			log.debug("put " + tile + " into TS " + mNTS);
+		}
+		return tile;
+	}
+
+	@Override
+	public Tile updateTile(Tile tTile)
+	{
+		log.trace(OSMBStrs.RStr("START"));
+		Tile tile = null;
+		try
+		{
+			tile = TileDownLoader.updateTile(tTile, this);
+		}
+		catch (UnrecoverableDownloadException | IOException e)
+		{
+			log.error("download timeout " + tTile);
+		}
 		if (tile != null)
 		{
 			mNTS.putTile(tile);

@@ -114,9 +114,9 @@ public class Tile
 	protected TileAddress mTA = null;
 	protected BufferedImage mImage = LOADING_IMAGE;
 	protected TileState mTileState = TileState.TS_NEW;
-	protected Date mod = new Date();
-	protected Date exp = new Date();
-	protected String etag = "-";
+	protected Date mMod = new Date();
+	protected Date mExp = new Date();
+	protected String mETag = "-";
 	protected String mKey = "";
 
 	/**
@@ -193,9 +193,9 @@ public class Tile
 	 */
 	public Date getMod()
 	{
-		if (mod == null)
-			mod = new Date();
-		return mod;
+		if (mMod == null)
+			mMod = new Date();
+		return mMod;
 	}
 
 	/**
@@ -204,7 +204,7 @@ public class Tile
 	 */
 	public void setMod(Date mod)
 	{
-		this.mod = mod;
+		this.mMod = mod;
 	}
 
 	/**
@@ -212,9 +212,9 @@ public class Tile
 	 */
 	public Date getExp()
 	{
-		if (exp == null)
-			exp = new Date();
-		return exp;
+		if (mExp == null)
+			mExp = new Date();
+		return mExp;
 	}
 
 	/**
@@ -223,7 +223,7 @@ public class Tile
 	 */
 	public void setExp(Date exp)
 	{
-		this.exp = exp;
+		this.mExp = exp;
 	}
 
 	public boolean isExpired()
@@ -265,18 +265,18 @@ public class Tile
 	/**
 	 * @return the etag entry
 	 */
-	public String getEtag()
+	public String getETag()
 	{
-		return etag;
+		return mETag;
 	}
 
 	/**
 	 * @param etag
 	 *          the etag to set
 	 */
-	public void setEtag(String etag)
+	public void setETag(String etag)
 	{
-		this.etag = etag;
+		this.mETag = etag;
 	}
 
 	/**

@@ -386,11 +386,11 @@ public class SQLiteDbTileStore extends ACNTileStore
 								nNextImg_ID = Math.max(nNextImg_ID, rs.getLong(1) + 1);
 						}
 						writeTileData(nNextImg_ID, tile.getImageData());
-						writeTileInfo(tile.getXtile(), tile.getYtile(), tile.getZoom(), tile.getMod().getTime(), tile.getExp().getTime(), tile.getEtag(), nNextImg_ID);
+						writeTileInfo(tile.getXtile(), tile.getYtile(), tile.getZoom(), tile.getMod().getTime(), tile.getExp().getTime(), tile.getETag(), nNextImg_ID);
 						log.debug("image " + nNextImg_ID + " written for " + tile);
 						break;
 					case TS_ERROR:
-						writeTileInfo(tile.getXtile(), tile.getYtile(), tile.getZoom(), tile.getMod().getTime(), tile.getExp().getTime(), tile.getEtag(),
+						writeTileInfo(tile.getXtile(), tile.getYtile(), tile.getZoom(), tile.getMod().getTime(), tile.getExp().getTime(), tile.getETag(),
 						    Tile.ERROR_TILE_ID);
 						log.warn("error image written for " + tile);
 						break;
@@ -573,7 +573,7 @@ public class SQLiteDbTileStore extends ACNTileStore
 							tile.loadImage(rs.getBytes(1));
 							tile.setExp(new Date(getExp(tAddr)));
 							tile.setMod(new Date(getMod(tAddr)));
-							tile.setEtag(getETag(tAddr));
+							tile.setETag(getETag(tAddr));
 							tile.setTileState(TileState.TS_LOADED);
 							log.debug("bytes=" + data.length);
 						}
