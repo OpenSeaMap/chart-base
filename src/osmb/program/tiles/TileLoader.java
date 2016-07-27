@@ -17,6 +17,8 @@
 package osmb.program.tiles;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.log4j.Logger;
 
@@ -29,15 +31,18 @@ import osmb.program.tilestore.IfStoredTile;
 import osmb.utilities.OSMBStrs;
 
 /**
- * A {@link Runnable} providing implementation that loads tiles from some online map source via HTTP and saves all loaded files in a directory located in the
- * the temporary directory. If a tile is present in this file cache it will not be loaded from the online map source again.
+ * A {@link Runnable} providing implementation that loads tiles.
  */
 public class TileLoader
 {
-	private static Logger log = Logger.getLogger(TileLoader.class);
+	protected static Logger log = Logger.getLogger(TileLoader.class);
 
 	protected IfTileLoaderListener listener = null;
 	protected MemoryTileCache mMTC = null;
+	/**
+	 * Hash map allowing for registration of all started jobs, and thus preventing duplicate jobs.
+	 */
+	protected HashMap<TileAddress, Runnable> mJHM = new HashMap<TileAddress, Runnable>(1000);
 
 	public TileLoader(IfTileLoaderListener listener, MemoryTileCache mtc)
 	{
@@ -49,7 +54,7 @@ public class TileLoader
 	/**
 	 * Creates a {@link Runnable} to load one tile from the specified map source. It informs the listener by calling tileLoadingFinished(tile, true) that the
 	 * loading is finished. It tries to load the tile in sequence from MemoryTileCache, from TileStore and last from the online MapSource.
-	 * If the tile is downloaded, it is automatically updated, or inserted if it did not yet exist, in the TileStore.
+	 * If the tile is downloaded, it is automatically updated, or, if it did not yet exist, inserted into the TileStore.
 	 * 
 	 * @param source
 	 * @param tileXIdx
@@ -57,17 +62,23 @@ public class TileLoader
 	 * @param tileYIdx
 	 *          in tile indices
 	 * @param zoom
-	 * @return A {@link Runnable} to execute by some thread pool
+	 * @return A {@link Runnable} to be executed by some thread pool
 	 */
 	public Runnable createTileLoaderJob(final ACMapSource source, final TileAddress tAddr)
 	{
-		return new TileAsyncLoadJob(source, tAddr);
+		Runnable job;
+		if ((job = mJHM.get(tAddr)) == null)
+		{
+			job = new TileAsyncLoadJob(source, tAddr);
+			mJHM.put(tAddr, job);
+		}
+		return job;
 	}
 
 	/**
-	 * This class implements the actual tile loader. It usually is executed by a {@link JobDispatcher}.
+	 * This class implements the actual tile loader. It usually is executed by a {@link ThreadPoolExecutor} i.e. {@link JobDispatcher}.
 	 * It first tries to load the tile from the tile store for the map source.
-	 * If there is no tile in the store it returns an 'error' tile.
+	 * If there is no tile in the store it immediately returns an 'error' tile.
 	 * If the tile in the store is expired, it tries to download an updated tile from the online map source.
 	 * 
 	 * @author humbach

@@ -62,7 +62,7 @@ public class TileDownLoader
 	{
 		// Object defaultReadTimeout = System.getProperty("sun.net.client.defaultReadTimeout");
 		// if (defaultReadTimeout == null)
-		System.setProperty("sun.net.client.defaultReadTimeout", "20000");
+		System.setProperty("sun.net.client.defaultReadTimeout", "30000");
 		System.setProperty("http.maxConnections", "20");
 	}
 
@@ -166,6 +166,11 @@ public class TileDownLoader
 		return data;
 	}
 
+	/**
+	 * @param tAddr
+	 * @param mapSource
+	 * @return The downloaded tile or null if problems have occurred.
+	 */
 	public static Tile downloadTile(TileAddress tAddr, ACOnlineMapSource mapSource)
 	{
 		log.trace(OSMBStrs.RStr("START"));

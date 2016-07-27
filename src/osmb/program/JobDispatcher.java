@@ -25,41 +25,26 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 
 /**
- * Not a singleton anymore. This is done because we have to handle different separate pools, i.e. for layer and map, or downloader etc...
+ * Not a singleton any longer. This is done because we have to handle different separate pools, i.e. for layer and map, or downloader etc...
  * 
  * @author humbach
  */
 public class JobDispatcher extends ThreadPoolExecutor implements ThreadFactory, RejectedExecutionHandler
 {
-	private static final Logger log = Logger.getLogger(JobDispatcher.class);
-	@SuppressWarnings("unused") // W #unused
-	private static JobDispatcher INSTANCE = new JobDispatcher();
+	protected static final Logger log = Logger.getLogger(JobDispatcher.class);
 
-	private static final int WORKER_THREAD_INIT_COUNT = 5;
+	private static final int WORKER_THREAD_INIT_COUNT = 50;
 	private static final int WORKER_THREAD_MAX_COUNT = 500;
 
 	/**
 	 * Specifies the time span in seconds that a worker thread waits for new jobs to perform. If the time span has elapsed the worker thread terminates itself.
-	 * Only the first worker thread works differently, it ignores the timeout and will never terminate itself.
 	 */
-	private static final int WORKER_THREAD_TIMEOUT = 30;
+	private static final int WORKER_THREAD_TIMEOUT = 120;
 
 	/**
-	 * @deprecated see {@link JobDispatcher}
-	 */
-	@Deprecated
-	public static JobDispatcher getInstance()
-	{
-		log.debug("do not use any longer");
-		return null;
-	}
-
-	/**
-	 * This holds the number for the next Thread
+	 * This holds the TID for the next Thread
 	 */
 	private int WORKER_THREAD_ID = 1;
-	// private final BlockingQueue<Runnable> jobQueue;
-	// private final ThreadPoolExecutor executor;
 
 	/**
 	 * Removes all jobs from the queue that are currently not being processed.
@@ -88,17 +73,6 @@ public class JobDispatcher extends ThreadPoolExecutor implements ThreadFactory, 
 	{
 		super(Math.min(nMaxConcThreads, WORKER_THREAD_INIT_COUNT), nMaxConcThreads, WORKER_THREAD_TIMEOUT, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 		allowCoreThreadTimeOut(true);
-	}
-
-	/**
-	 * Why this ?
-	 * 
-	 * @deprecated Use execute(job) instead
-	 */
-	@Deprecated
-	public void addJob(Runnable job)
-	{
-		execute(job);
 	}
 
 	@Override
@@ -165,8 +139,29 @@ public class JobDispatcher extends ThreadPoolExecutor implements ThreadFactory, 
 	@Override
 	public boolean remove(Runnable task)
 	{
-		// TODO Auto-generated method stub
 		return super.remove(task);
 	}
 
+	/**
+	 * Sets a new max thread number.
+	 */
+	public void setNewMaxThreads(int nMax)
+	{
+		setMaximumPoolSize(nMax);
+	}
+
+	/**
+	 * nyr
+	 * 
+	 * @param strPref
+	 *          The thread name prefix to be used by this thread pool.
+	 */
+	public void setNamePref(String strPref)
+	{
+		// TODO modify the ThreadFactory to accommodate the prefix setting
+	}
+
+	/*
+	 * prestartCoreThread()
+	 */
 }
