@@ -19,6 +19,10 @@ package osmb.program.tiles;
 /**
  * A TileLoaderListener must listen to the following messages, which are sent by the actual TileLoader instance.
  * 
+ * <li>{@link #tileDownloaded(Tile, int)}
+ * <li>{@link #tileLoadedFromCache(Tile, int)}
+ * <li>{@link #tileLoadingFinished(Tile, boolean)}
+ * 
  * @author humbach
  */
 public interface IfTileLoaderListener

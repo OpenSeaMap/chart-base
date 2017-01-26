@@ -62,7 +62,7 @@ public class TileDownLoader
 	{
 		// Object defaultReadTimeout = System.getProperty("sun.net.client.defaultReadTimeout");
 		// if (defaultReadTimeout == null)
-		System.setProperty("sun.net.client.defaultReadTimeout", "20000");
+		System.setProperty("sun.net.client.defaultReadTimeout", "30000");
 		System.setProperty("http.maxConnections", "20");
 	}
 
@@ -127,7 +127,7 @@ public class TileDownLoader
 			HttpURLConnection conn = mapSource.getTileUrlConnection(tAddr);
 			if (conn == null)
 				throw new UnrecoverableDownloadException(
-				    "Tile x=" + tAddr.getX() + " y=" + tAddr.getY() + " zoom=" + tAddr.getZoom() + " is not a valid tile in map source " + mapSource);
+						"Tile x=" + tAddr.getX() + " y=" + tAddr.getY() + " zoom=" + tAddr.getZoom() + " is not a valid tile in map source " + mapSource);
 
 			log.trace("Downloading " + conn.getURL());
 
@@ -166,6 +166,11 @@ public class TileDownLoader
 		return data;
 	}
 
+	/**
+	 * @param tAddr
+	 * @param mapSource
+	 * @return The downloaded tile or null if problems have occurred.
+	 */
 	public static Tile downloadTile(TileAddress tAddr, ACOnlineMapSource mapSource)
 	{
 		log.trace(OSMBStrs.RStr("START"));
@@ -480,7 +485,7 @@ public class TileDownLoader
 					log.trace("Content (" + contentType + "): " + new String(data));
 				}
 				throw new UnrecoverableDownloadException("Content type of the loaded image is unknown: " + contentType,
-				    UnrecoverableDownloadException.ERROR_CODE_CONTENT_TYPE);
+						UnrecoverableDownloadException.ERROR_CODE_CONTENT_TYPE);
 			}
 		}
 	}
@@ -500,6 +505,6 @@ public class TileDownLoader
 			return;
 		if (data.length != len)
 			throw new UnrecoverableDownloadException(
-			    "Content length is not as declared by the server: retrieved=" + data.length + " bytes, expected-content-length=" + len + " bytes");
+					"Content length is not as declared by the server: retrieved=" + data.length + " bytes, expected-content-length=" + len + " bytes");
 	}
 }
