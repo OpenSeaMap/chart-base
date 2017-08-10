@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package osmb.utilities.file;
+package osmb.utilities.path;
 
 import java.io.File;
 
@@ -42,6 +42,5 @@ public class GpxFileFilter extends FileFilter
 			return "GPX 1.1 files (*.gpx)";
 		else
 			return "GPX 1.0/1.1 files (*.gpx)";
-
 	}
 }

@@ -14,34 +14,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package osmb.utilities.file;
+package osmb.utilities.stream;
 
-import java.io.File;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
-import javax.swing.filechooser.FileFilter;
+public class CountingOutputStream extends FilterOutputStream {
 
-public class GpxFileFilter extends FileFilter
-{
-	private boolean onlyGpx11;
+	private long bytesWritten = 0;
 
-	public GpxFileFilter(boolean onlyGpx11)
-	{
-		this.onlyGpx11 = onlyGpx11;
+	public CountingOutputStream(OutputStream out) {
+		super(out);
 	}
 
 	@Override
-	public boolean accept(File f)
-	{
-		return f.isDirectory() || f.getName().endsWith(".gpx");
+	public void write(int b) throws IOException {
+		out.write(b);
+		bytesWritten++;
 	}
 
 	@Override
-	public String getDescription()
-	{
-		if (onlyGpx11)
-			return "GPX 1.1 files (*.gpx)";
-		else
-			return "GPX 1.0/1.1 files (*.gpx)";
-
+	public void write(byte[] b, int off, int len) throws IOException {
+		out.write(b, off, len);
+		bytesWritten += len;
 	}
+
+	@Override
+	public void write(byte[] b) throws IOException {
+		out.write(b);
+		bytesWritten += b.length;
+	}
+
+	public long getBytesWritten() {
+		return bytesWritten;
+	}
+
 }

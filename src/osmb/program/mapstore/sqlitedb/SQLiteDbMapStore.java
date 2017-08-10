@@ -1,4 +1,4 @@
-package osmb.program.tilestore.sqlitedb;
+package osmb.program.mapstore.sqlitedb;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -27,22 +27,12 @@ import osmb.utilities.OSMBStrs;
 import osmb.utilities.OSMBUtilities;
 
 /**
- * This class is intended to replace the 'old' berkelydb tilestore. It is not a singleton any longer.
- * It is neccessary to have several tile stores open at the same time.
- * This is valid for one app, as well as for different apps.
- * <p>
- * Tiles to be hold in the SQLite db, maps stored in file system and paths in the map store db, see: https://www.sqlite.org/intern-v-extern-blob.html
- * This says approximately > 200kB files system is faster; < 20kB SQLite is faster
- * <p>
- * The class holds an enumeration of all instances.
- * Each map sources tile store is placed in a separate file.
- * 
  * @author humbach
  */
-public class SQLiteDbTileStore extends ACNTileStore
+public class SQLiteDbMapStore extends ACNTileStore
 {
 	// class/static data
-	protected static Logger log = Logger.getLogger(SQLiteDbTileStore.class);
+	protected static Logger log = Logger.getLogger(SQLiteDbMapStore.class);
 	// common tile store database
 	private static final int MAX_BATCH_SIZE = 1000;
 	private static final String TS_COMMONDB = "TSCommon";
@@ -51,24 +41,24 @@ public class SQLiteDbTileStore extends ACNTileStore
 	private static final String COMMIT_TA = "commit transaction";
 	private static final String ROLLBACK_TA = "rollback transaction";
 	// tile store info table
-	private static final String CREATE_TSINFO = "create table if not exists TS_INFO (SID int, TS_NAME text, TS_SNAME text, primary key (SID))";
-	private static final String INSERT_TSINFO = "insert or replace into TS_INFO (SID, TS_NAME, TS_SNAME) values (?,?,?)";
-	private static final String MAXID_TSINFO = "select distinct SID from TS_INFO order by SID desc limit 1";
-	private static final String SNAME_TSINFO = "select TS_SNAME from TS_INFO where (SID=?)";
-	private static final String IDS_TSINFO = "select SID from TS_INFO where (TS_NAME like ?)";
+	private static final String CREATE_TSINFO = "create table if not exists MS_INFO (SID int, MS_NAME text, MS_SNAME text, primary key (SID))";
+	private static final String INSERT_TSINFO = "insert or replace into MS_INFO (SID, MS_NAME, MS_SNAME) values (?,?,?)";
+	private static final String MAXID_TSINFO = "select distinct SID from MS_INFO order by SID desc limit 1";
+	private static final String SNAME_TSINFO = "select TS_SNAME from MS_INFO where (SID=?)";
+	private static final String IDS_TSINFO = "select SID from MS_INFO where (MS_NAME like ?)";
 	// tiles table
-	private static final String CREATE_TILES = "create table if not exists TILES (Z int, X int, Y int, MOD int, EXP int, ETAG text, FK_IID int, primary key (Z,X,Y))";
-	private static final String INDEXTILE_TILES = "create index if not exists IX_TILE on TILES (Z,X,Y)";
-	private static final String INDEXMOD_TILES = "create index if not exists IX_MOD on TILES (MOD)";
-	private static final String INDEXEXP_TILES = "create index if not exists IX_EXP on TILES (EXP)";
-	private static final String INDEXETAG_TILES = "create index if not exists IX_ETAG on TILES (ETAG)";
-	private static final String INSERT_TILES = "insert or replace into TILES (Z,X,Y,MOD,EXP,ETAG,FK_IID) values (?,?,?,?,?,?,?)";
-	private static final String CLEAR_TILES = "delete from TILES";
-	private static final String IID_TILES = "select FK_IID from TILES where (Z=?) and (X=?) and (Y=?)";
-	private static final String EXP_TILES = "select EXP from TILES where (Z=?) and (X=?) and (Y=?)";
-	private static final String MOD_TILES = "select MOD from TILES where (Z=?) and (X=?) and (Y=?)";
-	private static final String ETAG_TILES = "select ETAG from TILES where (Z=?) and (X=?) and (Y=?)";
-	private static final String NIID_TILES = "select max(FK_IID) from TILES";
+	private static final String CREATE_MAPS = "create table if not exists MAPS (Z int, X int, Y int, W int, H int, MOD int, EXP int, ETAG text, FK_IID int, primary key (Z,X,Y,W,H))";
+	private static final String INDEXTILE_MAPS = "create index if not exists IX_TILE on MAPS (Z,X,Y,W,H)";
+	private static final String INDEXMOD_MAPS = "create index if not exists IX_MOD on MAPS (MOD)";
+	private static final String INDEXEXP_MAPS = "create index if not exists IX_EXP on MAPS (EXP)";
+	private static final String INDEXETAG_MAPS = "create index if not exists IX_ETAG on MAPS (ETAG)";
+	private static final String INSERT_MAPS = "insert or replace into MAPS (Z,X,Y,W,H,MOD,EXP,ETAG,FK_IID) values (?,?,?,?,?,?,?,?,?)";
+	private static final String CLEAR_MAPS = "delete from MAPS";
+	private static final String IID_MAPS = "select FK_IID from MAPS where (Z=?) and (X=?) and (Y=?) and (W=?) and (H=?)";
+	private static final String EXP_MAPS = "select EXP from MAPS where (Z=?) and (X=?) and (Y=?) and (W=?) and (H=?)";
+	private static final String MOD_MAPS = "select MOD from MAPS where (Z=?) and (X=?) and (Y=?) and (W=?) and (H=?)";
+	// private static final String ETAG_MAPS = "select ETAG from MAPS where (Z=?) and (X=?) and (Y=?) and (W=?) and (H=?)";
+	private static final String NIID_MAPS = "select max(FK_IID) from MAPS";
 	// images table
 	private static final String CREATE_IMAGES = "create table if not exists IMAGES (IID int, IMAGE blob, primary key (IID))";
 	private static final String INSERT_IMAGES = "insert or replace into IMAGES (IID, IMAGE) values (?,?)";
@@ -105,7 +95,7 @@ public class SQLiteDbTileStore extends ACNTileStore
 	 * @param mapSource
 	 * @throws TileStoreException
 	 */
-	public static SQLiteDbTileStore prepareTileStore(ACMapSource mapSource) throws TileStoreException
+	public static SQLiteDbMapStore prepareTileStore(ACMapSource mapSource) throws TileStoreException
 	{
 		log.trace(OSMBStrs.RStr("START"));
 		try
@@ -118,10 +108,10 @@ public class SQLiteDbTileStore extends ACNTileStore
 				throw new TileStoreException(OSMBStrs.RStr("TileStore.NotInit"));
 			}
 
-			SQLiteDbTileStore tStore = (SQLiteDbTileStore) sHM.get(mapSource);
+			SQLiteDbMapStore tStore = (SQLiteDbMapStore) sHM.get(mapSource);
 			if (tStore == null)
 			{
-				tStore = new SQLiteDbTileStore();
+				tStore = new SQLiteDbMapStore();
 				sHM.put(mapSource, tStore);
 			}
 			if (!tStore.isInitialized())
@@ -255,12 +245,12 @@ public class SQLiteDbTileStore extends ACNTileStore
 	/**
 	 * 
 	 */
-	private SQLiteDbTileStore()
+	private SQLiteDbMapStore()
 	{
 		try
 		{
 			if (!sInitialized)
-				SQLiteDbTileStore.initializeCommonDB();
+				SQLiteDbMapStore.initializeCommonDB();
 		}
 		catch (SQLException e)
 		{
@@ -275,7 +265,7 @@ public class SQLiteDbTileStore extends ACNTileStore
 		// testing of SQLite tile store
 		try
 		{
-			SQLiteDbTileStore.initializeCommonDB();
+			SQLiteDbMapStore.initializeCommonDB();
 			if (mConn == null)
 			{
 				mTileStoreDB = sTileStoreBase.resolve(mMapSource.getName() + "." + EXT_COMMONDB);
@@ -309,7 +299,7 @@ public class SQLiteDbTileStore extends ACNTileStore
 			{
 				stmt = mConn.createStatement();
 				stmt.executeUpdate(BEGIN_TA);
-				stmt.executeUpdate(CLEAR_TILES);
+				stmt.executeUpdate(CLEAR_MAPS);
 				stmt.executeUpdate(CLEAR_IMAGES);
 				stmt.executeUpdate(COMMIT_TA);
 			}
@@ -327,7 +317,7 @@ public class SQLiteDbTileStore extends ACNTileStore
 	protected void writeTileInfo(int x, int y, int z, long mod, long exp, String eTag, long nImg_ID) throws SQLException
 	{
 		// write the tile info
-		mPrepStmt = mConn.prepareStatement(INSERT_TILES);
+		mPrepStmt = mConn.prepareStatement(INSERT_MAPS);
 		mPrepStmt.setInt(1, z);
 		mPrepStmt.setInt(2, x);
 		mPrepStmt.setInt(3, y);
@@ -367,7 +357,7 @@ public class SQLiteDbTileStore extends ACNTileStore
 						// find next free image id
 						long nNextImg_ID = 100;
 						// ResultSet rs = mConn.prepareStatement(NIID_IMAGES).executeQuery();
-						mPrepStmt = mConn.prepareStatement(IID_TILES);
+						mPrepStmt = mConn.prepareStatement(IID_MAPS);
 						mPrepStmt.setInt(1, tile.getZoom());
 						mPrepStmt.setInt(2, tile.getXtile());
 						mPrepStmt.setInt(3, tile.getYtile());
@@ -381,7 +371,7 @@ public class SQLiteDbTileStore extends ACNTileStore
 						else
 						{
 							rs.close();
-							rs = mConn.prepareStatement(NIID_TILES).executeQuery();
+							rs = mConn.prepareStatement(NIID_MAPS).executeQuery();
 							if (rs.next())
 								nNextImg_ID = Math.max(nNextImg_ID, rs.getLong(1) + 1);
 						}
@@ -457,11 +447,11 @@ public class SQLiteDbTileStore extends ACNTileStore
 		{
 			Statement stmt = mConn.createStatement();
 			stmt.executeUpdate(BEGIN_TA);
-			stmt.executeUpdate(CREATE_TILES);
-			stmt.executeUpdate(INDEXTILE_TILES);
-			stmt.executeUpdate(INDEXMOD_TILES);
-			stmt.executeUpdate(INDEXEXP_TILES);
-			stmt.executeUpdate(INDEXETAG_TILES);
+			stmt.executeUpdate(CREATE_MAPS);
+			stmt.executeUpdate(INDEXTILE_MAPS);
+			stmt.executeUpdate(INDEXMOD_MAPS);
+			stmt.executeUpdate(INDEXEXP_MAPS);
+			stmt.executeUpdate(INDEXETAG_MAPS);
 			stmt.executeUpdate(CREATE_IMAGES);
 			stmt.executeUpdate(COMMIT_TA);
 		}
@@ -548,7 +538,7 @@ public class SQLiteDbTileStore extends ACNTileStore
 			// get image id from tiles
 			synchronized (mConn)
 			{
-				mPrepStmt = mConn.prepareStatement(IID_TILES);
+				mPrepStmt = mConn.prepareStatement(IID_MAPS);
 				mPrepStmt.setInt(1, tAddr.getZoom());
 				mPrepStmt.setInt(2, tAddr.getX());
 				mPrepStmt.setInt(3, tAddr.getY());
@@ -573,7 +563,7 @@ public class SQLiteDbTileStore extends ACNTileStore
 							tile.loadImage(rs.getBytes(1));
 							tile.setExp(new Date(getExp(tAddr)));
 							tile.setMod(new Date(getMod(tAddr)));
-							tile.setETag(getETag(tAddr));
+							// tile.setETag(getETag(tAddr));
 							tile.setTileState(TileState.TS_LOADED);
 							log.debug("bytes=" + data.length);
 						}
@@ -599,7 +589,7 @@ public class SQLiteDbTileStore extends ACNTileStore
 	protected long getMod(TileAddress tAddr) throws SQLException
 	{
 		long tMod = System.currentTimeMillis();
-		mPrepStmt = mConn.prepareStatement(MOD_TILES);
+		mPrepStmt = mConn.prepareStatement(MOD_MAPS);
 		mPrepStmt.setInt(1, tAddr.getZoom());
 		mPrepStmt.setInt(2, tAddr.getX());
 		mPrepStmt.setInt(3, tAddr.getY());
@@ -616,7 +606,7 @@ public class SQLiteDbTileStore extends ACNTileStore
 	protected long getExp(TileAddress tAddr) throws SQLException
 	{
 		long tExp = System.currentTimeMillis();
-		mPrepStmt = mConn.prepareStatement(EXP_TILES);
+		mPrepStmt = mConn.prepareStatement(EXP_MAPS);
 		mPrepStmt.setInt(1, tAddr.getZoom());
 		mPrepStmt.setInt(2, tAddr.getX());
 		mPrepStmt.setInt(3, tAddr.getY());
@@ -630,22 +620,22 @@ public class SQLiteDbTileStore extends ACNTileStore
 		return tExp;
 	}
 
-	protected String getETag(TileAddress tAddr) throws SQLException
-	{
-		String eTag = "-";
-		mPrepStmt = mConn.prepareStatement(ETAG_TILES);
-		mPrepStmt.setInt(1, tAddr.getZoom());
-		mPrepStmt.setInt(2, tAddr.getX());
-		mPrepStmt.setInt(3, tAddr.getY());
-		ResultSet rs = mPrepStmt.executeQuery();
-		if (rs.next())
-		{
-			eTag = rs.getString(1);
-			log.debug("eTag=" + eTag);
-		}
-		rs.close();
-		return eTag;
-	}
+	// protected String getETag(TileAddress tAddr) throws SQLException
+	// {
+	// String eTag = "-";
+	// mPrepStmt = mConn.prepareStatement(ETAG_MAPS);
+	// mPrepStmt.setInt(1, tAddr.getZoom());
+	// mPrepStmt.setInt(2, tAddr.getX());
+	// mPrepStmt.setInt(3, tAddr.getY());
+	// ResultSet rs = mPrepStmt.executeQuery();
+	// if (rs.next())
+	// {
+	// eTag = rs.getString(1);
+	// log.debug("eTag=" + eTag);
+	// }
+	// rs.close();
+	// return eTag;
+	// }
 
 	@Override
 	public BufferedImage getCacheCoverage(ACMapSource mapSource, int zoom, Point tileNumMin, Point tileNumMax) throws InterruptedException

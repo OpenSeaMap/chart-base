@@ -14,34 +14,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package osmb.utilities.file;
+package osmb.utilities.path;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.util.regex.Pattern;
 
-import javax.swing.filechooser.FileFilter;
-
-public class GpxFileFilter extends FileFilter
+public class RegexPathFilter implements FileFilter
 {
-	private boolean onlyGpx11;
+	private Pattern p;
 
-	public GpxFileFilter(boolean onlyGpx11)
+	public RegexPathFilter(String regex)
 	{
-		this.onlyGpx11 = onlyGpx11;
+		p = Pattern.compile(regex);
 	}
 
 	@Override
-	public boolean accept(File f)
+	public boolean accept(File pathname)
 	{
-		return f.isDirectory() || f.getName().endsWith(".gpx");
-	}
-
-	@Override
-	public String getDescription()
-	{
-		if (onlyGpx11)
-			return "GPX 1.1 files (*.gpx)";
-		else
-			return "GPX 1.0/1.1 files (*.gpx)";
-
+		return p.matcher(pathname.getName()).matches();
 	}
 }

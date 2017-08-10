@@ -14,34 +14,54 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package osmb.utilities.file;
+package osmb.utilities.path;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import javax.swing.filechooser.FileFilter;
+import osmb.utilities.OSMBUtilities;
 
-public class GpxFileFilter extends FileFilter
+/**
+ * A {@link DirectoryStream.Filter} returning only directories.
+ */
+public class DirInfoPathFilter implements DirectoryStream.Filter<Path>
 {
-	private boolean onlyGpx11;
+	long dirSize = 0;
+	int fileCount = 0;
 
-	public GpxFileFilter(boolean onlyGpx11)
+	public DirInfoPathFilter()
 	{
-		this.onlyGpx11 = onlyGpx11;
 	}
 
 	@Override
-	public boolean accept(File f)
+	public boolean accept(Path tP)
 	{
-		return f.isDirectory() || f.getName().endsWith(".gpx");
+		try
+		{
+			if (!Files.isDirectory(tP))
+			{
+				OSMBUtilities.checkForInterruptionRt();
+				dirSize += Files.size(tP);
+				fileCount++;
+			}
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return false;
 	}
 
-	@Override
-	public String getDescription()
+	public long getDirSize()
 	{
-		if (onlyGpx11)
-			return "GPX 1.1 files (*.gpx)";
-		else
-			return "GPX 1.0/1.1 files (*.gpx)";
+		return dirSize;
+	}
 
+	public int getFileCount()
+	{
+		return fileCount;
 	}
 }
