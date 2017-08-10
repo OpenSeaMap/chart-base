@@ -241,7 +241,7 @@ public class Tile
 		if ((modMillis + maxExpirationTime) < now)
 		{
 			bExp = true;
-			log.warn(this + " has expired due to max=" + (maxExpirationTime / 3600000) + "h, mod=" + (modMillis / 1000));
+			log.info(this + " has expired due to max=" + (maxExpirationTime / 3600000) + "h, mod=" + (modMillis / 1000));
 		}
 		// only if (modDate + minExpirationTime) has expired. then ...
 		else if ((modMillis + minExpirationTime) < now)
@@ -370,8 +370,8 @@ public class Tile
 	public void paint(Graphics gC, int xTgt, int yTgt)
 	{
 		if (mImage != null)
-		  // gC.drawImage(mImage, xTgt, yTgt, MP2MapSpace.TECH_TILESIZE, MP2MapSpace.TECH_TILESIZE, Color.WHITE, null);
-		  gC.drawImage(mImage, xTgt, yTgt, MP2MapSpace.TECH_TILESIZE, MP2MapSpace.TECH_TILESIZE, mMapSource.getBackgroundColor(), null);
+			// gC.drawImage(mImage, xTgt, yTgt, MP2MapSpace.TECH_TILESIZE, MP2MapSpace.TECH_TILESIZE, Color.WHITE, null);
+			gC.drawImage(mImage, xTgt, yTgt, MP2MapSpace.TECH_TILESIZE, MP2MapSpace.TECH_TILESIZE, mMapSource.getBackgroundColor(), null);
 	}
 
 	/**

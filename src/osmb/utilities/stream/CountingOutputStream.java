@@ -14,31 +14,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package osmb.utilities.path;
+package osmb.utilities.stream;
 
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.io.FilterOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
-import osmb.program.catalog.Catalog;
+public class CountingOutputStream extends FilterOutputStream {
 
-/**
- * This Filter accepts only files following the scheme: "osmcb-catalog-NAME.xml".
- * This match is tested according to Catalog.CATALOG_FILENAME_PATTERN
- * 
- * @author humbach
- */
-public class CatalogFilter implements DirectoryStream.Filter<Path>
-{
-	@Override
-	public boolean accept(Path tP)
-	{
-		boolean bExtOk = false;
-		if (!Files.isDirectory(tP))
-		{
-			String strCName = tP.subpath(tP.getNameCount() - 1, tP.getNameCount()).toString();
-			bExtOk = Catalog.CATALOG_FILENAME_PATTERN.matcher(strCName).matches();
-		}
-		return bExtOk;
+	private long bytesWritten = 0;
+
+	public CountingOutputStream(OutputStream out) {
+		super(out);
 	}
+
+	@Override
+	public void write(int b) throws IOException {
+		out.write(b);
+		bytesWritten++;
+	}
+
+	@Override
+	public void write(byte[] b, int off, int len) throws IOException {
+		out.write(b, off, len);
+		bytesWritten += len;
+	}
+
+	@Override
+	public void write(byte[] b) throws IOException {
+		out.write(b);
+		bytesWritten += b.length;
+	}
+
+	public long getBytesWritten() {
+		return bytesWritten;
+	}
+
 }

@@ -127,7 +127,7 @@ public class TileDownLoader
 			HttpURLConnection conn = mapSource.getTileUrlConnection(tAddr);
 			if (conn == null)
 				throw new UnrecoverableDownloadException(
-						"Tile x=" + tAddr.getX() + " y=" + tAddr.getY() + " zoom=" + tAddr.getZoom() + " is not a valid tile in map source " + mapSource);
+				    "Tile x=" + tAddr.getX() + " y=" + tAddr.getY() + " zoom=" + tAddr.getZoom() + " is not a valid tile in map source " + mapSource);
 
 			log.trace("Downloading " + conn.getURL());
 
@@ -366,11 +366,10 @@ public class TileDownLoader
 	protected static byte[] loadBodyDataInBuffer(HttpURLConnection conn) throws IOException
 	{
 		log.trace(OSMBStrs.RStr("START"));
-		InputStream input = null;
+		InputStream input = conn.getInputStream();
 		byte[] data = null;
 		try
 		{
-			input = conn.getInputStream();
 			if (Thread.currentThread() instanceof IfMapSourceListener)
 			{
 				// // We only throttle bundle downloads, not downloads for the preview map
@@ -402,11 +401,12 @@ public class TileDownLoader
 		}
 		finally
 		{
-			OSMBUtilities.closeStream(input);
+			if (input != null)
+				OSMBUtilities.closeStream(input);
 		}
-		log.trace("Retrieved " + data.length + " bytes for a HTTP " + conn.getResponseCode());
-		if (data.length == 0)
+		if ((data == null) || (data.length == 0))
 			return null;
+		log.trace("Retrieved " + data.length + " bytes for a HTTP " + conn.getResponseCode());
 		return data;
 	}
 
@@ -485,7 +485,7 @@ public class TileDownLoader
 					log.trace("Content (" + contentType + "): " + new String(data));
 				}
 				throw new UnrecoverableDownloadException("Content type of the loaded image is unknown: " + contentType,
-						UnrecoverableDownloadException.ERROR_CODE_CONTENT_TYPE);
+				    UnrecoverableDownloadException.ERROR_CODE_CONTENT_TYPE);
 			}
 		}
 	}
@@ -505,6 +505,6 @@ public class TileDownLoader
 			return;
 		if (data.length != len)
 			throw new UnrecoverableDownloadException(
-					"Content length is not as declared by the server: retrieved=" + data.length + " bytes, expected-content-length=" + len + " bytes");
+			    "Content length is not as declared by the server: retrieved=" + data.length + " bytes, expected-content-length=" + len + " bytes");
 	}
 }
