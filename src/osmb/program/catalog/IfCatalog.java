@@ -27,7 +27,6 @@ import osmb.program.map.IfLayer;
  * to enable typing of catalog objects
  * 
  * @author humbach
- *
  */
 public interface IfCatalog extends IfCatalogObject, Iterable<IfLayer>
 // public interface IfCatalog extends Iterable<IfLayer>

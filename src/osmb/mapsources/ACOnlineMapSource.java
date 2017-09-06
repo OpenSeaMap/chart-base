@@ -134,8 +134,7 @@ public abstract class ACOnlineMapSource extends ACMapSource implements IfOnlineM
 	public Tile loadTile(TileAddress tAddr) throws IOException
 	{
 		log.trace(OSMBStrs.RStr("START"));
-		Tile tile = null;
-		tile = TileDownLoader.downloadTile(tAddr, this);
+		Tile tile = TileDownLoader.downloadTile(tAddr, this);
 		if (tile != null)
 		{
 			mNTS.putTile(tile);

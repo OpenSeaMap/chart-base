@@ -123,7 +123,7 @@ public final class MemoryTileCache implements NotificationListener
 	public void handleNotification(Notification notification, Object handback)
 	{
 		if ((!MemoryNotificationInfo.MEMORY_THRESHOLD_EXCEEDED.equals(notification.getType()))
-		    && (!MemoryNotificationInfo.MEMORY_COLLECTION_THRESHOLD_EXCEEDED.equals(notification.getType())))
+				&& (!MemoryNotificationInfo.MEMORY_COLLECTION_THRESHOLD_EXCEEDED.equals(notification.getType())))
 		{
 			log.trace("Memory notification: " + notification.toString());
 			return;

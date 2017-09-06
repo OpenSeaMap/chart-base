@@ -62,7 +62,7 @@ public class TileDownLoader
 	{
 		// Object defaultReadTimeout = System.getProperty("sun.net.client.defaultReadTimeout");
 		// if (defaultReadTimeout == null)
-		System.setProperty("sun.net.client.defaultReadTimeout", "20000");
+		System.setProperty("sun.net.client.defaultReadTimeout", "30000");
 		System.setProperty("http.maxConnections", "20");
 	}
 
@@ -166,6 +166,11 @@ public class TileDownLoader
 		return data;
 	}
 
+	/**
+	 * @param tAddr
+	 * @param mapSource
+	 * @return The downloaded tile or null if problems have occurred.
+	 */
 	public static Tile downloadTile(TileAddress tAddr, ACOnlineMapSource mapSource)
 	{
 		log.trace(OSMBStrs.RStr("START"));
@@ -361,11 +366,10 @@ public class TileDownLoader
 	protected static byte[] loadBodyDataInBuffer(HttpURLConnection conn) throws IOException
 	{
 		log.trace(OSMBStrs.RStr("START"));
-		InputStream input = null;
+		InputStream input = conn.getInputStream();
 		byte[] data = null;
 		try
 		{
-			input = conn.getInputStream();
 			if (Thread.currentThread() instanceof IfMapSourceListener)
 			{
 				// // We only throttle bundle downloads, not downloads for the preview map
@@ -397,11 +401,12 @@ public class TileDownLoader
 		}
 		finally
 		{
-			OSMBUtilities.closeStream(input);
+			if (input != null)
+				OSMBUtilities.closeStream(input);
 		}
-		log.trace("Retrieved " + data.length + " bytes for a HTTP " + conn.getResponseCode());
-		if (data.length == 0)
+		if ((data == null) || (data.length == 0))
 			return null;
+		log.trace("Retrieved " + data.length + " bytes for a HTTP " + conn.getResponseCode());
 		return data;
 	}
 

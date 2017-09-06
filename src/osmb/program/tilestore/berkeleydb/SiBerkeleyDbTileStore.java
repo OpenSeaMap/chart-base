@@ -44,12 +44,14 @@ import com.sleepycat.persist.evolve.Mutations;
 import com.sleepycat.persist.evolve.Renamer;
 
 import osmb.mapsources.ACMapSource;
+import osmb.mapsources.IfMapSource;
 import osmb.mapsources.TileAddress;
 import osmb.program.ACSettings;
 import osmb.program.DelayedInterruptThread;
 import osmb.program.tiles.Tile;
 import osmb.program.tilestore.ACTileStore;
 import osmb.program.tilestore.IfStoredTile;
+import osmb.program.tilestore.IfTileStoreEntry;
 import osmb.program.tilestore.TileStoreException;
 import osmb.program.tilestore.TileStoreInfo;
 import osmb.program.tilestore.berkeleydb.TileDbEntry.TileDbKey;
@@ -860,5 +862,4 @@ public class SiBerkeleyDbTileStore extends ACTileStore
 		// TODO Auto-generated method stub
 		return false;
 	}
-
 }
