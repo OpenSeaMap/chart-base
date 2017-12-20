@@ -23,7 +23,6 @@ import osmb.utilities.OSMBUtilities;
 
 public class ProgramInfo
 {
-
 	public static String PROG_NAME = "OpenSeaMap unknown";
 	public static String PROG_NAME_SHORT = "OSMB";
 
@@ -126,5 +125,4 @@ public class ProgramInfo
 	{
 		return userAgent;
 	}
-
 }
