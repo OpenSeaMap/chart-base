@@ -14,13 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ******************************************************************************/
-package osmb.utilities.path;
+package osmb.program.catalog;
 
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-
-import osmb.program.catalog.Catalog;
 
 /**
  * This Filter accepts only files following the scheme: "osmcb-catalog-NAME.xml".
