@@ -66,7 +66,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 	public static final Pattern CATALOG_FILENAME_PATTERN = Pattern.compile(CATALOG_FILENAME_PREFIX + "(" + CATALOG_NAME_REGEX + ").xml");
 	// public static final Catalog DEFAULT = new Catalog();
 	@Deprecated
-	protected static Vector<Catalog> catalogs = new Vector<Catalog>();
+	protected static Vector<Catalog> catalogs = new Vector<>();
 
 	/**
 	 * Builds a (hopefully) valid filename for a given catalog name
@@ -155,36 +155,37 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 
 	/**
 	 * This actually creates a new catalog object and fills it with the content from the {@link #File}
+	 * The layers are sorted in descending zoom level order. Hence the most detailed layer is first in the catalog.
 	 */
 	public static Catalog load(File file) throws JAXBException
 	{
 		JAXBContext context = JAXBContext.newInstance(Catalog.class);
 		Unmarshaller um = context.createUnmarshaller();
 
-		// W ValidationEventHandler is not helpful, user will get an info from GUIExceptionHandler
-		// um.setEventHandler(new ValidationEventHandler()
-		// {
-		// @Override
-		// public boolean handleEvent(ValidationEvent event)
-		// {
-		// ValidationEventLocator loc = event.getLocator();
-		// String file = loc.getURL().getFile();
-		// int lastSlash = file.lastIndexOf('/');
-		// if (lastSlash > 0)
-		// file = file.substring(lastSlash + 1);
-		// // UI should be separated from program logic -> relocate to UI components
-		// int ret = JOptionPane.showConfirmDialog(null,
-		// String.format(OSMBStrs.RStr("Catalog.Loading.ErrMsg"), event.getMessage(), file, loc.getLineNumber(), loc.getColumnNumber()),
-		// OSMBStrs.RStr("Catalog.Loading.Title"), JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.ERROR_MESSAGE);
-		// log.error(event.toString());
-		// return (ret == JOptionPane.YES_OPTION);
-		// }
-		// });
-
 		try
 		{
 			Catalog newCatalog = (Catalog) um.unmarshal(file);
 			newCatalog.file = file;
+			// sort the layers
+			List<IfLayer> sortedlayers = new LinkedList<>();
+			int zLvl = 0;
+			for (IfLayer layer : newCatalog.layers)
+			{
+				boolean bOk = false;
+				zLvl = layer.getZoomLvl();
+				for (IfLayer sLayer : sortedlayers)
+				{
+					if (sLayer.getZoomLvl() < zLvl)
+					{
+						sortedlayers.add(sortedlayers.indexOf(sLayer), layer);
+						bOk = true;
+						break;
+					}
+				}
+				if (!bOk)
+					sortedlayers.add(layer);
+			}
+			newCatalog.layers = sortedlayers;
 			return newCatalog;
 		}
 		catch (Exception e)
@@ -243,7 +244,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 
 	@XmlElements(
 	{ @XmlElement(name = "Layer", type = Layer.class) })
-	protected List<IfLayer> layers = new LinkedList<IfLayer>();
+	protected List<IfLayer> layers = new LinkedList<>();
 
 	// @XmlElement
 	// protected int Num = layers.size();
@@ -415,7 +416,7 @@ public class Catalog implements IfCatalogProfile, IfCatalog, TreeNode, Comparabl
 		if (isEmpty())
 			return true;
 		// Check for duplicate layer names
-		HashSet<String> names = new HashSet<String>(layers.size());
+		HashSet<String> names = new HashSet<>(layers.size());
 		for (IfLayer layer : layers)
 			names.add(layer.getName());
 		if (names.size() < layers.size())
