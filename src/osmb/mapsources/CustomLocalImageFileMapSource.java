@@ -187,10 +187,10 @@ public class CustomLocalImageFileMapSource implements IfFileBasedMapSource
 			int imageHeight = fullImage.getHeight();
 			// W #mapSpace MP2MapSpace EastNorthCoordinate <-> GeoCoordinate MP2Corner <-> MercatorPixelCoordinate
 			int tileSize = MP2MapSpace.getTileSize();
-			double tileWest = MP2MapSpace.cXToLon(x * tileSize, zoom);
-			double tileNorth = MP2MapSpace.cYToLat(y * tileSize, zoom);
-			double tileEast = MP2MapSpace.cXToLon((x + 1) * tileSize, zoom);
-			double tileSouth = MP2MapSpace.cYToLat((y + 1) * tileSize, zoom);
+			double tileWest = MP2MapSpace.cXToLonLeftBorder(x * tileSize, zoom);
+			double tileNorth = MP2MapSpace.cYToLatUpperBorder(y * tileSize, zoom);
+			double tileEast = MP2MapSpace.cXToLonRightBorder(x * tileSize, zoom);
+			double tileSouth = MP2MapSpace.cYToLatLowerBorder(y * tileSize, zoom);
 			double tileWidth = tileEast - tileWest;
 			double tileHeight = tileNorth - tileSouth;
 

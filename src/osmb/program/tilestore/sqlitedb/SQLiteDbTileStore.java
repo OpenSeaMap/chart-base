@@ -664,7 +664,6 @@ public class SQLiteDbTileStore extends ACNTileStore
 	public void putTileData(byte[] tileData, TileAddress tAddr, long timeLastModified, long timeExpires, String eTag) throws IOException
 	{
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
